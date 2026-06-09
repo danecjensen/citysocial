@@ -1,0 +1,56 @@
+plugins:
+  - rubocop-rails
+
+AllCops:
+  TargetRubyVersion: 3.3
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "bin/**/*"
+    - "db/**/*"
+    - "config/**/*"
+    - "vendor/**/*"
+    - "components/*/db/**/*"
+    - "**/*.gemspec"
+
+# The codebase uses Rails-idiomatic double quotes and namespaced modules
+# without per-file doc comments; align the linter with those conventions.
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Metrics:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 120
+
+# --- Cops disabled to match this app's deliberate architecture ---
+
+# The kernel's BaseController is the base every module inherits from; by
+# contract it subclasses ActionController::Base, not the host ApplicationController.
+Rails/ApplicationController:
+  Enabled: false
+
+# The event bus lives in the shared kernel's lib/ where there is no
+# ApplicationJob; its dispatcher subclasses ActiveJob::Base directly.
+Rails/ApplicationJob:
+  Enabled: false
+
+# This app keeps flash/redirect copy inline; it does not use i18n locale files.
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+# The social-graph associations are simple foreign-key links; inverse_of adds
+# noise without benefit here.
+Rails/InverseOf:
+  Enabled: false
+
+# current_user memoization via ||= find_by is intentional and request-scoped.
+Rails/FindByOrAssignmentMemoization:
+  Enabled: false

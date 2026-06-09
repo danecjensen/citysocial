@@ -1,0 +1,15 @@
+<h1>Log in</h1>
+
+<%= form_with url: "/login", method: :post do |f| %>
+  <p>
+    <%= f.label :email %><br>
+    <%= f.email_field :email, autocomplete: "email", autofocus: true %>
+  </p>
+  <p>
+    <%= f.label :password %><br>
+    <%= f.password_field :password, autocomplete: "current-password" %>
+  </p>
+  <p><%= f.submit "Log in" %></p>
+<% end %>
+
+<p>No account? <%= link_to "Sign up", "/signup" %></p>

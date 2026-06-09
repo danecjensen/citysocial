@@ -1,5 +1,7 @@
 module Feed
   class PostsController < PlatformCore::BaseController
+    before_action :require_login
+
     def index
       @posts = Feed::Timeline.for_user(current_user&.id)
     end

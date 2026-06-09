@@ -1,0 +1,31 @@
+<h1>Sign up</h1>
+
+<%= form_with model: @user, url: "/signup", method: :post do |f| %>
+  <% if @user.errors.any? %>
+    <ul class="errors">
+      <% @user.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <p>
+    <%= f.label :handle %><br>
+    <%= f.text_field :handle, autofocus: true %>
+  </p>
+  <p>
+    <%= f.label :email %><br>
+    <%= f.email_field :email, autocomplete: "email" %>
+  </p>
+  <p>
+    <%= f.label :password %><br>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+  </p>
+  <p>
+    <%= f.label :password_confirmation, "Confirm password" %><br>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  </p>
+  <p><%= f.submit "Create account" %></p>
+<% end %>
+
+<p>Already have an account? <%= link_to "Log in", "/login" %></p>

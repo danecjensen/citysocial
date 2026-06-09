@@ -1,4 +1,4 @@
 Feed::Engine.routes.draw do
-  resources :posts, only: [:index, :create]
+  resources :posts, only: %i[index create]
   root to: "posts#index"
 end

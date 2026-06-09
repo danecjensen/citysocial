@@ -5,6 +5,21 @@
     <%= csrf_meta_tags %>
   </head>
   <body>
+    <nav>
+      <%= link_to "CitySocial", "/" %>
+      <% if respond_to?(:logged_in?) && logged_in? %>
+        <span>@<%= current_user.handle %></span>
+        <%= button_to "Log out", "/logout", method: :delete %>
+      <% else %>
+        <%= link_to "Log in", "/login" %>
+        <%= link_to "Sign up", "/signup" %>
+      <% end %>
+    </nav>
+
+    <% flash.each do |type, message| %>
+      <p class="flash flash-<%= type %>"><%= message %></p>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>
