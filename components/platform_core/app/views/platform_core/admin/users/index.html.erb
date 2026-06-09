@@ -1,0 +1,36 @@
+<h1>Admin &middot; Users</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Handle</th>
+      <th>Email</th>
+      <th>Admin</th>
+      <th>Joined</th>
+      <th colspan="2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td>@<%= user.handle %></td>
+        <td><%= user.email %></td>
+        <td><%= user.admin? ? "yes" : "no" %></td>
+        <td><%= user.created_at.to_date %></td>
+        <td>
+          <% if user.admin? %>
+            <%= button_to "Revoke admin", "/admin/users/#{user.id}", method: :patch, params: { admin: false } %>
+          <% else %>
+            <%= button_to "Make admin", "/admin/users/#{user.id}", method: :patch, params: { admin: true } %>
+          <% end %>
+        </td>
+        <td>
+          <% unless user == current_user %>
+            <%= button_to "Delete", "/admin/users/#{user.id}", method: :delete,
+                          form: { data: { turbo_confirm: "Delete @#{user.handle}?" } } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

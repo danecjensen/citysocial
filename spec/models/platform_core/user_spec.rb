@@ -26,4 +26,12 @@ RSpec.describe PlatformCore::User, type: :model do
     user = create(:user, email: "  MixedCase@Example.COM ")
     expect(user.email).to eq("mixedcase@example.com")
   end
+
+  it "defaults to non-admin" do
+    expect(create(:user).admin?).to be(false)
+  end
+
+  it "can be an admin via the factory trait" do
+    expect(create(:user, :admin).admin?).to be(true)
+  end
 end

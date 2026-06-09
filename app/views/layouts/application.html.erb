@@ -9,6 +9,9 @@
       <%= link_to "CitySocial", "/" %>
       <% if respond_to?(:logged_in?) && logged_in? %>
         <span>@<%= current_user.handle %></span>
+        <% if respond_to?(:admin?) && admin? %>
+          <%= link_to "Admin", "/admin" %>
+        <% end %>
         <%= button_to "Log out", "/logout", method: :delete %>
       <% else %>
         <%= link_to "Log in", "/login" %>
