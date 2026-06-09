@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Autonomous build loop. There is NO native time-based /loop in Claude Code,
+# so this is the honest version: run a command headlessly with `claude -p`,
+# check the verify gate, and repeat until green or max iterations.
+#
+# Requires the Claude Code CLI installed and authenticated (`claude`).
+#
+# Usage:
+#   bin/loop babysit                 # run /babysit until bin/verify passes
+#   bin/loop "implement-feature ..."  # run any command, looping on verify
+#   MAX=8 bin/loop babysit            # cap iterations (default 6)
+#
+set -uo pipefail
+MAX="${MAX:-6}"
+CMD="${*:-babysit}"
+ITER=0
+
+command -v claude >/dev/null 2>&1 || { echo "claude CLI not found. See https://docs.claude.com/en/docs/claude-code/overview"; exit 127; }
+
+while [ "$ITER" -lt "$MAX" ]; do
+  ITER=$((ITER+1))
+  echo "===== loop iteration $ITER / $MAX :: /$CMD ====="
+
+  # Headless run. --dangerously-skip-permissions lets it edit/run unattended;
+  # scope this down with .claude/settings.json permissions if you prefer.
+  claude -p "/$CMD" --dangerously-skip-permissions
+
+  if bin/verify; then
+    echo "===== loop: GREEN after $ITER iteration(s) ====="
+    exit 0
+  fi
+  echo "----- verify still failing, looping -----"
+done
+
+echo "===== loop: hit MAX=$MAX without going green. Human review needed. ====="
+exit 1

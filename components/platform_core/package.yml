@@ -1,0 +1,4 @@
+enforce_dependencies: true
+enforce_privacy: true
+# The shared kernel depends on no other module. Everything depends on it.
+dependencies: []

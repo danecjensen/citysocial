@@ -1,0 +1,6 @@
+enforce_dependencies: true
+enforce_privacy: true
+# feed may depend ONLY on the shared kernel. It reaches marketplace/messaging/etc
+# exclusively through PlatformCore::EventBus.
+dependencies:
+  - components/platform_core

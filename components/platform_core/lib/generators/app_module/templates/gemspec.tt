@@ -1,0 +1,11 @@
+require_relative "lib/<%= file_name %>/version"
+
+Gem::Specification.new do |spec|
+  spec.name     = "<%= file_name %>"
+  spec.version  = <%= class_name %>::VERSION
+  spec.authors  = ["CitySocial"]
+  spec.summary  = "<%= class_name %> app-module."
+  spec.files    = Dir["{app,config,lib}/**/*", "README.md"]
+  spec.add_dependency "rails", "~> 7.2"
+  spec.add_dependency "platform_core"
+end

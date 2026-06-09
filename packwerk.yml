@@ -1,0 +1,8 @@
+# Packwerk enforces module boundaries statically. The rule for this repo:
+# modules talk to each other ONLY through declared dependencies + public APIs
+# (app/public/**) or via the event bus. No reaching into another module's internals.
+include:
+  - "components/**/app/**/*.{rb,rake,erb}"
+exclude:
+  - "**/node_modules/**"
+  - "**/tmp/**"

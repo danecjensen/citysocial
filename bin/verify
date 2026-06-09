@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# The single source of truth for "is the change done?". The autonomous loop
+# runs this between iterations and stops when it exits 0.
+set -uo pipefail
+fail=0
+
+echo "== rspec =="
+bin/rails db:test:prepare >/dev/null 2>&1 || true
+bundle exec rspec || fail=1
+
+echo "== packwerk (module boundaries) =="
+bundle exec packwerk check || fail=1
+
+echo "== rubocop =="
+bundle exec rubocop || fail=1
+
+if [ "$fail" -ne 0 ]; then
+  echo "VERIFY: FAILED"; exit 1
+fi
+echo "VERIFY: PASSED"

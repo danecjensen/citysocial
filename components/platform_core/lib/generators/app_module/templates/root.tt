@@ -1,0 +1,3 @@
+require "<%= file_name %>/version"
+require "<%= file_name %>/engine"
+require "<%= file_name %>/events"
