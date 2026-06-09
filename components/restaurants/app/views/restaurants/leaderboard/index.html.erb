@@ -1,0 +1,27 @@
+<h1>Austin Restaurant Leaderboard</h1>
+<p><%= link_to "Back to matchups", "/restaurants" %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Restaurant</th>
+      <th>Cuisine</th>
+      <th>Area</th>
+      <th>Elo</th>
+      <th>Matchups</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @restaurants.each_with_index do |restaurant, i| %>
+      <tr>
+        <td><%= i + 1 %></td>
+        <td><%= restaurant.name %></td>
+        <td><%= restaurant.cuisine %></td>
+        <td><%= restaurant.area %></td>
+        <td><%= restaurant.elo %></td>
+        <td><%= restaurant.matches_count %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

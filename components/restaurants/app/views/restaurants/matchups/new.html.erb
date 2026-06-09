@@ -1,0 +1,21 @@
+<h1>Which is better?</h1>
+<p>Austin restaurants, head to head. Pick the one you'd rather eat at.</p>
+
+<% if @pair %>
+  <% left, right = @pair %>
+  <div class="matchup">
+    <% [[left, right], [right, left]].each do |winner, loser| %>
+      <section class="matchup-card">
+        <h2><%= winner.name %></h2>
+        <p><%= winner.cuisine %> &middot; <%= winner.area %></p>
+        <%= button_to "Pick #{winner.name}", "/restaurants/matchups",
+                      method: :post,
+                      params: { winner_id: winner.id, loser_id: loser.id } %>
+      </section>
+    <% end %>
+  </div>
+<% else %>
+  <p>Not enough restaurants to compare yet. Ask an admin to add some.</p>
+<% end %>
+
+<p><%= link_to "See the leaderboard", "/restaurants/leaderboard" %></p>

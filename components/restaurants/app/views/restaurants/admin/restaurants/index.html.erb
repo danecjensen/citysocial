@@ -1,0 +1,45 @@
+<h1>Admin &middot; Restaurants</h1>
+<p><%= link_to "Back to matchups", "/restaurants" %></p>
+
+<h2>Add a restaurant</h2>
+<%= form_with model: @restaurant, url: "/restaurants/admin/restaurants", method: :post do |f| %>
+  <% if @restaurant.errors.any? %>
+    <ul class="errors">
+      <% @restaurant.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+  <p><%= f.label :name %><br><%= f.text_field :name %></p>
+  <p><%= f.label :cuisine %><br><%= f.text_field :cuisine %></p>
+  <p><%= f.label :area %><br><%= f.text_field :area %></p>
+  <p><%= f.submit "Add restaurant" %></p>
+<% end %>
+
+<h2>All restaurants (<%= @restaurants.size %>)</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Restaurant</th>
+      <th>Cuisine</th>
+      <th>Area</th>
+      <th>Elo</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @restaurants.each do |restaurant| %>
+      <tr>
+        <td><%= restaurant.name %></td>
+        <td><%= restaurant.cuisine %></td>
+        <td><%= restaurant.area %></td>
+        <td><%= restaurant.elo %></td>
+        <td>
+          <%= button_to "Delete", "/restaurants/admin/restaurants/#{restaurant.id}",
+                        method: :delete,
+                        form: { data: { turbo_confirm: "Delete #{restaurant.name}?" } } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_01_000010) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_01_000021) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -39,5 +39,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_01_000010) do
     t.boolean "admin", default: false, null: false
     t.index ["email"], name: "index_platform_core_users_on_email", unique: true
     t.index ["handle"], name: "index_platform_core_users_on_handle", unique: true
+  end
+
+  create_table "restaurants_restaurants", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "cuisine"
+    t.string "area"
+    t.integer "elo", default: 1500, null: false
+    t.integer "matches_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["elo"], name: "index_restaurants_restaurants_on_elo"
+    t.index ["name"], name: "index_restaurants_restaurants_on_name", unique: true
+  end
+
+  create_table "restaurants_votes", force: :cascade do |t|
+    t.bigint "voter_id", null: false
+    t.bigint "winner_id", null: false
+    t.bigint "loser_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_restaurants_votes_on_created_at"
+    t.index ["voter_id"], name: "index_restaurants_votes_on_voter_id"
   end
 end

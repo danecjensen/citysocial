@@ -24,6 +24,7 @@ gem "dotenv-rails"
 # `app_module` generator. platform_core is the shared kernel.
 gem "feed",          path: "components/feed"
 gem "platform_core", path: "components/platform_core"
+gem "restaurants",   path: "components/restaurants"
 
 group :development, :test do
   gem "factory_bot_rails"
