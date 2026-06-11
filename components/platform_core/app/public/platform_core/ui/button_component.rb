@@ -19,7 +19,7 @@ module PlatformCore
       }.freeze
 
       BASE = "inline-flex items-center justify-center rounded-md font-bold tracking-wide " \
-             "transition-colors cursor-pointer whitespace-nowrap".freeze
+             "transition-colors cursor-pointer".freeze
 
       def initialize(variant: :primary, size: :md, href: nil, method: nil, params: nil, confirm: nil, type: :submit)
         @variant = VARIANTS.fetch(variant)
