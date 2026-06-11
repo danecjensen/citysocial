@@ -6,6 +6,14 @@ gem "pg", "~> 1.5"
 gem "puma", ">= 6.0"
 gem "rails", "~> 7.2"
 
+# Front end: no-Node asset pipeline + shared design system
+gem "importmap-rails"
+gem "propshaft"
+gem "stimulus-rails"
+gem "tailwindcss-rails", "~> 4.0"
+gem "turbo-rails"
+gem "view_component"
+
 # Identity: password hashing for has_secure_password (kernel-owned auth).
 gem "bcrypt", "~> 3.1"
 

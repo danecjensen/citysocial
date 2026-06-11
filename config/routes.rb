@@ -8,5 +8,8 @@ Rails.application.routes.draw do
   # the `app_module` generator. Keep this list as the single map of the app.
   mount Feed::Engine => "/feed"
 
+  # Living style guide for the shared design system (PlatformCore::Ui).
+  get "/design", to: "design#show"
+
   root to: redirect("/feed")
 end

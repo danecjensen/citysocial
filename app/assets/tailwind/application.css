@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* Engine views live outside app/, so declare them explicitly. The .rb glob
+   matters: ViewComponent variant->class maps live in Ruby files and must be
+   scanned or their classes get purged. */
+@source "../../views/**/*.erb";
+@source "../../../components/*/app/views/**/*.erb";
+@source "../../../components/platform_core/app/public/**/*.{rb,erb}";
+
+/* ---------------------------------------------------------------------------
+   CitySocial design tokens — "warm editorial city-desk"
+   Paper-and-ink warmth, terracotta brand, agave green secondary.
+   Edit tokens here; never hardcode hex values in views or components.
+   --------------------------------------------------------------------------- */
+@theme {
+  /* Type. Fraunces = display serif (headlines, brand). Karla = body.
+     Plex Mono = numbers, scores, stats. Loaded via Google Fonts in layout. */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Brand: terracotta */
+  --color-brand-50: #fdf4ef;
+  --color-brand-100: #fae5d8;
+  --color-brand-200: #f4c8af;
+  --color-brand-300: #eca57e;
+  --color-brand-400: #e07d4c;
+  --color-brand-500: #d15f2c;
+  --color-brand-600: #c24e21;
+  --color-brand-700: #a23c1d;
+  --color-brand-800: #82321e;
+  --color-brand-900: #6a2b1c;
+  --color-brand-950: #391309;
+
+  /* Secondary: agave green */
+  --color-agave-100: #e3ede2;
+  --color-agave-300: #a7c4a6;
+  --color-agave-600: #4d7350;
+  --color-agave-700: #3d5c41;
+  --color-agave-900: #243627;
+
+  /* Surfaces & ink (warm-tinted neutrals) */
+  --color-paper: #faf6ee;
+  --color-surface: #ffffff;
+  --color-sunken: #f3ecdf;
+  --color-ink: #241d18;
+  --color-ink-muted: #71655c;
+  --color-ink-faint: #a3958a;
+  --color-line: #e6dccc;
+
+  /* Semantic */
+  --color-success: #3d7048;
+  --color-success-soft: #e4efe3;
+  --color-danger: #b3372b;
+  --color-danger-soft: #f9e6e1;
+  --color-warning: #976a16;
+  --color-warning-soft: #f8efd9;
+
+  /* Shape & depth */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --shadow-card: 0 1px 2px rgb(57 19 9 / 0.05), 0 4px 12px -4px rgb(57 19 9 / 0.10);
+  --shadow-pop: 0 2px 4px rgb(57 19 9 / 0.08), 0 12px 28px -8px rgb(57 19 9 / 0.18);
+}
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}

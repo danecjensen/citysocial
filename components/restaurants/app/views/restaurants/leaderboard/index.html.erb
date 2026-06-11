@@ -1,27 +1,30 @@
-<h1>Austin Restaurant Leaderboard</h1>
-<p><%= link_to "Back to matchups", "/restaurants" %></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Restaurant</th>
-      <th>Cuisine</th>
-      <th>Area</th>
-      <th>Elo</th>
-      <th>Matchups</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @restaurants.each_with_index do |restaurant, i| %>
-      <tr>
-        <td><%= i + 1 %></td>
-        <td><%= restaurant.name %></td>
-        <td><%= restaurant.cuisine %></td>
-        <td><%= restaurant.area %></td>
-        <td><%= restaurant.elo %></td>
-        <td><%= restaurant.matches_count %></td>
-      </tr>
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Austin Restaurant Leaderboard", subtitle: "Ranked by head-to-head Elo.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm, href: "/restaurants") do %>
+      Back to matchups
     <% end %>
-  </tbody>
-</table>
+  <% end %>
+<% end %>
+
+<%= render PlatformCore::Ui::TableComponent.new(columns: ["#", "Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Matchups", numeric: true }]) do |table| %>
+  <% @restaurants.each_with_index do |restaurant, i| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <span class="font-mono text-ink-faint"><%= i + 1 %></span>
+      <% end %>
+      <% row.with_cell do %>
+        <span class="font-bold"><%= restaurant.name %></span>
+      <% end %>
+      <% row.with_cell do %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= restaurant.cuisine %><% end %>
+      <% end %>
+      <% row.with_cell do %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= restaurant.area %><% end %>
+      <% end %>
+      <% row.with_cell(numeric: true) do %>
+        <span class="font-semibold"><%= restaurant.elo %></span>
+      <% end %>
+      <% row.with_cell(numeric: true) { restaurant.matches_count.to_s } %>
+    <% end %>
+  <% end %>
+<% end %>

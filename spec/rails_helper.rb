@@ -6,6 +6,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 
 require "rspec/rails"
 require "factory_bot_rails"
+require "view_component/test_helpers"
 
 begin
   ActiveRecord::Migration.maintain_test_schema!
@@ -20,4 +21,8 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
 
   config.include FactoryBot::Syntax::Methods
+  config.include ViewComponent::TestHelpers, type: :component
+  config.define_derived_metadata(file_path: %r{/spec/components/}) do |metadata|
+    metadata[:type] = :component
+  end
 end

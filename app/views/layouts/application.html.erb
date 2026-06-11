@@ -2,29 +2,49 @@
 <html>
   <head>
     <title>CitySocial</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Karla:wght@400..800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
-  <body>
-    <nav>
-      <%= link_to "CitySocial", "/" %>
+  <body class="min-h-screen">
+    <%= render PlatformCore::Ui::NavBarComponent.new do |nav| %>
       <% if respond_to?(:logged_in?) && logged_in? %>
-        <span>@<%= current_user.handle %></span>
-        <%= link_to "Restaurants", "/restaurants" %>
+        <% nav.with_link "Restaurants", "/restaurants", active: request.path.start_with?("/restaurants") && !request.path.include?("/admin") %>
         <% if respond_to?(:admin?) && admin? %>
-          <%= link_to "Admin", "/admin" %>
-          <%= link_to "Restaurants Admin", "/restaurants/admin/restaurants" %>
+          <% nav.with_link "Admin", "/admin", active: request.path.start_with?("/admin") %>
+          <% nav.with_link "Restaurants Admin", "/restaurants/admin/restaurants", active: request.path.include?("/restaurants/admin") %>
         <% end %>
-        <%= button_to "Log out", "/logout", method: :delete %>
+        <% nav.with_session_area do %>
+          <span class="font-mono text-sm text-ink-muted">@<%= current_user.handle %></span>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/logout", method: :delete) do %>
+            Log out
+          <% end %>
+        <% end %>
       <% else %>
-        <%= link_to "Log in", "/login" %>
-        <%= link_to "Sign up", "/signup" %>
+        <% nav.with_session_area do %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/login") do %>
+            Log in
+          <% end %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm, href: "/signup") do %>
+            Sign up
+          <% end %>
+        <% end %>
       <% end %>
-    </nav>
-
-    <% flash.each do |type, message| %>
-      <p class="flash flash-<%= type %>"><%= message %></p>
     <% end %>
 
-    <%= yield %>
+    <main class="mx-auto max-w-5xl px-4 py-10">
+      <% flash.each do |type, message| %>
+        <div class="mb-6">
+          <%= render PlatformCore::Ui::FlashComponent.new(type: type, message: message) %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
   </body>
 </html>

@@ -30,6 +30,12 @@ Metrics:
 Layout/LineLength:
   Max: 120
 
+# ViewComponent's documented idiom is initializers without super; the parent
+# initializer takes no state.
+Lint/MissingSuper:
+  Exclude:
+    - "components/platform_core/app/public/platform_core/ui/**/*"
+
 # --- Cops disabled to match this app's deliberate architecture ---
 
 # The kernel's BaseController is the base every module inherits from; by

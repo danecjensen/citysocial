@@ -1,7 +1,22 @@
-<h1>Feed</h1>
-<% @posts.each do |post| %>
-  <article>
-    <strong><%= post.author&.handle %></strong>
-    <p><%= post.body %></p>
-  </article>
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Feed", subtitle: "What your city is up to.") %>
+
+<% if @posts.any? %>
+  <div class="mx-auto max-w-2xl space-y-4">
+    <% @posts.each do |post| %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="mb-2 flex items-baseline gap-2">
+          <span class="font-mono text-sm font-semibold text-brand-700">@<%= post.author&.handle %></span>
+          <% if post.created_at %>
+            <span class="font-mono text-xs text-ink-faint"><%= time_ago_in_words(post.created_at) %> ago</span>
+          <% end %>
+        </div>
+        <p class="text-[15px] leading-relaxed text-ink"><%= post.body %></p>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "Nothing here yet",
+        body: "Follow people in your city and their posts will show up here."
+      ) %>
 <% end %>

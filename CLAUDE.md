@@ -56,6 +56,30 @@ Every feature must:
 - Ship with tests and pass `bin/verify`.
 Size: substantial but bounded. One module, one clear flow + its edge cases.
 
+## Design system (every view uses it — no exceptions)
+
+UI is centralized so modules never drift visually. The stack is Tailwind CSS v4
+(standalone binary, no Node) + ViewComponent + Hotwire (importmap, no Node).
+
+- **Components:** `PlatformCore::Ui::*` (Button, Card, Table, PageHeader,
+  FormField, EmptyState, Badge, Flash, NavBar) live in
+  `components/platform_core/app/public/platform_core/ui/`. Views compose these;
+  never hand-roll buttons/tables/forms/flash markup.
+- **Tokens:** colors/fonts/radii/shadows are defined once in the `@theme` block
+  of `app/assets/tailwind/application.css` (e.g. `bg-paper`, `text-ink`,
+  `bg-brand-600`, `font-display`). Never hardcode hex values in views.
+- **Living catalog:** browse `/design` to see every token and component variant
+  before building UI. Keep it updated when adding components.
+- **Purge rule:** write Tailwind classes as complete literal strings — never
+  build class names by interpolation — or the production build drops them.
+  Component variant maps (`VARIANTS = { primary: "bg-brand-600 ..." }`) exist
+  for exactly this reason.
+- **Scanning:** engine views are picked up by the `@source` globs in
+  `application.css`; new modules need no Tailwind config.
+- **Local dev:** `bin/dev` runs the server + Tailwind watcher
+  (plain `bin/rails s` works too; run `bin/rails tailwindcss:build` after CSS
+  or component-class changes).
+
 ## Verification checklist (the loop closes on this)
 
 `bin/verify` must pass before any change is considered done. It runs:

@@ -1,31 +1,32 @@
-<h1>Sign up</h1>
+<div class="mx-auto max-w-sm">
+  <h1 class="mb-2 text-center font-display text-3xl font-black">Sign up</h1>
+  <p class="mb-6 text-center text-sm text-ink-muted">Join your city.</p>
 
-<%= form_with model: @user, url: "/signup", method: :post do |f| %>
-  <% if @user.errors.any? %>
-    <ul class="errors">
-      <% @user.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @user, url: "/signup", method: :post do |f| %>
+      <% if @user.errors.any? %>
+        <div class="mb-4">
+          <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: "Please fix the issues below.") %>
+        </div>
       <% end %>
-    </ul>
+
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :handle, autofocus: true,
+                                                          hint: "Your public @name.") %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :email, type: :email_field,
+                                                          autocomplete: "email") %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :password, type: :password_field,
+                                                          autocomplete: "new-password") %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :password_confirmation, type: :password_field,
+                                                          label: "Confirm password", autocomplete: "new-password") %>
+      <div class="mt-6 grid">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg) do %>
+          Create account
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 
-  <p>
-    <%= f.label :handle %><br>
-    <%= f.text_field :handle, autofocus: true %>
+  <p class="mt-4 text-center text-sm text-ink-muted">
+    Already have an account? <%= link_to "Log in", "/login", class: "font-bold text-brand-700 hover:underline" %>
   </p>
-  <p>
-    <%= f.label :email %><br>
-    <%= f.email_field :email, autocomplete: "email" %>
-  </p>
-  <p>
-    <%= f.label :password %><br>
-    <%= f.password_field :password, autocomplete: "new-password" %>
-  </p>
-  <p>
-    <%= f.label :password_confirmation, "Confirm password" %><br>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </p>
-  <p><%= f.submit "Create account" %></p>
-<% end %>
-
-<p>Already have an account? <%= link_to "Log in", "/login" %></p>
+</div>

@@ -1,0 +1,116 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Design system", subtitle: "Living catalog of CitySocial tokens and PlatformCore::Ui components. Build every view from these.") %>
+
+<div class="space-y-12">
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Color tokens</h2>
+    <div class="flex flex-wrap gap-3">
+      <% %w[bg-brand-50 bg-brand-100 bg-brand-200 bg-brand-300 bg-brand-400 bg-brand-500 bg-brand-600 bg-brand-700 bg-brand-800 bg-brand-900].each do |klass| %>
+        <div>
+          <div class="h-14 w-14 rounded-md border border-line <%= klass %>"></div>
+          <p class="mt-1 font-mono text-[10px] text-ink-faint"><%= klass.delete_prefix("bg-") %></p>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <% %w[bg-paper bg-surface bg-sunken bg-ink bg-ink-muted bg-line bg-agave-100 bg-agave-600 bg-success bg-danger bg-warning].each do |klass| %>
+        <div>
+          <div class="h-14 w-14 rounded-md border border-line <%= klass %>"></div>
+          <p class="mt-1 font-mono text-[10px] text-ink-faint"><%= klass.delete_prefix("bg-") %></p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Typography</h2>
+    <div class="space-y-3 rounded-lg border border-line bg-surface p-6">
+      <p class="font-display text-4xl font-black">Fraunces — display headlines</p>
+      <p class="font-sans text-base">Karla — body copy, labels, navigation. Friendly without being soft.</p>
+      <p class="font-mono text-sm">IBM Plex Mono — 1742 Elo, @handles, timestamps</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Buttons</h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>Primary<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary) do %>Secondary<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :danger) do %>Danger<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost) do %>Ghost<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm) do %>Small<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg) do %>Large<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "/design") do %>Link button<% end %>
+    </div>
+    <p class="mt-2 font-mono text-xs text-ink-faint">PlatformCore::Ui::ButtonComponent.new(variant: :primary/:secondary/:danger/:ghost, size: :sm/:md/:lg, href:, method:, confirm:)</p>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Flash messages</h2>
+    <div class="space-y-2">
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :notice, message: "Welcome back to CitySocial.") %>
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :alert, message: "Please log in to continue.") %>
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: "Something went wrong.") %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Badges</h2>
+    <div class="flex flex-wrap gap-2">
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Neutral<% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>BBQ<% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %>East Side<% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Open<% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Admin<% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Card</h2>
+    <div class="grid max-w-2xl gap-4 sm:grid-cols-2">
+      <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+        <% card.with_header do %>
+          <span class="font-bold">With header</span>
+        <% end %>
+        <p class="text-sm text-ink-muted">Card body content. Used for feed posts, matchup cards, forms.</p>
+      <% end %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="text-sm text-ink-muted">Headerless card.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Table</h2>
+    <%= render PlatformCore::Ui::TableComponent.new(columns: ["Rank", "Restaurant", { label: "Elo", numeric: true }]) do |table| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell { "1" } %>
+        <% row.with_cell { "Franklin Barbecue" } %>
+        <% row.with_cell(numeric: true) { "1742" } %>
+      <% end %>
+      <% table.with_row do |row| %>
+        <% row.with_cell { "2" } %>
+        <% row.with_cell { "Uchi" } %>
+        <% row.with_cell(numeric: true) { "1691" } %>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Form fields</h2>
+    <div class="max-w-sm">
+      <%= form_with url: "#", scope: :demo, local: true do |f| %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :email, type: :email_field, label: "Email", hint: "We never share this.") %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :password, type: :password_field, label: "Password") %>
+      <% end %>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Empty state</h2>
+    <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "Nothing here yet", body: "When your city starts posting, it shows up here.") do |empty| %>
+      <% empty.with_action do %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: "/design") do %>Do the thing<% end %>
+      <% end %>
+    <% end %>
+  </section>
+</div>

@@ -1,21 +1,36 @@
-<h1>Which is better?</h1>
-<p>Austin restaurants, head to head. Pick the one you'd rather eat at.</p>
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Which is better?", subtitle: "Austin restaurants, head to head. Pick the one you'd rather eat at.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: "/restaurants/leaderboard") do %>
+      See the leaderboard
+    <% end %>
+  <% end %>
+<% end %>
 
 <% if @pair %>
   <% left, right = @pair %>
-  <div class="matchup">
+  <div class="relative mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+    <span class="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink bg-paper px-3 py-1 font-display text-sm font-black sm:block">vs</span>
     <% [[left, right], [right, left]].each do |winner, loser| %>
-      <section class="matchup-card">
-        <h2><%= winner.name %></h2>
-        <p><%= winner.cuisine %> &middot; <%= winner.area %></p>
-        <%= button_to "Pick #{winner.name}", "/restaurants/matchups",
-                      method: :post,
-                      params: { winner_id: winner.id, loser_id: loser.id } %>
-      </section>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="flex h-full flex-col items-center gap-3 py-4 text-center">
+          <h2 class="font-display text-2xl font-black"><%= winner.name %></h2>
+          <div class="flex gap-2">
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= winner.cuisine %><% end %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= winner.area %><% end %>
+          </div>
+          <div class="mt-2">
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg, href: "/restaurants/matchups",
+                                                             method: :post, params: { winner_id: winner.id, loser_id: loser.id }) do %>
+              Pick <%= winner.name %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     <% end %>
   </div>
 <% else %>
-  <p>Not enough restaurants to compare yet. Ask an admin to add some.</p>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "Not enough restaurants to compare yet",
+        body: "Ask an admin to add a few spots, then come back and settle the score."
+      ) %>
 <% end %>
-
-<p><%= link_to "See the leaderboard", "/restaurants/leaderboard" %></p>

@@ -1,45 +1,53 @@
-<h1>Admin &middot; Restaurants</h1>
-<p><%= link_to "Back to matchups", "/restaurants" %></p>
-
-<h2>Add a restaurant</h2>
-<%= form_with model: @restaurant, url: "/restaurants/admin/restaurants", method: :post do |f| %>
-  <% if @restaurant.errors.any? %>
-    <ul class="errors">
-      <% @restaurant.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Admin · Restaurants", subtitle: "Add and remove the spots people vote on.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: "/restaurants") do %>
+      Back to matchups
+    <% end %>
   <% end %>
-  <p><%= f.label :name %><br><%= f.text_field :name %></p>
-  <p><%= f.label :cuisine %><br><%= f.text_field :cuisine %></p>
-  <p><%= f.label :area %><br><%= f.text_field :area %></p>
-  <p><%= f.submit "Add restaurant" %></p>
 <% end %>
 
-<h2>All restaurants (<%= @restaurants.size %>)</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Restaurant</th>
-      <th>Cuisine</th>
-      <th>Area</th>
-      <th>Elo</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @restaurants.each do |restaurant| %>
-      <tr>
-        <td><%= restaurant.name %></td>
-        <td><%= restaurant.cuisine %></td>
-        <td><%= restaurant.area %></td>
-        <td><%= restaurant.elo %></td>
-        <td>
-          <%= button_to "Delete", "/restaurants/admin/restaurants/#{restaurant.id}",
-                        method: :delete,
-                        form: { data: { turbo_confirm: "Delete #{restaurant.name}?" } } %>
-        </td>
-      </tr>
+<div class="mb-10 max-w-md">
+  <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <span class="font-bold">Add a restaurant</span>
     <% end %>
-  </tbody>
-</table>
+    <%= form_with model: @restaurant, url: "/restaurants/admin/restaurants", method: :post do |f| %>
+      <% if @restaurant.errors.any? %>
+        <div class="mb-4">
+          <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: "Please fix the issues below.") %>
+        </div>
+      <% end %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :area) %>
+      <div class="mt-5">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>
+          Add restaurant
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<h2 class="mb-4 text-xl font-bold">All restaurants <span class="font-mono text-base font-normal text-ink-faint">(<%= @restaurants.size %>)</span></h2>
+<%= render PlatformCore::Ui::TableComponent.new(columns: ["Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Action", numeric: true }]) do |table| %>
+  <% @restaurants.each do |restaurant| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <span class="font-bold"><%= restaurant.name %></span>
+      <% end %>
+      <% row.with_cell { restaurant.cuisine } %>
+      <% row.with_cell { restaurant.area } %>
+      <% row.with_cell(numeric: true) { restaurant.elo.to_s } %>
+      <% row.with_cell(numeric: true) do %>
+        <div class="flex justify-end">
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :danger, size: :sm,
+                                                           href: "/restaurants/admin/restaurants/#{restaurant.id}",
+                                                           method: :delete, confirm: "Delete #{restaurant.name}?") do %>
+            Delete
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

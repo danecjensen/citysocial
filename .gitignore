@@ -8,3 +8,9 @@
 .env.*
 /config/master.key
 /node_modules
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+# Playwright MCP browser artifacts
+/.playwright-mcp/
