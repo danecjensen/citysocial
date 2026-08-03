@@ -1,7 +1,21 @@
 PATH
+  remote: components/communities
+  specs:
+    communities (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
   remote: components/feed
   specs:
     feed (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
+  remote: components/marketplace
+  specs:
+    marketplace (0.1.0)
       platform_core
       rails (~> 7.2)
 
@@ -396,10 +410,12 @@ DEPENDENCIES
   bcrypt (~> 3.1)
   bootsnap
   capybara
+  communities!
   dotenv-rails
   factory_bot_rails
   feed!
   importmap-rails
+  marketplace!
   packwerk (~> 3.0)
   pg (~> 1.5)
   platform_core!

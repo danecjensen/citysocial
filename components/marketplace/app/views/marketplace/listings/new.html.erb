@@ -1,0 +1,7 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Post a listing", subtitle: "Add a few details and photos.") %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "marketplace/listings/form", listing: @listing, url: listings_path, method: :post %>
+  <% end %>
+</div>

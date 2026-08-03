@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by a `.dark` class on <html> (set by the theme toggle),
+   so wire the `dark:` variant to that class instead of prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Engine views live outside app/, so declare them explicitly. The .rb glob
    matters: ViewComponent variant->class maps live in Ruby files and must be
    scanned or their classes get purged. */
@@ -8,53 +12,57 @@
 @source "../../../components/platform_core/app/public/**/*.{rb,erb}";
 
 /* ---------------------------------------------------------------------------
-   CitySocial design tokens — "warm editorial city-desk"
-   Paper-and-ink warmth, terracotta brand, agave green secondary.
+   CitySocial design tokens — "local community marketplace"
+   Emerald/teal brand on cool slate neutrals. Ported from the reddcraigs look.
    Edit tokens here; never hardcode hex values in views or components.
+
+   Dark mode: the neutral + tint tokens are re-declared under `.dark` (and a
+   prefers-color-scheme fallback) below. Because Tailwind v4 utilities compile
+   to var(--color-*), overriding the variables flips the entire app — existing
+   modules included — with no per-view `dark:` classes.
    --------------------------------------------------------------------------- */
 @theme {
-  /* Type. Fraunces = display serif (headlines, brand). Karla = body.
-     Plex Mono = numbers, scores, stats. Loaded via Google Fonts in layout. */
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
+  /* Type. Inter = display + body (clean modern sans). Plex Mono = numbers/stats. */
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  /* Brand: terracotta */
-  --color-brand-50: #fdf4ef;
-  --color-brand-100: #fae5d8;
-  --color-brand-200: #f4c8af;
-  --color-brand-300: #eca57e;
-  --color-brand-400: #e07d4c;
-  --color-brand-500: #d15f2c;
-  --color-brand-600: #c24e21;
-  --color-brand-700: #a23c1d;
-  --color-brand-800: #82321e;
-  --color-brand-900: #6a2b1c;
-  --color-brand-950: #391309;
+  /* Brand: emerald */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+  --color-brand-950: #022c22;
 
-  /* Secondary: agave green */
-  --color-agave-100: #e3ede2;
-  --color-agave-300: #a7c4a6;
-  --color-agave-600: #4d7350;
-  --color-agave-700: #3d5c41;
-  --color-agave-900: #243627;
+  /* Secondary: teal (kept under the agave-* names so existing views don't break) */
+  --color-agave-100: #ccfbf1;
+  --color-agave-300: #5eead4;
+  --color-agave-600: #0d9488;
+  --color-agave-700: #0f766e;
+  --color-agave-900: #134e4a;
 
-  /* Surfaces & ink (warm-tinted neutrals) */
-  --color-paper: #faf6ee;
+  /* Surfaces & ink (cool slate neutrals) */
+  --color-paper: #f8fafc;
   --color-surface: #ffffff;
-  --color-sunken: #f3ecdf;
-  --color-ink: #241d18;
-  --color-ink-muted: #71655c;
-  --color-ink-faint: #a3958a;
-  --color-line: #e6dccc;
+  --color-sunken: #f1f5f9;
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+  --color-ink-faint: #94a3b8;
+  --color-line: #e2e8f0;
 
   /* Semantic */
-  --color-success: #3d7048;
-  --color-success-soft: #e4efe3;
-  --color-danger: #b3372b;
-  --color-danger-soft: #f9e6e1;
-  --color-warning: #976a16;
-  --color-warning-soft: #f8efd9;
+  --color-success: #059669;
+  --color-success-soft: #d1fae5;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+  --color-warning: #d97706;
+  --color-warning-soft: #fef3c7;
 
   /* Shape & depth */
   --radius-xs: 0.25rem;
@@ -62,15 +70,81 @@
   --radius-md: 0.625rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
-  --shadow-card: 0 1px 2px rgb(57 19 9 / 0.05), 0 4px 12px -4px rgb(57 19 9 / 0.10);
-  --shadow-pop: 0 2px 4px rgb(57 19 9 / 0.08), 0 12px 28px -8px rgb(57 19 9 / 0.18);
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 12px -4px rgb(15 23 42 / 0.10);
+  --shadow-pop: 0 2px 4px rgb(15 23 42 / 0.08), 0 12px 28px -8px rgb(15 23 42 / 0.20);
+}
+
+/* Dark palette. Declared twice (system-preference fallback + explicit .dark)
+   with identical values so the two never conflict. Neutrals invert; brand/
+   accent tint pairs (bg-*-100 / text-*-700..800) swap so chips stay legible. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --color-brand-50: #0c2a24;
+    --color-brand-100: #103a30;
+    --color-brand-700: #6ee7b7;
+    --color-brand-800: #a7f3d0;
+
+    --color-agave-100: #0c322f;
+    --color-agave-700: #5eead4;
+
+    --color-paper: #0f172a;
+    --color-surface: #1e293b;
+    --color-sunken: #334155;
+    --color-ink: #f1f5f9;
+    --color-ink-muted: #94a3b8;
+    --color-ink-faint: #64748b;
+    --color-line: #334155;
+
+    --color-success: #34d399;
+    --color-success-soft: #06312a;
+    --color-danger: #f87171;
+    --color-danger-soft: #3f1a1a;
+    --color-warning: #fbbf24;
+    --color-warning-soft: #3a2c10;
+  }
+}
+
+.dark {
+  --color-brand-50: #0c2a24;
+  --color-brand-100: #103a30;
+  --color-brand-700: #6ee7b7;
+  --color-brand-800: #a7f3d0;
+
+  --color-agave-100: #0c322f;
+  --color-agave-700: #5eead4;
+
+  --color-paper: #0f172a;
+  --color-surface: #1e293b;
+  --color-sunken: #334155;
+  --color-ink: #f1f5f9;
+  --color-ink-muted: #94a3b8;
+  --color-ink-faint: #64748b;
+  --color-line: #334155;
+
+  --color-success: #34d399;
+  --color-success-soft: #06312a;
+  --color-danger: #f87171;
+  --color-danger-soft: #3f1a1a;
+  --color-warning: #fbbf24;
+  --color-warning-soft: #3a2c10;
 }
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) {
+      color-scheme: dark;
+    }
+  }
   body {
     @apply bg-paper font-sans text-ink antialiased;
   }
   h1, h2, h3 {
-    @apply font-display;
+    @apply font-display font-bold;
   }
 }

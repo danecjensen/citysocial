@@ -30,7 +30,9 @@ gem "dotenv-rails"
 # --- engines (path-mounted local packages) ---
 # Every app-module lives in components/ and is wired in here by the
 # `app_module` generator. platform_core is the shared kernel.
-gem "feed",          path: "components/feed"
+gem "communities", path: "components/communities"
+gem "feed", path: "components/feed"
+gem "marketplace", path: "components/marketplace"
 gem "platform_core", path: "components/platform_core"
 gem "restaurants",   path: "components/restaurants"
 

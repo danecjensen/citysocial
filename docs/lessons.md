@@ -12,3 +12,7 @@ into CLAUDE.md.
   head; verify stylesheet_link_tag "tailwind" exists after running it.
 - Run the puma dev server with WEB_CONCURRENCY=0 on macOS; forked workers crash
   on objc fork-safety (NSCharacterSet + fork).
+- The app_module generator historically omitted the `<name>.append_migrations`
+  initializer, so a new engine's db/migrate is invisible to host `db:migrate`
+  (silent no-op, then PG::UndefinedTable). Fixed in engine.tt; verify the
+  initializer exists in any hand-checked engine.rb before migrating.

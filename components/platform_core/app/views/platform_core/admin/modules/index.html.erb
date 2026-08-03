@@ -1,0 +1,34 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Admin · Modules", subtitle: "Turn app-modules on and off. Disabled modules disappear from navigation and their pages become unavailable.") %>
+
+<%= render PlatformCore::Ui::TableComponent.new(columns: ["Module", "Path", "Status", { label: "Actions", numeric: true }]) do |table| %>
+  <% @modules.each do |mod| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <span class="font-semibold text-ink"><%= mod.label %></span>
+      <% end %>
+      <% row.with_cell do %>
+        <span class="font-mono text-xs text-ink-muted"><%= mod.path %></span>
+      <% end %>
+      <% row.with_cell do %>
+        <% if mod.enabled %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Enabled<% end %>
+        <% else %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Disabled<% end %>
+        <% end %>
+      <% end %>
+      <% row.with_cell do %>
+        <div class="flex justify-end">
+          <% if mod.enabled %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: "/admin/modules/#{mod.key}", method: :patch, params: { enabled: false }) do %>
+              Disable
+            <% end %>
+          <% else %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm, href: "/admin/modules/#{mod.key}", method: :patch, params: { enabled: true }) do %>
+              Enable
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

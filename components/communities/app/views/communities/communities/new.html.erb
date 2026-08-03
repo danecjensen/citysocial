@@ -1,0 +1,18 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "New community", subtitle: "Give it a short name — letters, numbers, and underscores only.") %>
+
+<div class="mx-auto max-w-xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @community, url: communities_path, method: :post do |f| %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name, label: "Name", hint: "This becomes c/yourname.") %>
+      <div class="mb-4">
+        <%= f.label :category, "Category", class: "mb-1 block text-sm font-bold text-ink" %>
+        <%= f.select :category, Communities::Community::CATEGORIES.map { |c| [c.humanize, c] }, { include_blank: "None" }, class: "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+      </div>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :description, type: :text_area, label: "Description", rows: 4) %>
+      <div class="flex items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Create community<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: communities_path) do %>Cancel<% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

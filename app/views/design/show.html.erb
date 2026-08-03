@@ -24,8 +24,8 @@
   <section>
     <h2 class="mb-4 text-xl font-bold">Typography</h2>
     <div class="space-y-3 rounded-lg border border-line bg-surface p-6">
-      <p class="font-display text-4xl font-black">Fraunces — display headlines</p>
-      <p class="font-sans text-base">Karla — body copy, labels, navigation. Friendly without being soft.</p>
+      <p class="font-display text-4xl font-black">Inter — display headlines</p>
+      <p class="font-sans text-base">Inter — body copy, labels, navigation. Clean and modern.</p>
       <p class="font-mono text-sm">IBM Plex Mono — 1742 Elo, @handles, timestamps</p>
     </div>
   </section>
@@ -112,5 +112,17 @@
         <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: "/design") do %>Do the thing<% end %>
       <% end %>
     <% end %>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-bold">Footer</h2>
+    <div class="overflow-hidden rounded-lg border border-line">
+      <%= render PlatformCore::Ui::FooterComponent.new do |footer| %>
+        <% footer.with_column(title: "Explore", links: [["Feed", "/feed"], ["Marketplace", "/marketplace"]]) %>
+        <% footer.with_column(title: "Account", links: [["Log in", "/login"], ["Sign up", "/signup"]]) %>
+        <% footer.with_column(title: "About", links: [["Design system", "/design"]]) %>
+      <% end %>
+    </div>
+    <p class="mt-2 font-mono text-xs text-ink-faint">Use the dark-mode toggle in the navbar to preview every token in both themes.</p>
   </section>
 </div>

@@ -9,5 +9,6 @@ PlatformCore::Engine.routes.draw do
   namespace :admin do
     root to: "users#index"
     resources :users, only: %i[update destroy]
+    resources :modules, only: %i[index update], param: :key
   end
 end

@@ -1,0 +1,10 @@
+<%# Vertical vote control. Locals: up_url, down_url, score. %>
+<div class="flex w-10 flex-col items-center gap-0.5">
+  <% if logged_in? %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: up_url, method: :post) do %>▲<% end %>
+  <% end %>
+  <span class="font-mono text-sm font-bold tabular-nums text-ink"><%= score %></span>
+  <% if logged_in? %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: down_url, method: :post) do %>▼<% end %>
+  <% end %>
+</div>

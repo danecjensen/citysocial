@@ -1,26 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>CitySocial</title>
+    <title>CitySocial — Your Local Community Marketplace</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Connect with your local community. Buy, sell, discuss, and discover what's happening near you.">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <%# Apply the saved theme before first paint to avoid a flash of the wrong mode. %>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark") document.documentElement.classList.add("dark");
+          else if (t === "light") document.documentElement.classList.add("light");
+        } catch (e) {}
+      })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Karla:wght@400..800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="min-h-screen">
+  <body class="flex min-h-screen flex-col">
     <%= render PlatformCore::Ui::NavBarComponent.new do |nav| %>
-      <% if respond_to?(:logged_in?) && logged_in? %>
-        <% nav.with_link "Restaurants", "/restaurants", active: request.path.start_with?("/restaurants") && !request.path.include?("/admin") %>
-        <% if respond_to?(:admin?) && admin? %>
-          <% nav.with_link "Admin", "/admin", active: request.path.start_with?("/admin") %>
-          <% nav.with_link "Restaurants Admin", "/restaurants/admin/restaurants", active: request.path.include?("/restaurants/admin") %>
+      <% PlatformCore::Modules.nav_modules.each do |mod| %>
+        <% nav.with_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>
+      <% end %>
+      <% if respond_to?(:admin?) && admin? %>
+        <% nav.with_link "Admin", "/admin", active: request.path == "/admin" || request.path.start_with?("/admin/users") %>
+        <% nav.with_link "Modules", "/admin/modules", active: request.path.start_with?("/admin/modules") %>
+      <% end %>
+
+      <% if PlatformCore::Modules.enabled?("marketplace") %>
+        <% nav.with_search do %>
+          <%= form_with url: "/marketplace", method: :get do |f| %>
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-faint">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </span>
+              <%= f.text_field :q, value: params[:q], placeholder: "Search the marketplace…", class: "w-full rounded-full border border-line bg-sunken py-2 pl-10 pr-3 text-sm text-ink placeholder-ink-faint transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" %>
+            </div>
+          <% end %>
         <% end %>
+      <% end %>
+
+      <% if respond_to?(:logged_in?) && logged_in? %>
         <% nav.with_session_area do %>
-          <span class="font-mono text-sm text-ink-muted">@<%= current_user.handle %></span>
+          <span class="hidden font-mono text-sm text-ink-muted sm:inline">@<%= current_user.handle %></span>
           <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/logout", method: :delete) do %>
             Log out
           <% end %>
@@ -37,7 +72,7 @@
       <% end %>
     <% end %>
 
-    <main class="mx-auto max-w-5xl px-4 py-10">
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
       <% flash.each do |type, message| %>
         <div class="mb-6">
           <%= render PlatformCore::Ui::FlashComponent.new(type: type, message: message) %>
@@ -46,5 +81,11 @@
 
       <%= yield %>
     </main>
+
+    <%= render PlatformCore::Ui::FooterComponent.new do |footer| %>
+      <% footer.with_column(title: "Explore", links: PlatformCore::Modules.nav_modules.map { |m| [m.label, m.path] }) %>
+      <% footer.with_column(title: "Account", links: [["Log in", "/login"], ["Sign up", "/signup"]]) %>
+      <% footer.with_column(title: "About", links: [["Design system", "/design"]]) %>
+    <% end %>
   </body>
 </html>

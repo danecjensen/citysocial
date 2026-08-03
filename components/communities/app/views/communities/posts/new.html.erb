@@ -1,0 +1,15 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "New post", subtitle: "Posting to c/#{@community.name}") %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @post, url: community_posts_path(@community), method: :post do |f| %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :title, label: "Title") %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :body, type: :text_area, label: "Text (optional)", rows: 6) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :url, label: "Link (optional)", hint: "Add a URL to share a link.") %>
+      <div class="flex items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Post<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: community_path(@community)) do %>Cancel<% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

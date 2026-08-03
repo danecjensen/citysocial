@@ -1,0 +1,7 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Edit listing") %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "marketplace/listings/form", listing: @listing, url: listing_path(@listing), method: :patch %>
+  <% end %>
+</div>

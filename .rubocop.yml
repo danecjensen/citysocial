@@ -60,3 +60,9 @@ Rails/InverseOf:
 # current_user memoization via ||= find_by is intentional and request-scoped.
 Rails/FindByOrAssignmentMemoization:
   Enabled: false
+
+# Counter caches, vote scores, and view counts are denormalized aggregates kept
+# in sync with update_column/increment! by design -- skipping validations and
+# callbacks is the point (no timestamp churn, no re-validation of the parent).
+Rails/SkipsModelValidations:
+  Enabled: false

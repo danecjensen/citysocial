@@ -1,0 +1,48 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "c/#{@community.name}", subtitle: @community.description.presence) do |header| %>
+  <% header.with_actions do %>
+    <% if logged_in? %>
+      <% if @community.member?(current_user.id) %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_community_post_path(@community)) do %>New post<% end %>
+        <% unless @community.role_for(current_user.id) == "owner" %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: leave_community_path(@community), method: :delete) do %>Leave<% end %>
+        <% end %>
+      <% else %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: join_community_path(@community), method: :post) do %>Join<% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="mb-6 flex items-center gap-4 font-mono text-xs text-ink-faint">
+  <span><%= pluralize(@community.members_count, "member") %></span>
+  <span><%= pluralize(@community.posts_count, "post") %></span>
+</div>
+
+<% if @posts.any? %>
+  <div class="space-y-3">
+    <% @posts.each do |post| %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="flex gap-3">
+          <%= render "communities/posts/vote", score: post.score,
+                     up_url: upvote_community_post_path(@community, post),
+                     down_url: downvote_community_post_path(@community, post) %>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <% if post.pinned %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Pinned<% end %>
+              <% end %>
+              <%= link_to post.title, community_post_path(@community, post), class: "font-display text-lg font-bold text-ink hover:text-brand-700" %>
+            </div>
+            <div class="mt-1 flex items-center gap-2 font-mono text-xs text-ink-faint">
+              <span class="text-brand-700">@<%= post.author&.handle %></span>
+              <span><%= time_ago_in_words(post.created_at) %> ago</span>
+              <span><%= pluralize(post.comments_count, "comment") %></span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "No posts yet", body: "Start the conversation in c/#{@community.name}.") %>
+<% end %>

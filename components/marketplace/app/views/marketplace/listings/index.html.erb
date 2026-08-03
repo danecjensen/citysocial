@@ -1,0 +1,40 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Marketplace", subtitle: "Buy, sell, and find what you need nearby.") do |header| %>
+  <% if logged_in? %>
+    <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: mine_listings_path) do %>My listings<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_listing_path) do %>Post a listing<% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= form_with url: listings_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3" do |f| %>
+  <div class="min-w-[12rem] flex-1">
+    <%= f.label :q, "Search", class: "mb-1 block text-sm font-bold text-ink" %>
+    <%= f.text_field :q, value: params[:q], placeholder: "What are you looking for?", class: "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+  </div>
+  <div>
+    <%= f.label :category, "Category", class: "mb-1 block text-sm font-bold text-ink" %>
+    <%= f.select :category, Marketplace::Listing::CATEGORIES.map { |c| [c.titleize, c] }, { include_blank: "All" }, class: "rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+  </div>
+  <div>
+    <%= f.label :sort, "Sort", class: "mb-1 block text-sm font-bold text-ink" %>
+    <%= f.select :sort, [["Newest", ""], ["Price: low to high", "price_asc"], ["Price: high to low", "price_desc"]], { selected: params[:sort] }, class: "rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+  </div>
+  <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, type: :submit) do %>Filter<% end %>
+<% end %>
+
+<% if @listings.any? %>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <% @listings.each do |listing| %>
+      <%= render "marketplace/listings/card", listing: listing %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "No listings found", body: "Try a different search or category — or post the first one.") do |empty| %>
+    <% if logged_in? %>
+      <% empty.with_action do %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_listing_path) do %>Post a listing<% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

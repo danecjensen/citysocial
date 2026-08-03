@@ -6,6 +6,10 @@ module PlatformCore
     protect_from_forgery with: :exception
     layout "layouts/application"
 
+    # Every module controller inherits this, so gate disabled modules here in one
+    # place. The kernel ("platform_core") is never toggleable.
+    before_action :ensure_module_enabled
+
     helper_method :current_user, :logged_in?, :admin?
 
     def current_user
@@ -47,6 +51,21 @@ module PlatformCore
     def logout
       reset_session
       @current_user = nil
+    end
+
+    private
+
+    # The module a controller belongs to is its top-level namespace, e.g.
+    # Marketplace::ListingsController => "marketplace". If that module is
+    # toggled off, its whole surface (including its admin) is unavailable.
+    def current_module_key
+      self.class.name.split("::").first.underscore
+    end
+
+    def ensure_module_enabled
+      return if PlatformCore::Modules.enabled?(current_module_key)
+
+      redirect_to "/", alert: "That section is currently unavailable."
     end
   end
 end

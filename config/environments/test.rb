@@ -5,4 +5,5 @@ Rails.application.configure do
   config.action_dispatch.show_exceptions = :rescuable
   config.active_support.deprecation = :stderr
   config.action_controller.allow_forgery_protection = false
+  config.active_storage.service = :test
 end

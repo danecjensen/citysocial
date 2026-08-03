@@ -1,0 +1,19 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "My listings", subtitle: "Everything you've posted.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_listing_path) do %>Post a listing<% end %>
+  <% end %>
+<% end %>
+
+<% if @listings.any? %>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <% @listings.each do |listing| %>
+      <%= render "marketplace/listings/card", listing: listing %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "You haven't posted anything yet", body: "Your listings will show up here.") do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_listing_path) do %>Post your first listing<% end %>
+    <% end %>
+  <% end %>
+<% end %>

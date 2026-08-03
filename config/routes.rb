@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount Marketplace::Engine => "/marketplace"
+  mount Communities::Engine => "/communities"
   mount Restaurants::Engine => "/restaurants"
   # The kernel owns identity, so auth routes (signup/login/logout) live in
   # platform_core and are mounted at the root.
