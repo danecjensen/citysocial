@@ -1,0 +1,23 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "This Week in Austin",
+      subtitle: "The 10 best things happening between now and #{@window_end.strftime('%A, %B %-d')} — performing arts, film, live music, art, and ideas.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: all_path) do %>Browse all events<% end %>
+  <% end %>
+<% end %>
+
+<% if @events.any? %>
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <% @events.each_with_index do |event, i| %>
+      <%= render "events/events/card", event: event, rank: i + 1 %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No events yet this week",
+        body: "The discovery routine hasn't dropped a feed for the week ahead yet. Once it does, the ten best picks show up right here.") do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: all_path) do %>Browse the archive<% end %>
+    <% end %>
+  <% end %>
+<% end %>

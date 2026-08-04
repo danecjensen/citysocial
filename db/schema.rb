@@ -102,6 +102,29 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_03_212025) do
     t.index ["votable_type", "votable_id", "user_id"], name: "index_communities_votes_uniqueness", unique: true
   end
 
+  create_table "events_events", force: :cascade do |t|
+    t.string "fingerprint", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.string "venue"
+    t.string "category", default: "other", null: false
+    t.string "url"
+    t.string "image_url"
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at"
+    t.string "price"
+    t.float "score", default: 0.0, null: false
+    t.float "confidence", default: 1.0, null: false
+    t.string "source"
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_events_events_on_category"
+    t.index ["fingerprint"], name: "index_events_events_on_fingerprint", unique: true
+    t.index ["starts_at", "score"], name: "index_events_events_on_starts_at_and_score"
+    t.index ["starts_at"], name: "index_events_events_on_starts_at"
+  end
+
   create_table "feed_posts", force: :cascade do |t|
     t.bigint "author_id", null: false
     t.text "body", null: false

@@ -1,0 +1,46 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "All Events",
+      subtitle: "Search every event the routine has ever found in Austin.") do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: root_path) do %>This week's top 10<% end %>
+  <% end %>
+<% end %>
+
+<%= form_with url: all_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3" do |f| %>
+  <div class="min-w-[12rem] flex-1">
+    <%= f.label :q, "Search", class: "mb-1 block text-sm font-bold text-ink" %>
+    <%= f.text_field :q, value: @q, placeholder: "Artist, venue, show…", class: "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+  </div>
+  <div>
+    <%= f.label :category, "Category", class: "mb-1 block text-sm font-bold text-ink" %>
+    <%= f.select :category, Events::Event::CATEGORIES.map { |c| [Events::Event::CATEGORY_LABELS[c], c] }, { include_blank: "All", selected: @category }, class: "rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+  </div>
+  <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, type: :submit) do %>Filter<% end %>
+<% end %>
+
+<% if @events.any? %>
+  <p class="mb-4 font-mono text-xs text-ink-faint"><%= pluralize(@total, "event") %> found</p>
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <% @events.each do |event| %>
+      <%= render "events/events/card", event: event %>
+    <% end %>
+  </div>
+
+  <div class="mt-8 flex items-center justify-between">
+    <% if @page > 1 %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: all_path(q: @q, category: @category, page: @page - 1)) do %>← Previous<% end %>
+    <% else %>
+      <span></span>
+    <% end %>
+    <span class="font-mono text-xs text-ink-faint">Page <%= @page %></span>
+    <% if @has_next %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: all_path(q: @q, category: @category, page: @page + 1)) do %>Next →<% end %>
+    <% else %>
+      <span></span>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No events match",
+        body: "Try a broader search or a different category.") %>
+<% end %>

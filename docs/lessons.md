@@ -16,3 +16,9 @@ into CLAUDE.md.
   initializer, so a new engine's db/migrate is invisible to host `db:migrate`
   (silent no-op, then PG::UndefinedTable). Fixed in engine.tt; verify the
   initializer exists in any hand-checked engine.rb before migrating.
+- The generator names every module's wiring module `Events` (e.g.
+  `Marketplace::Events`). If a module is itself named `events`, that produces
+  `Events::Events`, which SHADOWS the top-level `Events` for all code lexically
+  inside `module Events` — plain `Events::Event` then resolves to
+  `Events::Events::Event` and blows up. Fix: rename the wiring module (we use
+  `Events::Wiring`) rather than fully-qualifying every reference with `::`.

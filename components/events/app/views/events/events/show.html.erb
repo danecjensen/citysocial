@@ -1,0 +1,35 @@
+<div class="mb-6">
+  <%= link_to "← Back to all events", all_path, class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<article class="mx-auto max-w-3xl">
+  <% if @event.image_url.present? %>
+    <div class="mb-6 aspect-[16/9] w-full overflow-hidden rounded-lg border border-line bg-sunken">
+      <%= image_tag @event.image_url, alt: @event.title, class: "h-full w-full object-cover" %>
+    </div>
+  <% end %>
+
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= @event.category_emoji %> <%= @event.category_label %><% end %>
+    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= @event.price_display %><% end %>
+  </div>
+
+  <h1 class="font-display text-3xl font-black tracking-tight text-ink"><%= @event.title %></h1>
+
+  <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-sm text-ink-muted">
+    <span>📅 <%= @event.when_display %></span>
+    <% if @event.venue.present? %><span>📍 <%= @event.venue %></span><% end %>
+  </div>
+
+  <% if @event.description.present? %>
+    <div class="mt-6 border-t border-line pt-6">
+      <p class="whitespace-pre-line leading-relaxed text-ink"><%= @event.description %></p>
+    </div>
+  <% end %>
+
+  <% if @event.url.present? %>
+    <div class="mt-8">
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg, href: @event.url) do %>🎟️ Tickets &amp; details<% end %>
+    </div>
+  <% end %>
+</article>

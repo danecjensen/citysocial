@@ -16,7 +16,8 @@ module PlatformCore
       { key: "feed",         label: "Feed",         path: "/feed",         nav: true },
       { key: "restaurants",  label: "Restaurants",  path: "/restaurants",  nav: true },
       { key: "communities",  label: "Communities",  path: "/communities",  nav: true },
-      { key: "marketplace",  label: "Marketplace",  path: "/marketplace",  nav: true }
+      { key: "marketplace",  label: "Marketplace",  path: "/marketplace",  nav: true },
+      { key: "events",       label: "Events",       path: "/events",       nav: true }
     ].freeze
 
     def all

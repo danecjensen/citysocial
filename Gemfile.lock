@@ -6,6 +6,13 @@ PATH
       rails (~> 7.2)
 
 PATH
+  remote: components/events
+  specs:
+    events (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
   remote: components/feed
   specs:
     feed (0.1.0)
@@ -412,6 +419,7 @@ DEPENDENCIES
   capybara
   communities!
   dotenv-rails
+  events!
   factory_bot_rails
   feed!
   importmap-rails
