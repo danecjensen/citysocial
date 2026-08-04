@@ -16,6 +16,7 @@ All paths are relative to the repository root. Resolve them before Phase 0.
 | this file | `.claude/routines/feature-loop.md` |
 | `backlog.json` | `.claude/routines/backlog.json` |
 | `progress.md` | `.claude/routines/progress.md` |
+| `research.md` | `.claude/routines/research.md` |
 
 If `progress.md` does not exist, create it with an empty `## Codebase Patterns` block.
 
@@ -52,6 +53,7 @@ something that exists in the repo or in connected data. Cite it in the `evidence
 
 | Source | How to find it |
 |---|---|
+| Verified research briefs with `Status: fresh` | `## Briefs` in `research.md` (written by the feature-research routine) |
 | Open GitHub issues, unlabeled or untriaged | `gh issue list --state open` |
 | `TODO` / `FIXME` / `HACK` comments | `rg -n 'TODO\|FIXME\|HACK'` |
 | README or docs promising something not implemented | diff docs against routes/handlers |
@@ -65,6 +67,16 @@ something that exists in the repo or in connected data. Cite it in the `evidence
 **Reject any idea you cannot tie to one of the above.** No "add dark mode," no "add
 notifications," no "add CSV export" unless something in the repo actually asks for it.
 An ungrounded idea is worse than an empty backlog because it consumes a whole run.
+Research briefs are the one sanctioned path for outward-looking ideas — they arrive
+already verified, graded, and cited, which is why they may enter the backlog and raw
+"wouldn't it be nice" ideas may not.
+
+**Consuming a research brief:** convert it to an item with `evidence` set to
+`research.md#R-<id>` plus the brief's repo tie-in path, carry its `Acceptance sketch`
+into `acceptance`, and set `confidence` no higher than `grader score / 10`. Then edit
+that brief's `Status` line in `research.md` to `consumed (F-<id>)` — or
+`rejected (<reason>)` if you decline it — so the research routine's queue drains.
+That status line is the only part of `research.md` this routine may edit.
 
 Before appending, check for duplicates against: existing `backlog.json` entries (any
 status), merged PR titles from the last 30 days, and `progress.md`. If an idea overlaps

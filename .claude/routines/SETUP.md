@@ -77,6 +77,37 @@ any amount of prompt tuning. Specifically check:
 If evidence quality is poor, the fix is almost always a thinner `product_context`, not a
 longer routine file.
 
+## 5. (Optional but recommended) The feature-research routine
+
+`feature-loop` only sees what is already in the repo. The companion
+`feature-research.md` routine looks outward — user complaints, competitor changelogs,
+retention patterns — and turns what it finds into verified, graded briefs in
+`research.md`, which feature-loop's Phase 1 consumes as its top evidence source. It
+never writes code and never touches `backlog.json`, so the two routines cannot conflict.
+
+Create a second routine at `claude.ai/code/routines` → **New routine** → **Remote**,
+same repository, prompt:
+
+```
+Read .claude/routines/feature-research.md and follow it exactly.
+```
+
+**Trigger:** twice a week is plenty — it stops itself when 4 briefs are waiting:
+
+```
+7 5 * * 1,4
+```
+
+**Connectors / tools:** it needs web access (WebSearch/WebFetch are built in). If you
+have Exa or Firecrawl MCP connectors, attach them — the routine prefers them and falls
+back to the built-ins otherwise. It spawns the three agents in `.claude/agents/`
+(research-scout, research-verifier, research-grader); the grader intentionally runs on
+a different model than the researcher so the final quality gate is decorrelated.
+
+**Review:** its PRs are just markdown (`research.md` + `progress.md`). Merge them
+promptly — feature-loop can't see briefs that are stuck in an unmerged PR, and the
+research routine's circuit breaker counts unconsumed briefs.
+
 ## After a week
 
 Watch for two things:
