@@ -5,7 +5,7 @@ cycle below, then stop. **One backlog item per run. Never more.**
 
 Repo state: you have a fresh clone of the default branch. Nothing carries over from the
 last run except what is committed to this repo. `backlog.json` and `progress.md` are your
-only memory.
+only memory. `DanesIdeas.md` is Dane's human idea inbox — your highest-signal *input*.
 
 ## Files
 
@@ -17,6 +17,7 @@ All paths are relative to the repository root. Resolve them before Phase 0.
 | `backlog.json` | `.claude/routines/backlog.json` |
 | `progress.md` | `.claude/routines/progress.md` |
 | `research.md` | `.claude/routines/research.md` |
+| `DanesIdeas.md` | `DanesIdeas.md` (repo root — Dane's idea inbox) |
 
 If `progress.md` does not exist, create it with an empty `## Codebase Patterns` block.
 
@@ -36,15 +37,61 @@ Stop and post a summary instead of working if any of these is true:
 - **6 or more open `claude/*` PRs.** The queue is backed up; more PRs make it worse.
 - **The same item has failed 2 runs in a row.** Set its `status` to `blocked`, write why
   in `progress.md`, move on to the next item.
-- **No item scores above the threshold** (see Phase 2) and Phase 1 is gated off.
+- **No item scores above the threshold** (see Phase 2), 1b is gated off, and step 1a
+  found no new ideas in `DanesIdeas.md`.
 
 ---
 
-## Phase 1 — Replenish (conditional)
+## Phase 1 — Feed the backlog
 
-**Gate: only run this if fewer than 5 items have `status: "ready"`.** Otherwise skip to
-Phase 2. Regenerating ideas on every run produces backlog churn, near-duplicates, and
-priority thrash — the queue stops being stable enough to drain.
+Two sources feed the backlog. **Step 1a always runs; step 1b is gated.**
+
+### 1a — Ingest Dane's ideas (ALWAYS — ignore the 1b gate)
+
+`DanesIdeas.md` (repo root) is Dane's raw, human idea inbox — a stream-of-consciousness
+to-do list he edits from the GitHub app. It is the **highest-signal input in the system**,
+so it is processed on **every** run regardless of the 1b gate. Human ideas are grounded by
+definition: Dane asking for it *is* the evidence, and desirability is already settled.
+
+An idea is **unprocessed** iff it is a `- [ ]` line under the `## Inbox` heading with **no
+trailing `` `[...]` `` tag**. (Lines in the instructions/legend above `## Inbox`, and any
+already-tagged line, are never ingested.) For each unprocessed idea, in file order:
+
+1. **Dedup.** Compare against `backlog.json` (any status), the open `claude/*` PRs from
+   Phase 0, merged PR titles from the last 30 days, and already-tagged lines in
+   `DanesIdeas.md`. On a match, tag the line `` `[dup F-0NN]` ``, check the box, and skip.
+2. **Triage.** If the idea is unactionable — a Phase 3 hard wall, in `out_of_scope`, or too
+   vague to become a concrete change — tag it `` `[rejected: <short reason>]` ``, check the
+   box, and move on. Give a reason Dane can act on (e.g. `rejected: needs a specific screen`).
+   Split an idea that implies several changes into multiple items; tag the source line with
+   the first item's id and note the fan-out in `progress.md`.
+3. **Accept.** Otherwise create a `backlog.json` item using the schema below with
+   `origin: "danes-ideas"`, `status: "ready"`, `evidence` set to the **verbatim idea text**,
+   and `confidence` starting at 0.8–0.9. Then tag the source line `` `[F-0NN queued]` `` and
+   **leave the box unchecked** — an idea is only checked at a terminal state (see standard).
+
+Commit `DanesIdeas.md` alongside `backlog.json`. **Never delete or reword Dane's text** —
+only flip the checkbox and append/replace the one trailing `` `[...]` `` tag.
+
+**The marking standard — the ONLY tags you may write (exactly one per line):**
+
+| Line state | Meaning |
+|---|---|
+| `- [ ] idea` | pending — raw input, not yet seen |
+| `` - [ ] idea `[F-0NN queued]` `` | accepted into the backlog, not started |
+| `` - [ ] idea `[F-0NN blocked: <reason>]` `` | needs a human before it can proceed |
+| `` - [x] idea `[F-0NN PR #<n>]` `` | built; draft PR opened (the loop's terminal state) |
+| `` - [x] idea `[rejected: <reason>]` `` | won't do; reason given |
+| `` - [x] idea `[dup F-0NN]` `` | already covered by an existing item/PR |
+
+When an item advances (queued → PR opened, or → blocked), rewrite that line's tag in place
+in the same run/branch that made the change (see Phase 4).
+
+### 1b — Auto-propose (GATED: only if fewer than 5 items have `status: "ready"`)
+
+Regenerating ideas on every run produces backlog churn, near-duplicates, and priority
+thrash — the queue stops being stable enough to drain. **If 5+ items are already `ready`
+(including anything 1a just added), skip 1b entirely and go to Phase 2.**
 
 When the gate opens, propose **3–5** new items. Every proposal must be grounded in
 something that exists in the repo or in connected data. Cite it in the `evidence` field.
@@ -99,6 +146,7 @@ an existing item, strengthen that item's `evidence` instead of adding a new one.
   "confidence": 0.8,
   "score": 1.6,
   "status": "ready",
+  "origin": "auto",
   "attempts": 0,
   "created": "2026-08-01",
   "pr": null
@@ -106,6 +154,10 @@ an existing item, strengthen that item's `evidence` instead of adding a new one.
 ```
 
 `status` is one of: `ready`, `in_progress`, `done`, `blocked`, `rejected`.
+`origin` is one of: `auto` (proposed in 1b), `danes-ideas` (ingested from `DanesIdeas.md`
+in 1a), `research` (consumed from a `research.md` brief). Items with
+`origin: "danes-ideas"` must be kept in sync with their source line per the marking
+standard (Phase 4, step 2).
 
 ---
 
@@ -161,7 +213,12 @@ Treat these as hard walls. If an item requires one, mark it `blocked` with reaso
 
 1. Update `backlog.json`: set the item's `status` and `pr` fields. Keep the file sorted by
    `score` descending.
-2. **Append** to `progress.md` — never overwrite:
+2. **Sync `DanesIdeas.md` for `origin: "danes-ideas"` items** (skip otherwise). Map the
+   item's new backlog state to the marking standard and rewrite that idea's line in place
+   (never touch Dane's wording): opened a PR → `` - [x] … `[F-0NN PR #<n>]` ``; still
+   `ready`/`in_progress` → `` - [ ] … `[F-0NN queued]` ``; `blocked` → `` - [ ] …
+   `[F-0NN blocked: <reason>]` ``; `rejected` → `` - [x] … `[rejected: <reason>]` ``.
+3. **Append** to `progress.md` — never overwrite:
 
 ```
 ## 2026-08-01 14:03 — F-041
@@ -173,12 +230,13 @@ Learnings:
 - <only if genuinely reusable>
 ```
 
-3. If you learned something that applies to *future* work rather than this one item,
+4. If you learned something that applies to *future* work rather than this one item,
    promote it to the `## Codebase Patterns` block at the top of `progress.md`. Keep that
    block under 20 lines — prune the least useful line when you add one. It is read at the
    start of every run and it is the only thing that compounds.
-4. Commit `backlog.json` and `progress.md` on the same branch as the change. If the run
-   produced no code, commit them straight to a `claude/backlog-<date>` branch.
+5. Commit `backlog.json`, `progress.md`, and any `DanesIdeas.md` changes on the same branch
+   as the change. If the run produced no code (e.g. a run that only ingested ideas in 1a),
+   commit them straight to a `claude/backlog-<date>` branch.
 
 ---
 
