@@ -1,0 +1,15 @@
+{
+  "project": "citysocial",
+  "product_context": "CitySocial is a modular-monolith social platform for city residents (currently Austin), built as one Rails app whose features live as near-independent modules (mountable engines) under components/. platform_core owns identity (User), the Follow social graph, a public Graph API, and an event bus; feed is the reference module (posts + timeline); communities is subreddit-style (join, post, comment, up/down vote); marketplace is classified listings with photos; restaurants is head-to-head Elo ranking of local spots. Users are residents who follow each other and engage through these modules. 'Better' means tightening the existing engagement loops (do -> others see it -> they get notified/react), filling in missing empty/loading/error and accessibility states on views that already ship, and polishing the UX of already-shipped modules. It does NOT mean speculative net-new features nobody asked for. Every view must compose the PlatformCore::Ui components and Tailwind v4 design tokens (no hand-rolled markup, no hardcoded hex). Modules may depend only on platform_core and must cross boundaries only via events or a sibling's app/public API (Packwerk enforces this).",
+  "out_of_scope": [
+    "Anything requiring a schema migration",
+    "Anything touching auth, authorization, sessions, or payments",
+    "New third-party dependencies (gems or JS)",
+    "Standing up a whole new module (that is the human-run /new-app-module flow)",
+    "Cross-module references that violate the Packwerk boundary contract",
+    "Editing the @theme design tokens or the standalone Tailwind build config"
+  ],
+  "check_command": "bin/verify",
+  "next_id": 1,
+  "items": []
+}
