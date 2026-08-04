@@ -21,7 +21,8 @@ module PlatformCore
       BASE = "inline-flex items-center justify-center rounded-md font-bold tracking-wide " \
              "transition-colors cursor-pointer".freeze
 
-      def initialize(variant: :primary, size: :md, href: nil, method: nil, params: nil, confirm: nil, type: :submit)
+      def initialize(variant: :primary, size: :md, href: nil, method: nil, params: nil, confirm: nil, type: :submit,
+                     aria_label: nil)
         @variant = VARIANTS.fetch(variant)
         @size = SIZES.fetch(size)
         @href = href
@@ -29,17 +30,18 @@ module PlatformCore
         @params = params
         @confirm = confirm
         @type = type
+        @aria_label = aria_label
       end
 
       erb_template <<~ERB
         <% if @href && @method %>
           <%= button_to @href, method: @method, params: @params, class: classes,
-                        form_class: "inline-flex",
+                        form_class: "inline-flex", "aria-label": @aria_label,
                         data: ({ turbo_confirm: @confirm } if @confirm) do %><%= content %><% end %>
         <% elsif @href %>
-          <%= link_to @href, class: classes do %><%= content %><% end %>
+          <%= link_to @href, class: classes, "aria-label": @aria_label do %><%= content %><% end %>
         <% else %>
-          <button type="<%= @type %>" class="<%= classes %>"><%= content %></button>
+          <%= content_tag :button, content, type: @type, class: classes, "aria-label": @aria_label %>
         <% end %>
       ERB
 
