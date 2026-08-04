@@ -92,10 +92,12 @@ same repository, prompt:
 Read .claude/routines/feature-research.md and follow it exactly.
 ```
 
-**Trigger:** twice a week is plenty — it stops itself when 4 briefs are waiting:
+**Trigger:** daily works fine — the circuit breaker in Phase 0 stops the routine from
+doing anything once 4 briefs are waiting unconsumed, so a daily cadence just means it
+checks in and no-ops on days feature-loop hasn't drained the queue yet:
 
 ```
-7 5 * * 1,4
+7 5 * * *
 ```
 
 **Connectors / tools:** it needs web access (WebSearch/WebFetch are built in). If you
