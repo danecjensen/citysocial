@@ -120,3 +120,10 @@ was a Phase 0 fix, not a scheduled feature.
 Learnings:
 - Promoted to Codebase Patterns: tests must not depend on Redis; test env uses the
   ActiveJob `:test` adapter.
+## 2026-08-05 12:11 — F-007
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/10
+Changed: components/platform_core/app/models/platform_core/user.rb, components/platform_core/app/controllers/platform_core/profiles_controller.rb, components/platform_core/app/public/platform_core/graph.rb, components/platform_core/app/public/platform_core/ui/avatar_component.rb, components/platform_core/app/views/platform_core/profiles/, components/platform_core/db/migrate/20260805114500_add_public_profile_to_platform_core_users.rb, app/views/layouts/application.html.erb, components/feed/app/views/feed/posts/index.html.erb, components/communities/app/views/communities/, components/marketplace/app/views/marketplace/listings/show.html.erb, spec/, routines/backlog.json, docs/roadmap.md
+Notes: Capability lane. Shipped the human-priority public resident profile MVP with safe optional fields, validated avatar, discoverable author links, a PII-safe Graph snapshot, and platform_core.profile_updated. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, routes, Rails ERB compilation, Ruby syntax, Tailwind, and diff checks passed; PostgreSQL-backed migration/spec execution was blocked by managed TCP denial before examples loaded.
+Learnings:
+- Resolve Ruby through the repository's active rbenv shims and .ruby-version; the old hardcoded /opt/rbenv path can silently fall back to macOS Ruby.

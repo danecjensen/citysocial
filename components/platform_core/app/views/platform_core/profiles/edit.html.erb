@@ -1,0 +1,45 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Edit public profile",
+      subtitle: "Share only what you want other CitySocial residents to see. Your email is never shown."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @user, url: "/profile", method: :patch, multipart: true do |f| %>
+      <% if @user.errors.any? %>
+        <div class="mb-4">
+          <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: "Please fix the issues below.") %>
+        </div>
+      <% end %>
+
+      <div class="mb-6 flex items-center gap-4">
+        <%= render PlatformCore::Ui::AvatarComponent.new(user: @user, size: :lg) %>
+        <p class="text-sm text-ink-muted">JPEG, PNG, or WebP. Maximum 5 MB.</p>
+      </div>
+
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :avatar, type: :file_field, label: "Profile photo",
+            accept: PlatformCore::User::AVATAR_CONTENT_TYPES.join(",")
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :display_name, label: "Display name", maxlength: 80,
+            hint: "Optional. Your @handle remains the permanent profile address."
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :neighborhood, maxlength: 80,
+            hint: "Optional. Share a broad area, never a street address."
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :bio, type: :text_area, rows: 6, maxlength: 500,
+            hint: "Up to 500 characters."
+          ) %>
+
+      <div class="flex flex-wrap gap-2 border-t border-line pt-4">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>Save profile<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :secondary, href: profile_path(@user.handle)
+            ) do %>Cancel<% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
