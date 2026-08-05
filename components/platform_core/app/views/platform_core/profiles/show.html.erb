@@ -1,0 +1,44 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: @user.display_name_or_handle,
+      subtitle: "@#{@user.handle}"
+    ) do |header| %>
+  <% if logged_in? && current_user == @user %>
+    <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: edit_profile_path) do %>
+        Edit profile
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <div class="flex flex-col gap-6 sm:flex-row">
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: @user, size: :xl) %>
+
+      <div class="min-w-0 flex-1">
+        <% if @user.neighborhood.present? %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %>
+            <%= @user.neighborhood %>
+          <% end %>
+        <% end %>
+
+        <% if @user.bio.present? %>
+          <p class="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= @user.bio %></p>
+        <% else %>
+          <div class="mt-4">
+            <%= render PlatformCore::Ui::EmptyStateComponent.new(
+                  title: "This resident is keeping it simple",
+                  body: "Their public bio will appear here when they add one."
+                ) %>
+          </div>
+        <% end %>
+
+        <dl class="mt-6 flex gap-6 border-t border-line pt-4 text-sm text-ink-muted">
+          <div><dt class="font-bold text-ink"><%= @user.followers.count %></dt><dd>Followers</dd></div>
+          <div><dt class="font-bold text-ink"><%= @user.following.count %></dt><dd>Following</dd></div>
+        </dl>
+      </div>
+    </div>
+  <% end %>
+</div>

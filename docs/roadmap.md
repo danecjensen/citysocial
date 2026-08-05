@@ -2,6 +2,9 @@
 
 ## Shipped
 - platform_core: identity, social graph, event bus, public Graph API.
+- resident profiles: optional display name, neighborhood, bio, and validated avatar;
+  public /people/:handle identity pages, PII-safe Graph snapshot, reusable
+  AvatarComponent, cross-module author links, and platform_core.profile_updated.
 - feed: reference module (posts + timeline + feed.post_created event).
 - design system: Tailwind v4 tokens + PlatformCore::Ui ViewComponents + Hotwire;
   living catalog at /design.

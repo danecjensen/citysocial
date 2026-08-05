@@ -34,4 +34,39 @@ RSpec.describe PlatformCore::User, type: :model do
   it "can be an admin via the factory trait" do
     expect(create(:user, :admin).admin?).to be(true)
   end
+
+  it "normalizes optional public profile fields and falls back to the handle" do
+    user = build(:user, display_name: "  Dane Jensen  ", neighborhood: "  Hyde Park  ", bio: "  Hi, Austin!  ")
+
+    expect(user).to be_valid
+    expect(user.display_name).to eq("Dane Jensen")
+    expect(user.neighborhood).to eq("Hyde Park")
+    expect(user.bio).to eq("Hi, Austin!")
+    expect(build(:user, display_name: nil).display_name_or_handle).to match(/user\d+/)
+  end
+
+  it "limits public profile field lengths" do
+    user = build(:user, display_name: "x" * 81, neighborhood: "x" * 81, bio: "x" * 501)
+
+    expect(user).not_to be_valid
+    expect(user.errors).to include(:display_name, :neighborhood, :bio)
+  end
+
+  it "accepts image avatars and rejects other file types" do
+    user = build(:user)
+    user.avatar.attach(io: StringIO.new("image"), filename: "avatar.png", content_type: "image/png")
+    expect(user).to be_valid
+
+    user.avatar.attach(io: StringIO.new("document"), filename: "avatar.pdf", content_type: "application/pdf")
+    expect(user).not_to be_valid
+    expect(user.errors[:avatar]).to include("must be a JPEG, PNG, or WebP image")
+  end
+  it "rejects avatars larger than five megabytes" do
+    user = build(:user)
+    oversized = "x" * (PlatformCore::User::AVATAR_MAX_SIZE + 1)
+    user.avatar.attach(io: StringIO.new(oversized), filename: "avatar.png", content_type: "image/png")
+
+    expect(user).not_to be_valid
+    expect(user.errors[:avatar]).to include("must be smaller than 5 MB")
+  end
 end

@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 7,
+  "next_id": 8,
   "items": [
     {
       "id": "F-001",
@@ -94,6 +94,34 @@
       "pr": null,
       "notes": "Confidence held down while F-001 (PR #2) is open on the same _vote.html.erb partial — building this now would conflict. Confidence rises to ~0.85 (score ~1.7) once F-001 merges; prefer to schedule it after."
     },
+    {
+      "id": "F-007",
+      "title": "Create public resident profiles with avatars",
+      "problem": "Residents have no public identity surface beyond a handle, so their activity across CitySocial lacks context, trust, and a consistent way to discover who is participating.",
+      "evidence": "Explicit human priority in the CitySocial Codex product-loop mission: public user profile with avatar; profile fields must stay optional and never expose email or hidden PII.",
+      "acceptance": [
+        "A resident can edit only their own optional display name, neighborhood, bio, and avatar",
+        "Avatar uploads accept JPEG, PNG, or WebP up to 5 MB and invalid files render inline errors",
+        "Anyone can view /people/:handle with public fields and follow counts, but never email or authentication data",
+        "The shared AvatarComponent and author links make profiles discoverable from the navigation, feed, communities, and marketplace",
+        "A PII-safe PlatformCore::Graph.public_profile API and platform_core.profile_updated event expose the capability across module boundaries",
+        "Model, request, public API, and component specs cover the complete flow"
+      ],
+      "impact": 5,
+      "effort": 4,
+      "confidence": 0.9,
+      "score": 1.125,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/10",
+      "kind": "app_wide_capability",
+      "product_family": "resident_identity",
+      "milestone": "public-profile-mvp",
+      "notes": "Persona: city resident participating across multiple modules. Job: understand who another resident is and present a consistent public identity. Loop: resident updates profile -> activity links bring others to it -> public identity context supports follows and reactions; profile updates publish for future notification/search subscribers."
+    },
+
     {
       "id": "F-005",
       "title": "External ticket/detail links open in a new tab",

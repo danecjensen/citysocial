@@ -55,7 +55,10 @@
 
       <% if respond_to?(:logged_in?) && logged_in? %>
         <% nav.with_session_area do %>
-          <span class="hidden font-mono text-sm text-ink-muted sm:inline">@<%= current_user.handle %></span>
+          <%= link_to "/people/#{current_user.handle}", class: "inline-flex items-center gap-2 text-ink-muted hover:text-brand-700" do %>
+            <%= render PlatformCore::Ui::AvatarComponent.new(user: current_user, size: :sm, alt: "") %>
+            <span class="hidden font-mono text-sm sm:inline">@<%= current_user.handle %></span>
+          <% end %>
           <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/logout", method: :delete) do %>
             Log out
           <% end %>

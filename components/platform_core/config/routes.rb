@@ -6,6 +6,10 @@ PlatformCore::Engine.routes.draw do
   post   "/login",  to: "sessions#create"
   delete "/logout", to: "sessions#destroy", as: :logout
 
+  get   "/people/:handle", to: "profiles#show", as: :profile
+  get   "/profile/edit", to: "profiles#edit", as: :edit_profile
+  patch "/profile", to: "profiles#update"
+
   namespace :admin do
     root to: "users#index"
     resources :users, only: %i[update destroy]
