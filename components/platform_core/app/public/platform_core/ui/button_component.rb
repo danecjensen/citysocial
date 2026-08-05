@@ -22,7 +22,7 @@ module PlatformCore
              "transition-colors cursor-pointer".freeze
 
       def initialize(variant: :primary, size: :md, href: nil, method: nil, params: nil, confirm: nil, type: :submit,
-                     aria_label: nil)
+                     aria_label: nil, pressed: nil)
         @variant = VARIANTS.fetch(variant)
         @size = SIZES.fetch(size)
         @href = href
@@ -31,17 +31,18 @@ module PlatformCore
         @confirm = confirm
         @type = type
         @aria_label = aria_label
+        @pressed = pressed
       end
 
       erb_template <<~ERB
         <% if @href && @method %>
           <%= button_to @href, method: @method, params: @params, class: classes,
-                        form_class: "inline-flex", "aria-label": @aria_label,
+                        form_class: "inline-flex", "aria-label": @aria_label, "aria-pressed": @pressed,
                         data: ({ turbo_confirm: @confirm } if @confirm) do %><%= content %><% end %>
         <% elsif @href %>
-          <%= link_to @href, class: classes, "aria-label": @aria_label do %><%= content %><% end %>
+          <%= link_to @href, class: classes, "aria-label": @aria_label, "aria-pressed": @pressed do %><%= content %><% end %>
         <% else %>
-          <%= content_tag :button, content, type: @type, class: classes, "aria-label": @aria_label %>
+          <%= content_tag :button, content, type: @type, class: classes, "aria-label": @aria_label, "aria-pressed": @pressed %>
         <% end %>
       ERB
 

@@ -49,4 +49,22 @@ RSpec.describe PlatformCore::Ui::ButtonComponent do
 
     expect(page).to have_no_css("button[aria-label]")
   end
+
+  it "renders aria-pressed=true for a pressed toggle button" do
+    render_inline(described_class.new(href: "/vote", method: :post, aria_label: "Upvote", pressed: true)) { "▲" }
+
+    expect(page).to have_css("button[aria-pressed='true']")
+  end
+
+  it "renders aria-pressed=false for an unpressed toggle button" do
+    render_inline(described_class.new(href: "/vote", method: :post, aria_label: "Upvote", pressed: false)) { "▲" }
+
+    expect(page).to have_css("button[aria-pressed='false']")
+  end
+
+  it "omits aria-pressed when pressed is not given" do
+    render_inline(described_class.new) { "Save" }
+
+    expect(page).to have_no_css("button[aria-pressed]")
+  end
 end
