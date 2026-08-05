@@ -101,6 +101,7 @@
       <%= form_with url: "#", scope: :demo, local: true do |f| %>
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :email, type: :email_field, label: "Email", hint: "We never share this.") %>
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :password, type: :password_field, label: "Password") %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :category, type: :select, label: "Category", collection: [["Housing", "housing"], ["For sale", "for_sale"]], include_blank: "Choose one") %>
       <% end %>
     </div>
   </section>

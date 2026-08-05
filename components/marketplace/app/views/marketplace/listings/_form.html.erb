@@ -9,14 +9,8 @@
   <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :title, label: "Title") %>
 
   <div class="mb-4 grid gap-4 sm:grid-cols-2">
-    <div>
-      <%= f.label :category, "Category", class: "mb-1 block text-sm font-bold text-ink" %>
-      <%= f.select :category, Marketplace::Listing::CATEGORIES.map { |c| [c.titleize, c] }, { include_blank: "Choose one" }, class: "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
-    </div>
-    <div>
-      <%= f.label :condition, "Condition", class: "mb-1 block text-sm font-bold text-ink" %>
-      <%= f.select :condition, Marketplace::Listing::CONDITIONS.map { |c| [c.titleize, c] }, { include_blank: "Not applicable" }, class: "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
-    </div>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :category, type: :select, label: "Category", collection: Marketplace::Listing::CATEGORIES.map { |c| [c.titleize, c] }, include_blank: "Choose one") %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :condition, type: :select, label: "Condition", collection: Marketplace::Listing::CONDITIONS.map { |c| [c.titleize, c] }, include_blank: "Not applicable") %>
   </div>
 
   <div class="mb-4 grid gap-4 sm:grid-cols-2">
