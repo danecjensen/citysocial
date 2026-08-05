@@ -19,7 +19,7 @@ every check below passes.
    existing implementations of this feature. If it exists, the finding is CUT — unless
    what exists is clearly a partial version, in which case narrow the finding to the
    missing part and say so.
-3. **Fits the contract.** Read `CLAUDE.md` and `routines/backlog.json`
+3. **Fits the contract.** Read `CLAUDE.md` and `.claude/routines/backlog.json`
    (`product_context` and `out_of_scope`). Cut anything that requires: a schema
    migration, auth/session/payment changes, a new third-party dependency, a whole new
    module, cross-module references that break Packwerk boundaries, or design-token

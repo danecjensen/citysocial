@@ -15,9 +15,9 @@ All paths relative to the repository root.
 | Short name | Path | Access |
 |---|---|---|
 | this file | `.claude/routines/feature-research.md` | read |
-| `research.md` | `routines/research.md` | read + append |
-| `backlog.json` | `routines/backlog.json` | **read-only** — feature-loop owns it |
-| `progress.md` | `routines/progress.md` | append a run entry only |
+| `research.md` | `.claude/routines/research.md` | read + append |
+| `backlog.json` | `.claude/routines/backlog.json` | **read-only** — feature-loop owns it |
+| `progress.md` | `.claude/routines/progress.md` | append a run entry only |
 
 ## The stack (tool ladder)
 
