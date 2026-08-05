@@ -15,7 +15,7 @@ Examples of the right kind of line:
 - Feature specs need the dev server on :3000
 -->
 
-- Env setup before bin/verify: `export PATH="/opt/rbenv/versions/3.3.6/bin:$PATH"` (gem exes aren't on PATH), start PG (`pg_ctlcluster 16 main start`), then `bin/rails tailwindcss:build` — request specs render the layout and 404 without it.
+- Tests must NOT require Redis: `config/environments/test.rb` sets `config.active_job.queue_adapter = :test` (app uses `:sidekiq` elsewhere, set in config/application.rb). Any job enqueued in a spec (e.g. Active Storage `AnalyzeJob` on photo attach) otherwise raises `RedisClient::CannotConnectError`. Redis IS installed here but the suite must stay self-contained.
 - PG needs trust auth: set 127.0.0.1/::1/local to `trust` in /etc/postgresql/16/main/pg_hba.conf, then reload; config/database.yml uses user postgres, no password.
 - `git push` over Bash is blocked here. Push via GitHub MCP: create_branch (from master) → push_files (all changed files, one commit) → create_pull_request (draft). Default branch is `master`.
 - Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent now supports type: :select. ButtonComponent takes only variant/size/href/method/params/confirm/type (no arbitrary classes).
@@ -101,6 +101,25 @@ Notes: Shell DNS failure prevented refreshing the stale local origin/master befo
 research. The connected GitHub app revealed R-001 through R-004 already fresh on
 current remote master at the publish gate, so no new brief was recorded.
 
+## 2026-08-05 — master-red fix (test env queue adapter)
+Outcome: shipped (Phase 0 defect fix; skipped Phases 1-2 per routine)
+PR: https://github.com/danecjensen/citysocial/pull/11
+Changed: config/environments/test.rb, spec/config/active_job_adapter_spec.rb
+Notes: Default branch bin/verify was genuinely RED — 6 restaurants specs failed with
+RedisClient::CannotConnectError. Root cause: PR #6 added Active Storage photos, whose
+AnalyzeJob enqueues via the globally-configured `:sidekiq` adapter
+(config/application.rb:15); config/environments/test.rb never overrode it, so any
+attachment in a spec tried to reach Redis. Fix: set the test env's
+`config.active_job.queue_adapter = :test` (in-memory), the Rails-idiomatic choice — no
+new dependency, no schema, no secrets. EventBus subscribers are inline by default
+(async:true ones use ActiveJob), so this changes no passing behavior. Added a small
+config guard spec so a revert fails loudly with a clear reason instead of a Redis error.
+Full suite now 103 examples, 0 failures; packwerk + rubocop clean. Did NOT start Redis
+locally (would only paper over the defect for one environment). Backlog untouched — this
+was a Phase 0 fix, not a scheduled feature.
+Learnings:
+- Promoted to Codebase Patterns: tests must not depend on Redis; test env uses the
+  ActiveJob `:test` adapter.
 ## 2026-08-05 12:11 — F-007
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/10
