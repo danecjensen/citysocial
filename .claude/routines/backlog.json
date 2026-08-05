@@ -10,6 +10,21 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
+  "next_id": 5,
+  "items": [
+    {
+      "id": "F-002",
+      "title": "Add empty state to the restaurants leaderboard",
+      "problem": "The leaderboard renders a bare header-only table when there are no restaurants, unlike every other index view which shows an empty state.",
+      "evidence": "components/restaurants/app/views/restaurants/leaderboard/index.html.erb:9 — TableComponent iterates @restaurants with no any? guard; Restaurants::Restaurant.ranked (restaurant.rb:5) is an unfiltered order, so a fresh install shows a bare table.",
+      "acceptance": [
+        "With zero restaurants, /restaurants/leaderboard renders a PlatformCore::Ui::EmptyState instead of an empty table",
+        "The empty state composes shared UI components and design tokens with a CTA back to matchups",
+        "When restaurants exist, the ranked table renders exactly as before",
+        "Covered by a request spec asserting the empty-state copy renders with zero restaurants"
+      ],
+      "impact": 2,
+      "effort": 1,
   "next_id": 6,
   "items": [
     {
@@ -31,6 +46,21 @@
       "origin": "auto",
       "attempts": 1,
       "created": "2026-08-04",
+      "pr": "https://github.com/danecjensen/citysocial/pull/1"
+    },
+    {
+      "id": "F-001",
+      "title": "Add a post composer to the Feed index",
+      "problem": "The feed (the app's root page) shows posts but gives a logged-in user no UI to write one; the create action and route exist but nothing renders a form.",
+      "evidence": "components/feed/app/views/feed/posts/index.html.erb has no form/new-post button; feed/posts_controller.rb:9 defines create and config/routes.rb exposes POST /feed/posts, but no view links to it — a dead-end engagement loop on root ('/' redirects to /feed).",
+      "acceptance": [
+        "Logged-in users see a composer (a PlatformCore::Ui Card with a body text_area + submit) at the top of the feed",
+        "Submitting a non-empty body creates a Feed::Post and shows it in the feed",
+        "Submitting a blank body is rejected gracefully with a flash, not a 500 (controller uses create! today)",
+        "Covered by a feed request spec (none exists yet)"
+      ],
+      "impact": 4,
+      "effort": 2,
       "pr": "https://github.com/danecjensen/citysocial/pull/2"
     },
     {
@@ -55,6 +85,19 @@
     },
     {
       "id": "F-003",
+      "title": "Give community vote buttons accessible names",
+      "problem": "Up/down vote buttons render only the glyphs '▲'/'▼' with no accessible name, so screen readers cannot announce their purpose.",
+      "evidence": "components/communities/app/views/communities/posts/_vote.html.erb:4,8 — ButtonComponent content is a bare glyph; button_component.rb:24 has no aria-label/label param, so the component must be extended to pass an accessible name through.",
+      "acceptance": [
+        "Upvote/downvote controls expose an accessible name (e.g. aria-label 'Upvote' / 'Downvote')",
+        "PlatformCore::Ui::ButtonComponent supports passing an accessible label without breaking existing call sites",
+        "Design catalog (/design) still renders and the button variants are unchanged visually",
+        "Covered by a component or request spec asserting the accessible name is present"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.7,
+      "score": 1.05,
       "title": "Empty state for the restaurants admin index",
       "problem": "The admin 'All restaurants' table has no zero-case; a fresh install with no restaurants shows an empty table under the count (0).",
       "evidence": "components/restaurants/app/views/restaurants/admin/restaurants/index.html.erb:34 — @restaurants.each table with no empty branch.",
@@ -75,6 +118,19 @@
     },
     {
       "id": "F-004",
+      "title": "Remove N+1 author lookup in the feed timeline",
+      "problem": "Rendering the timeline issues one User query per post because each post resolves its author individually.",
+      "evidence": "components/feed/app/models/feed/post.rb:6-8 — #author calls PlatformCore::Graph.user(author_id) (graph.rb:15-17 does User.find_by per call); feed/posts/index.html.erb:8 calls post.author&.handle inside the @posts loop → N+1. A fix likely needs a batch Graph.users(ids) public API method.",
+      "acceptance": [
+        "Rendering the feed for N posts issues O(1) user queries, not O(N)",
+        "Author handles still render correctly for every post",
+        "A new batch accessor (if added) lives in platform_core app/public and does not violate Packwerk",
+        "Covered by a spec asserting the query count does not grow with post count"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.65,
+      "score": 0.975,
       "title": "Make the feed compose action reachable from the UI",
       "problem": "feed posts#create is implemented and routed but nothing in the UI links to or renders a compose form, so a user cannot create a feed post.",
       "evidence": "components/feed/config/routes.rb:2 + components/feed/app/controllers/feed/posts_controller.rb:9 implement create; no view renders a compose form or 'new post' link posting to /feed.",

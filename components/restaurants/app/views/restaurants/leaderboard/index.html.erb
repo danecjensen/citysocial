@@ -6,25 +6,37 @@
   <% end %>
 <% end %>
 
-<%= render PlatformCore::Ui::TableComponent.new(columns: ["#", "Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Matchups", numeric: true }]) do |table| %>
-  <% @restaurants.each_with_index do |restaurant, i| %>
-    <% table.with_row do |row| %>
-      <% row.with_cell do %>
-        <span class="font-mono text-ink-faint"><%= i + 1 %></span>
+<% if @restaurants.any? %>
+  <%= render PlatformCore::Ui::TableComponent.new(columns: ["#", "Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Matchups", numeric: true }]) do |table| %>
+    <% @restaurants.each_with_index do |restaurant, i| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <span class="font-mono text-ink-faint"><%= i + 1 %></span>
+        <% end %>
+        <% row.with_cell do %>
+          <span class="font-bold"><%= restaurant.name %></span>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= restaurant.cuisine %><% end %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= restaurant.area %><% end %>
+        <% end %>
+        <% row.with_cell(numeric: true) do %>
+          <span class="font-semibold"><%= restaurant.elo %></span>
+        <% end %>
+        <% row.with_cell(numeric: true) { restaurant.matches_count.to_s } %>
       <% end %>
-      <% row.with_cell do %>
-        <span class="font-bold"><%= restaurant.name %></span>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No restaurants on the board yet",
+        body: "Once an admin adds a few spots and people start voting, the rankings show up here.") do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: "/restaurants") do %>
+        Go rank some restaurants
       <% end %>
-      <% row.with_cell do %>
-        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= restaurant.cuisine %><% end %>
-      <% end %>
-      <% row.with_cell do %>
-        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= restaurant.area %><% end %>
-      <% end %>
-      <% row.with_cell(numeric: true) do %>
-        <span class="font-semibold"><%= restaurant.elo %></span>
-      <% end %>
-      <% row.with_cell(numeric: true) { restaurant.matches_count.to_s } %>
     <% end %>
   <% end %>
 <% end %>
