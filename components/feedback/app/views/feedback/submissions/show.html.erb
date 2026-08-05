@@ -1,0 +1,49 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(title: @submission.title) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: submissions_path) do %>Back to feedback<% end %>
+  <% end %>
+<% end %>
+
+<div class="grid gap-6 md:grid-cols-[minmax(0,1fr)_14rem]">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <div class="mb-5 flex flex-wrap items-center gap-2">
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: @submission.kind_badge) do %><%= @submission.kind_label %><% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: @submission.status_badge) do %><%= @submission.status_label %><% end %>
+      <% if @submission.area.present? %>
+        <span class="font-mono text-xs text-ink-muted"><%= @submission.area.humanize %></span>
+      <% end %>
+    </div>
+
+    <div class="whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= @submission.description %></div>
+
+    <% if @submission.page_url.present? %>
+      <div class="mt-6 border-t border-line pt-4">
+        <p class="text-xs font-bold uppercase tracking-wider text-ink-muted">Page context</p>
+        <%= link_to @submission.page_url, @submission.page_url,
+                    class: "mt-1 block break-all font-mono text-sm text-brand-700 hover:underline",
+                    target: ("_blank" unless @submission.page_url.start_with?("/")),
+                    rel: ("noopener" unless @submission.page_url.start_with?("/")) %>
+      </div>
+    <% end %>
+
+    <p class="mt-6 font-mono text-xs text-ink-faint">
+      <% if @submission.author %>@<%= @submission.author.handle %> · <% end %><%= @submission.created_at.to_date.to_fs(:long) %>
+    </p>
+  <% end %>
+
+  <div class="space-y-3">
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <p class="text-center font-display text-3xl font-black text-ink"><%= @submission.supports_count %></p>
+      <p class="mb-4 text-center text-xs text-ink-muted">people support this</p>
+      <div class="flex justify-center">
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: @supported ? :secondary : :primary,
+              href: toggle_support_submission_path(@submission),
+              method: :post
+            ) do %>
+          <%= @supported ? "Remove support" : "Support this" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

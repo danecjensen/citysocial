@@ -37,6 +37,7 @@ gem "aws-sdk-s3", require: false
 gem "communities", path: "components/communities"
 gem "events", path: "components/events"
 gem "feed", path: "components/feed"
+gem "feedback", path: "components/feedback"
 gem "marketplace", path: "components/marketplace"
 gem "platform_core", path: "components/platform_core"
 gem "restaurants",   path: "components/restaurants"

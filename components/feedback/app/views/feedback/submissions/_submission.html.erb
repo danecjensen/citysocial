@@ -1,0 +1,34 @@
+<%= render PlatformCore::Ui::CardComponent.new do %>
+  <div class="flex gap-4">
+    <div class="flex w-20 shrink-0 flex-col items-center gap-1">
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: supported ? :primary : :secondary,
+            size: :sm,
+            href: toggle_support_submission_path(submission),
+            method: :post,
+            aria_label: supported ? "Remove support" : "Support this feedback"
+          ) do %>
+        <span aria-hidden="true">▲</span>
+        <span class="font-mono tabular-nums"><%= submission.supports_count %></span>
+      <% end %>
+      <span class="text-xs text-ink-faint">supports</span>
+    </div>
+
+    <div class="min-w-0 flex-1">
+      <div class="mb-2 flex flex-wrap items-center gap-2">
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: submission.kind_badge) do %><%= submission.kind_label %><% end %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: submission.status_badge) do %><%= submission.status_label %><% end %>
+        <% if submission.area.present? %>
+          <span class="font-mono text-xs text-ink-muted"><%= submission.area.humanize %></span>
+        <% end %>
+      </div>
+      <h2 class="font-display text-lg font-bold text-ink">
+        <%= link_to submission.title, submission_path(submission), class: "hover:text-brand-700" %>
+      </h2>
+      <p class="mt-1 text-sm leading-relaxed text-ink-muted"><%= truncate(submission.description, length: 220) %></p>
+      <p class="mt-3 font-mono text-xs text-ink-faint">
+        <% if submission.author %>@<%= submission.author.handle %> · <% end %><%= time_ago_in_words(submission.created_at) %> ago
+      </p>
+    </div>
+  </div>
+<% end %>

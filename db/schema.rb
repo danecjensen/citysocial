@@ -133,6 +133,34 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_114500) do
     t.index ["author_id", "created_at"], name: "index_feed_posts_on_author_id_and_created_at"
   end
 
+  create_table "feedback_submissions", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.string "kind", default: "idea", null: false
+    t.string "status", default: "open", null: false
+    t.string "area"
+    t.string "page_url"
+    t.string "title", null: false
+    t.text "description", null: false
+    t.integer "supports_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["area"], name: "index_feedback_submissions_on_area"
+    t.index ["author_id"], name: "index_feedback_submissions_on_author_id"
+    t.index ["kind"], name: "index_feedback_submissions_on_kind"
+    t.index ["status", "supports_count"], name: "index_feedback_submissions_on_status_and_supports_count"
+    t.index ["status"], name: "index_feedback_submissions_on_status"
+  end
+
+  create_table "feedback_supports", force: :cascade do |t|
+    t.bigint "submission_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["submission_id", "user_id"], name: "index_feedback_supports_on_submission_id_and_user_id", unique: true
+    t.index ["submission_id"], name: "index_feedback_supports_on_submission_id"
+    t.index ["user_id"], name: "index_feedback_supports_on_user_id"
+  end
+
   create_table "marketplace_listings", force: :cascade do |t|
     t.bigint "author_id", null: false
     t.string "title", null: false
@@ -207,4 +235,5 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_114500) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "feedback_supports", "feedback_submissions", column: "submission_id"
 end

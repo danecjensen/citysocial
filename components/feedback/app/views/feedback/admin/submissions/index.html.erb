@@ -1,0 +1,63 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Admin · Feedback",
+      subtitle: "Triage the public roadmap and keep submitters informed."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: root_path) do %>View public board<% end %>
+  <% end %>
+<% end %>
+
+<div class="mb-6">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with url: admin_submissions_path, method: :get do |f| %>
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="min-w-56 flex-1">
+          <%= render PlatformCore::Ui::FormFieldComponent.new(
+                form: f, attribute: :status, type: :select, label: "Status",
+                collection: Feedback::Submission::STATUSES.map { |status| [Feedback::Submission::STATUS_LABELS.fetch(status), status] },
+                include_blank: "All statuses", selected: @status
+              ) %>
+        </div>
+        <div class="mb-4 flex gap-2">
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, type: :submit) do %>Filter<% end %>
+          <% if @status %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: admin_submissions_path) do %>Clear<% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @submissions.any? %>
+  <%= render PlatformCore::Ui::TableComponent.new(
+        columns: ["Feedback", "Type", { label: "Supports", numeric: true }, "Submitted", "Status"]
+      ) do |table| %>
+    <% @submissions.each do |submission| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <%= link_to submission.title, submission_path(submission), class: "font-semibold text-brand-700 hover:underline" %>
+          <% if submission.area.present? %><p class="font-mono text-xs text-ink-faint"><%= submission.area.humanize %></p><% end %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: submission.kind_badge) do %><%= submission.kind_label %><% end %>
+        <% end %>
+        <% row.with_cell(numeric: true) { submission.supports_count } %>
+        <% row.with_cell do %>
+          <span class="font-mono text-xs text-ink-muted"><%= submission.created_at.to_date %></span>
+        <% end %>
+        <% row.with_cell do %>
+          <%= form_with model: submission, url: admin_submission_path(submission), method: :patch do |f| %>
+            <%= render PlatformCore::Ui::FormFieldComponent.new(
+                  form: f, attribute: :status, type: :select, label: "Roadmap status",
+                  collection: Feedback::Submission::STATUSES.map { |status| [Feedback::Submission::STATUS_LABELS.fetch(status), status] }
+                ) %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, type: :submit) do %>Update<% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "No feedback to triage") %>
+<% end %>

@@ -85,6 +85,18 @@
       <%= yield %>
     </main>
 
+    <% if respond_to?(:logged_in?) && logged_in? && PlatformCore::Modules.enabled?("feedback") && !request.path.start_with?("/feedback") %>
+      <div class="fixed bottom-6 right-6 z-40 shadow-card">
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :primary,
+              href: feedback.new_submission_path(page_url: request.fullpath),
+              aria_label: "Give feedback about this page"
+            ) do %>
+          Feedback
+        <% end %>
+      </div>
+    <% end %>
+
     <%= render PlatformCore::Ui::FooterComponent.new do |footer| %>
       <% footer.with_column(title: "Explore", links: PlatformCore::Modules.nav_modules.map { |m| [m.label, m.path] }) %>
       <% footer.with_column(title: "Account", links: [["Log in", "/login"], ["Sign up", "/signup"]]) %>

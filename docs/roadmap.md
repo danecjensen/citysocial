@@ -26,6 +26,10 @@
   db/events_feed/*.json. Home (/events) = the 10 highest-scoring events in the
   next 7 days (taste `score` supplied upstream, selection is pure SQL); /events/all
   = searchable/paginated archive. Emits events.events_ingested.
+- feedback: public product ideas and issue reports with optional app-area/page
+  context, one support per member, public roadmap statuses, and an admin triage
+  queue. Emits feedback.submission_created, feedback.submission_supported, and
+  feedback.submission_status_changed for the notification loop.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this

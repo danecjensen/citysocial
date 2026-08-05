@@ -1,0 +1,67 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Product feedback",
+      subtitle: "Share an idea, report a problem, and help shape what CitySocial builds next."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <% if admin? %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: admin_root_path) do %>Triage feedback<% end %>
+    <% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_submission_path) do %>Share feedback<% end %>
+  <% end %>
+<% end %>
+
+<div class="mb-6">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with url: submissions_path, method: :get do |f| %>
+      <div class="grid gap-3 md:grid-cols-5">
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: f, attribute: :q, label: "Search", hint: "Title, details, or area",
+              value: @query, placeholder: "Search feedback…"
+            ) %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: f, attribute: :kind, type: :select, label: "Type",
+              collection: Feedback::Submission::KINDS.map { |kind| [Feedback::Submission::KIND_LABELS.fetch(kind), kind] },
+              include_blank: "All types", selected: @kind
+            ) %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: f, attribute: :status, type: :select, label: "Status",
+              collection: Feedback::Submission::STATUSES.map { |status| [Feedback::Submission::STATUS_LABELS.fetch(status), status] },
+              include_blank: "All statuses", selected: @status
+            ) %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: f, attribute: :area, type: :select, label: "Area",
+              collection: PlatformCore::Modules.all.map { |mod| [mod.label, mod.key] },
+              include_blank: "All areas", selected: @area
+            ) %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: f, attribute: :sort, type: :select, label: "Sort",
+              collection: [["Most supported", "top"], ["Newest", "newest"]], selected: @sort
+            ) %>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, type: :submit) do %>Apply filters<% end %>
+        <% if @query || @kind || @status || @area || @sort == "newest" %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: submissions_path) do %>Clear<% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @submissions.any? %>
+  <div class="space-y-4">
+    <% @submissions.each do |submission| %>
+      <%= render "submission", submission: submission,
+                               supported: @supported_submission_ids.include?(submission.id) %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No feedback matches",
+        body: "Try different filters, or start the conversation with your own idea."
+      ) do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_submission_path) do %>Share feedback<% end %>
+    <% end %>
+  <% end %>
+<% end %>

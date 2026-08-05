@@ -1,0 +1,40 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Share product feedback",
+      subtitle: "Tell us what would make CitySocial more useful, or point out something that is not working."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @submission, url: submissions_path, method: :post do |f| %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :kind, type: :select, label: "What kind of feedback is this?",
+            collection: Feedback::Submission::KINDS.map { |kind| [Feedback::Submission::KIND_LABELS.fetch(kind), kind] },
+            selected: @submission.kind
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :area, type: :select, label: "Which part of CitySocial?",
+            collection: PlatformCore::Modules.all.map { |mod| [mod.label, mod.key] },
+            include_blank: "General product feedback",
+            selected: @submission.area,
+            hint: "Choose an area when your feedback is about a specific part of the app."
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :page_url, label: "Page path or URL", placeholder: "/marketplace/listings/…",
+            hint: "Optional. Add the exact page so the team can find the context quickly."
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :title, label: "Short summary", autofocus: true,
+            placeholder: "Let me save marketplace searches"
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :description, type: :text_area, label: "Details", rows: 7,
+            placeholder: "What were you trying to do? What would a better experience look like?"
+          ) %>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Publish feedback<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: submissions_path) do %>Cancel<% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

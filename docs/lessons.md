@@ -27,3 +27,5 @@ into CLAUDE.md.
   `Edit`/`Write` are allowlisted (neither the `allow` list nor the trigger's allowed-tools
   overrides it). Feature-loop/-research state lives at the repo-root `routines/` dir for
   this reason; read-only instruction files can stay in `.claude/routines/`.
+- Validate user-supplied context links before rendering them: allow internal paths and
+  explicit HTTP(S) URLs, and reject protocol-relative or executable schemes.
