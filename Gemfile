@@ -27,6 +27,10 @@ gem "packwerk", "~> 3.0"
 gem "bootsnap", require: false
 gem "dotenv-rails"
 
+# Active Storage on S3 in production (Heroku Bucketeer addon provisions the
+# bucket + credentials). Disk storage is ephemeral on Heroku's dynos.
+gem "aws-sdk-s3", require: false
+
 # --- engines (path-mounted local packages) ---
 # Every app-module lives in components/ and is wired in here by the
 # `app_module` generator. platform_core is the shared kernel.
