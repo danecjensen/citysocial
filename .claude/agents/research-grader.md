@@ -12,7 +12,7 @@ you. You are grading whether each brief deserves a slot in an autonomous impleme
 queue where every accepted brief consumes a full unattended run.
 
 Context to read before grading: `CLAUDE.md` (the module contract) and
-`.claude/routines/backlog.json` (`product_context`, `out_of_scope`).
+`routines/backlog.json` (`product_context`, `out_of_scope`).
 
 ## Rubric — score each brief 1–10
 

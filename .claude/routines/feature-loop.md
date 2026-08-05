@@ -14,10 +14,16 @@ All paths are relative to the repository root. Resolve them before Phase 0.
 | Short name | Path |
 |---|---|
 | this file | `.claude/routines/feature-loop.md` |
-| `backlog.json` | `.claude/routines/backlog.json` |
-| `progress.md` | `.claude/routines/progress.md` |
-| `research.md` | `.claude/routines/research.md` |
+| `backlog.json` | `routines/backlog.json` |
+| `progress.md` | `routines/progress.md` |
+| `research.md` | `routines/research.md` |
 | `DanesIdeas.md` | `DanesIdeas.md` (repo root — Dane's idea inbox) |
+
+**`backlog.json`, `progress.md`, and `research.md` live OUTSIDE `.claude/` on purpose.**
+The routine rewrites them every run, and any write inside `.claude/` forces an approval
+prompt (Claude guards its own config directory) that stalls an unattended run — even when
+`Edit`/`Write` are allowlisted. Keep them at the repo-root `routines/` path; never move
+them back under `.claude/`.
 
 If `progress.md` does not exist, create it with an empty `## Codebase Patterns` block.
 
