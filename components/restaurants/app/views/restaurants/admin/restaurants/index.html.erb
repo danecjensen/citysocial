@@ -11,7 +11,7 @@
     <% card.with_header do %>
       <span class="font-bold">Add a restaurant</span>
     <% end %>
-    <%= form_with model: @restaurant, url: "/restaurants/admin/restaurants", method: :post do |f| %>
+    <%= form_with model: @restaurant, url: "/restaurants/admin/restaurants", method: :post, html: { multipart: true } do |f| %>
       <% if @restaurant.errors.any? %>
         <div class="mb-4">
           <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: "Please fix the issues below.") %>
@@ -20,6 +20,12 @@
       <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name) %>
       <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine) %>
       <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :area) %>
+      <div class="mt-4">
+        <%= f.label :photos, "Photos", class: "mb-1 block text-sm font-semibold text-ink" %>
+        <%= f.file_field :photos, multiple: true, accept: "image/png,image/jpeg,image/webp",
+                         class: "block w-full text-sm text-ink-muted file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700" %>
+        <p class="mt-1 text-xs text-ink-faint">The first photo is used as the restaurant's hero image.</p>
+      </div>
       <div class="mt-5">
         <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>
           Add restaurant
@@ -30,9 +36,16 @@
 </div>
 
 <h2 class="mb-4 text-xl font-bold">All restaurants <span class="font-mono text-base font-normal text-ink-faint">(<%= @restaurants.size %>)</span></h2>
-<%= render PlatformCore::Ui::TableComponent.new(columns: ["Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Action", numeric: true }]) do |table| %>
+<%= render PlatformCore::Ui::TableComponent.new(columns: ["", "Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Action", numeric: true }]) do |table| %>
   <% @restaurants.each do |restaurant| %>
     <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <div class="h-10 w-10 overflow-hidden rounded-md bg-sunken">
+          <% if restaurant.hero_photo %>
+            <%= image_tag main_app.rails_blob_path(restaurant.hero_photo, only_path: true), class: "h-full w-full object-cover", alt: restaurant.name, loading: "lazy" %>
+          <% end %>
+        </div>
+      <% end %>
       <% row.with_cell do %>
         <span class="font-bold"><%= restaurant.name %></span>
       <% end %>
