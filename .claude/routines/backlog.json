@@ -46,21 +46,6 @@
       "origin": "auto",
       "attempts": 1,
       "created": "2026-08-04",
-      "pr": "https://github.com/danecjensen/citysocial/pull/1"
-    },
-    {
-      "id": "F-001",
-      "title": "Add a post composer to the Feed index",
-      "problem": "The feed (the app's root page) shows posts but gives a logged-in user no UI to write one; the create action and route exist but nothing renders a form.",
-      "evidence": "components/feed/app/views/feed/posts/index.html.erb has no form/new-post button; feed/posts_controller.rb:9 defines create and config/routes.rb exposes POST /feed/posts, but no view links to it — a dead-end engagement loop on root ('/' redirects to /feed).",
-      "acceptance": [
-        "Logged-in users see a composer (a PlatformCore::Ui Card with a body text_area + submit) at the top of the feed",
-        "Submitting a non-empty body creates a Feed::Post and shows it in the feed",
-        "Submitting a blank body is rejected gracefully with a flash, not a 500 (controller uses create! today)",
-        "Covered by a feed request spec (none exists yet)"
-      ],
-      "impact": 4,
-      "effort": 2,
       "pr": "https://github.com/danecjensen/citysocial/pull/2"
     },
     {

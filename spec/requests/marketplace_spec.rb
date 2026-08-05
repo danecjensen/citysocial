@@ -41,6 +41,20 @@ RSpec.describe "Marketplace", type: :request do
     expect { get "/marketplace/#{listing.slug}" }.to change { listing.reload.views_count }.by(1)
   end
 
+  it "re-renders the new-listing form with an inline error on the category select when it is blank" do
+    login_as(create(:user))
+
+    expect do
+      post "/marketplace", params: { listing: { title: "A perfectly nice thing", category: "" } }
+    end.not_to change(Marketplace::Listing, :count)
+
+    expect(response).to have_http_status(:unprocessable_content)
+    # The category dropdown now composes FormFieldComponent, so the validation
+    # error renders inline and the select itself picks up the danger border.
+    expect(response.body).to include("Category can&#39;t be blank")
+    expect(response.body).to match(/<select\b(?=[^>]*name="listing\[category\]")(?=[^>]*border-danger)[^>]*>/)
+  end
+
   it "lets only the owner mark a listing sold" do
     owner = create(:user)
     listing = create(:listing, author_id: owner.id)
