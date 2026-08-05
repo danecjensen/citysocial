@@ -1,19 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bin/*)",
+      "Bash(bin/rails *)",
       "Bash(bundle *)",
-      "Bash(git *)",
-      "Bash(gh pr *)",
-      "Bash(gh issue *)",
-      "Bash(rg *)",
-      "Bash(pg_ctlcluster *)",
+      "Bash(bin/verify)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
       "Edit",
       "Write"
     ],
     "deny": [
-      "Bash(git push --force *)",
-      "Bash(git push -f *)",
+      "Bash(git push *)",
       "Bash(rm -rf *)"
     ]
   }

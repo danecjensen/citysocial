@@ -1,9 +1,7 @@
 # Setup
 
-The routine instruction files live under `.claude/routines/`. The mutable state the
-routine rewrites each run — `backlog.json`, `progress.md`, `research.md` — lives in a
-top-level `routines/` directory instead: any write inside `.claude/` always prompts for
-approval, which would break an unattended run.
+Everything lives under `.claude/routines/` so nothing in this bundle collides with files
+already at your repo root.
 
 ## 1. Get the files into the repo
 

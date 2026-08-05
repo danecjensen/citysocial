@@ -22,8 +22,3 @@ into CLAUDE.md.
   inside `module Events` — plain `Events::Event` then resolves to
   `Events::Events::Event` and blows up. Fix: rename the wiring module (we use
   `Events::Wiring`) rather than fully-qualifying every reference with `::`.
-- Never keep files an unattended routine WRITES under `.claude/`: Claude guards its own
-  config directory, so every Edit/Write there forces an approval prompt even when
-  `Edit`/`Write` are allowlisted (neither the `allow` list nor the trigger's allowed-tools
-  overrides it). Feature-loop/-research state lives at the repo-root `routines/` dir for
-  this reason; read-only instruction files can stay in `.claude/routines/`.
