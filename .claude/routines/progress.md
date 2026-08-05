@@ -15,7 +15,11 @@ Examples of the right kind of line:
 - Feature specs need the dev server on :3000
 -->
 
-_(empty — the routine will populate this)_
+- Check suite is `bin/verify`; in this sandbox `bundle exec <exe>` is broken, so run tools via generated binstubs (`bin/rspec`/`bin/rubocop`/`bin/packwerk`) — but do NOT commit those binstubs.
+- Test setup: start Postgres (`pg_ctlcluster 16 main start`, trust auth for localhost) and run `bin/rails tailwindcss:build` — specs render the layout which needs the built `tailwind.css`, else every request spec fails with Propshaft::MissingAssetError.
+- `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
+- Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
+- Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
 
 ---
 
@@ -32,3 +36,12 @@ Notes: one or two lines on what actually happened
 Learnings:
 - <only if genuinely reusable>
 -->
+
+## 2026-08-04 — F-001
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/2
+Changed: components/platform_core/app/public/platform_core/ui/button_component.rb, components/communities/app/views/communities/posts/_vote.html.erb, app/views/design/show.html.erb, spec/components/platform_core/ui/button_component_spec.rb, spec/requests/communities_spec.rb
+Notes: Empty backlog + empty DanesIdeas inbox, so ran 1b (gate open) and proposed 5 grounded items from an Explore sweep. Picked the highest scorer (1.8): icon-only vote buttons had no accessible name. Added aria_label: to the shared ButtonComponent, applied it to the vote partial, documented it in /design. Full suite 89 examples green, packwerk + rubocop clean.
+Learnings:
+- Verified-away slop: the explorer flagged communities community/post forms as "missing error state," but both use FormFieldComponent for every validated attribute, so errors already render inline. Cut, not queued — do not re-propose. Same for login/comment forms (flash.now via layout).
+- Backlog now holds F-002..F-005 (leaderboard/admin empty states, feed compose dead-end, author N+1) as grounded ready items for future runs.
