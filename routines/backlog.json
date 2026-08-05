@@ -1,0 +1,139 @@
+{
+  "project": "citysocial",
+  "product_context": "CitySocial is a modular-monolith social platform for city residents (currently Austin), built as one Rails app whose features live as near-independent modules (mountable engines) under components/. platform_core owns identity (User), the Follow social graph, a public Graph API, and an event bus; feed is the reference module (posts + timeline); communities is subreddit-style (join, post, comment, up/down vote); marketplace is classified listings with photos; restaurants is head-to-head Elo ranking of local spots. Users are residents who follow each other and engage through these modules. 'Better' means tightening the existing engagement loops (do -> others see it -> they get notified/react), filling in missing empty/loading/error and accessibility states on views that already ship, and polishing the UX of already-shipped modules. It does NOT mean speculative net-new features nobody asked for. Every view must compose the PlatformCore::Ui components and Tailwind v4 design tokens (no hand-rolled markup, no hardcoded hex). Modules may depend only on platform_core and must cross boundaries only via events or a sibling's app/public API (Packwerk enforces this).",
+  "out_of_scope": [
+    "Anything requiring a schema migration",
+    "Anything touching auth, authorization, sessions, or payments",
+    "New third-party dependencies (gems or JS)",
+    "Standing up a whole new module (that is the human-run /new-app-module flow)",
+    "Cross-module references that violate the Packwerk boundary contract",
+    "Editing the @theme design tokens or the standalone Tailwind build config"
+  ],
+  "check_command": "bin/verify",
+  "next_id": 7,
+  "items": [
+    {
+      "id": "F-001",
+      "title": "Give icon-only vote buttons accessible labels",
+      "problem": "The upvote/downvote controls are icon-only glyphs with no accessible name.",
+      "evidence": "components/communities/app/views/communities/posts/_vote.html.erb:4,8 — up/down glyphs rendered with no aria-label",
+      "acceptance": [
+        "ButtonComponent accepts an optional aria_label:",
+        "The vote buttons expose aria-label Upvote/Downvote"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.9,
+      "score": 1.35,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-04",
+      "pr": "https://github.com/danecjensen/citysocial/pull/2"
+    },
+    {
+      "id": "F-002",
+      "title": "Add empty state to the restaurants leaderboard",
+      "problem": "The restaurants leaderboard rendered a bare, header-only table when there were no restaurants.",
+      "evidence": "components/restaurants/app/views/restaurants/leaderboard/index.html.erb:9 — TableComponent iterated @restaurants with no any? guard and no EmptyState",
+      "acceptance": [
+        "With no restaurants, /restaurants/leaderboard renders an EmptyState",
+        "When restaurants exist, the ranked table renders as before"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.9,
+      "score": 1.35,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-04",
+      "pr": "https://github.com/danecjensen/citysocial/pull/1"
+    },
+    {
+      "id": "F-003",
+      "title": "Add select support to FormFieldComponent",
+      "problem": "Dropdowns were hand-rolled label+select markup, bypassing the design system and showing no inline validation errors.",
+      "evidence": "form_field_component.rb:6 INPUT_TYPES excludes select; marketplace/listings/_form.html.erb:13-19 and communities/communities/new.html.erb:8-9 hand-roll f.select; Marketplace::Listing validates category presence (listing.rb:19) yet the select showed no inline error",
+      "acceptance": [
+        "FormFieldComponent accepts type: :select with a collection and renders a styled select",
+        "A select with a validation error shows the inline error + border-danger",
+        "type: :select without a collection raises ArgumentError",
+        "Marketplace listing form and new-community form use FormFieldComponent for their selects",
+        "/design documents the select option"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.275,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/3"
+    },
+    {
+      "id": "F-004",
+      "title": "Vote control reflects the current user's own vote",
+      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
+      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
+      "acceptance": [
+        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
+        "Anonymous users and un-voted items render the neutral state as today",
+        "Applies on the community post list, the post show page, and comments",
+        "Covered by a request/component spec asserting the active state renders for the voter"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.6,
+      "score": 1.2,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "notes": "Confidence held down while F-001 (PR #2) is open on the same _vote.html.erb partial — building this now would conflict. Confidence rises to ~0.85 (score ~1.7) once F-001 merges; prefer to schedule it after."
+    },
+    {
+      "id": "F-005",
+      "title": "External ticket/detail links open in a new tab",
+      "problem": "The events 'Tickets & details' CTA (and other external links) navigate away from CitySocial in the same tab, losing the user's place — an engagement leak. Community post URLs already open in a new tab with rel=noopener; events don't.",
+      "evidence": "components/events/app/views/events/events/show.html.erb:32 — external @event.url button has no target/rel, vs communities/app/views/communities/posts/show.html.erb:17 which uses target=_blank rel=noopener",
+      "acceptance": [
+        "External event ticket links open in a new tab with rel=noopener noreferrer",
+        "Internal links are unchanged",
+        "Covered by a request spec asserting target/rel on the ticket link"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.6,
+      "score": 0.9,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "notes": "Needs ButtonComponent to accept target:/rel:, which overlaps F-001's (PR #2) in-flight edit to ButtonComponent — sequence after F-001 merges."
+    },
+    {
+      "id": "F-006",
+      "title": "Semantic <time> timestamps with exact-date tooltips",
+      "problem": "Relative timestamps (time_ago_in_words) render as plain text with no machine-readable datetime and no hover-to-see-exact-date.",
+      "evidence": "feed/posts/index.html.erb:10, communities/communities/show.html.erb:38, communities/posts/show.html.erb:14,52, marketplace/listings/show.html.erb:45 — 'X ago' rendered as bare text, no <time datetime title>",
+      "acceptance": [
+        "Relative timestamps wrap a <time datetime=...> element with a title showing the exact date/time",
+        "Rendered text is unchanged",
+        "Covered by a spec on at least one surface"
+      ],
+      "impact": 2,
+      "effort": 3,
+      "confidence": 0.7,
+      "score": 0.47,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null
+    }
+  ]
+}
