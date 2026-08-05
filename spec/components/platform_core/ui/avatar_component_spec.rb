@@ -16,4 +16,13 @@ RSpec.describe PlatformCore::Ui::AvatarComponent do
     expect(page).to have_css("[aria-hidden=true]")
     expect(page).not_to have_css("[role=img]")
   end
+
+  it "falls back safely when a rejected upload has an unpersisted blob" do
+    user = build(:user, handle: "dane")
+    user.avatar.attach(io: StringIO.new("not an image"), filename: "avatar.gif", content_type: "image/gif")
+
+    render_inline(described_class.new(user: user))
+
+    expect(page).to have_css("span", text: "D")
+  end
 end

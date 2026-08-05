@@ -20,7 +20,7 @@ module PlatformCore
       end
 
       erb_template <<~ERB
-        <% if @user.avatar.attached? %>
+        <% if renderable_avatar? %>
           <%= image_tag @user.avatar, class: "\#{classes} object-cover", alt: @alt %>
         <% else %>
           <%= tag.span @user.avatar_initial, class: classes, role: (@alt.present? ? "img" : nil),
@@ -30,6 +30,10 @@ module PlatformCore
       ERB
 
       private
+
+      def renderable_avatar?
+        @user.avatar.attached? && @user.avatar.blob.persisted?
+      end
 
       def classes
         [BASE, @size].join(" ")
