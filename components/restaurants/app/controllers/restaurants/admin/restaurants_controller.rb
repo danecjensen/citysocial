@@ -5,7 +5,7 @@ module Restaurants
       before_action :require_admin
 
       def index
-        @restaurants = Restaurants::Restaurant.ranked
+        @restaurants = Restaurants::Restaurant.ranked.with_attached_photos
         @restaurant = Restaurants::Restaurant.new
       end
 
@@ -28,7 +28,7 @@ module Restaurants
       private
 
       def restaurant_params
-        params.require(:restaurant).permit(:name, :cuisine, :area)
+        params.require(:restaurant).permit(:name, :cuisine, :area, photos: [])
       end
     end
   end

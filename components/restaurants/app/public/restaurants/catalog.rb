@@ -119,11 +119,41 @@ module Restaurants
 
     def seed!
       SEED.each do |attrs|
-        Restaurants::Restaurant.find_or_create_by!(name: attrs[:name]) do |r|
+        restaurant = Restaurants::Restaurant.find_or_create_by!(name: attrs[:name]) do |r|
           r.cuisine = attrs[:cuisine]
           r.area = attrs[:area]
         end
+        attach_seed_photo!(restaurant)
       end
+    end
+
+    # Directory of curated hero images shipped with the module, plus a
+    # name => filename map (`photos.json`) produced by the image harvester.
+    PHOTOS_DIR = Restaurants::Engine.root.join("db", "seed_photos")
+
+    def photo_manifest
+      manifest = PHOTOS_DIR.join("photos.json")
+      return {} unless manifest.exist?
+
+      @photo_manifest ||= JSON.parse(manifest.read)
+    end
+
+    # Idempotently attach the curated hero photo for a restaurant. Skips work
+    # when a photo is already attached or no curated image exists for the name.
+    def attach_seed_photo!(restaurant)
+      return if restaurant.photos.attached?
+
+      filename = photo_manifest[restaurant.name]
+      return if filename.blank?
+
+      path = PHOTOS_DIR.join(filename)
+      return unless path.exist?
+
+      restaurant.photos.attach(
+        io: File.open(path),
+        filename: filename,
+        content_type: Marcel::MimeType.for(path)
+      )
     end
   end
 end

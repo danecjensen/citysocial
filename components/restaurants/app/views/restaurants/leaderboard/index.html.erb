@@ -14,7 +14,14 @@
           <span class="font-mono text-ink-faint"><%= i + 1 %></span>
         <% end %>
         <% row.with_cell do %>
-          <span class="font-bold"><%= restaurant.name %></span>
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 flex-none overflow-hidden rounded-md bg-sunken">
+              <% if restaurant.hero_photo %>
+                <%= image_tag main_app.rails_blob_path(restaurant.hero_photo, only_path: true), class: "h-full w-full object-cover", alt: restaurant.name, loading: "lazy" %>
+              <% end %>
+            </div>
+            <span class="font-bold"><%= restaurant.name %></span>
+          </div>
         <% end %>
         <% row.with_cell do %>
           <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= restaurant.cuisine %><% end %>
