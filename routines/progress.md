@@ -92,3 +92,11 @@ Learnings:
 - Generic "reddit"/"nextdoor" search terms reliably produced unfetchable complaint-board noise this run; direct competitor product docs/help pages (Discourse meta, Craigslist help, Kijiji community docs) and App Store reviews cited cleanly and held up on re-fetch. Weighting keyword sets toward the latter first is worth it.
 - A good vein for no-migration findings: grep the target module's model for columns that already exist but are only ever displayed, never filtered/sorted/acted on (communities_comments.score, restaurants_restaurants.cuisine, marketplace_listings.expires_at/created_at all fit this shape).
 - The grader's engagement-loop deduction (−2) lands hardest on read-only/solo-utility features (filters, calendar export) versus features that make an existing vote/action visibly affect ordering (comment top-sort, listing renew) — bias future question drafts toward the latter shape when a choice exists.
+
+## 2026-08-05 11:04 — research
+Outcome: skipped (queue full: 4 fresh briefs on current remote master)
+Briefs: none
+Cut: 1 graded profile candidate discarded at the queue circuit breaker
+Notes: Shell DNS failure prevented refreshing the stale local origin/master before
+research. The connected GitHub app revealed R-001 through R-004 already fresh on
+current remote master at the publish gate, so no new brief was recorded.
