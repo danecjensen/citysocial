@@ -29,3 +29,5 @@ into CLAUDE.md.
   this reason; read-only instruction files can stay in `.claude/routines/`.
 - Validate user-supplied context links before rendering them: allow internal paths and
   explicit HTTP(S) URLs, and reject protocol-relative or executable schemes.
+- After running `app_module`, sort its injected Gemfile entry and freeze the generated
+  VERSION constant; the current generator templates need both cleanups for RuboCop.

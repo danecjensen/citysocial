@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_05_114500) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_05_170519) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -179,6 +179,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_114500) do
     t.index ["category"], name: "index_marketplace_listings_on_category"
     t.index ["slug"], name: "index_marketplace_listings_on_slug", unique: true
     t.index ["status"], name: "index_marketplace_listings_on_status"
+  end
+
+  create_table "notifications_notifications", force: :cascade do |t|
+    t.bigint "recipient_id", null: false
+    t.bigint "actor_id", null: false
+    t.string "event_name", null: false
+    t.bigint "source_id", null: false
+    t.string "message", null: false
+    t.string "target_path", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipient_id", "event_name", "source_id"], name: "index_notifications_delivery_uniqueness", unique: true
+    t.index ["recipient_id", "read_at", "created_at"], name: "index_notifications_inbox"
   end
 
   create_table "platform_core_follows", force: :cascade do |t|

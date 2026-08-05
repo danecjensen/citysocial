@@ -10,8 +10,56 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 8,
+  "next_id": 13,
   "items": [
+    {
+      "id": "F-009",
+      "title": "Add Top sorting to community comments",
+      "problem": "Community conversations can only show comments chronologically even though comment vote scores are already stored, so the most useful responses stay buried.",
+      "evidence": "research.md#R-001; components/communities/app/models/communities/comment.rb defines only chronological while its Votable concern maintains score.",
+      "acceptance": [
+        "Communities::Comment gets a top scope ordering by score descending and created_at descending",
+        "The post page offers New and Top query-param sorting while keeping New as the default",
+        "Changing sort order does not alter vote casting",
+        "Model and request specs cover both orders"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "communities",
+      "milestone": "comment-ranking"
+    },
+    {
+      "id": "F-012",
+      "title": "Let sellers renew stale marketplace listings",
+      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
+      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
+      "acceptance": [
+        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
+        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
+        "The existing owner actions show Renew only when eligible",
+        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "marketplace",
+      "milestone": "listing-renewal"
+    },
     {
       "id": "F-001",
       "title": "Give icon-only vote buttons accessible labels",
@@ -95,6 +143,54 @@
       "notes": "Confidence held down while F-001 (PR #2) is open on the same _vote.html.erb partial — building this now would conflict. Confidence rises to ~0.85 (score ~1.7) once F-001 merges; prefer to schedule it after."
     },
     {
+      "id": "F-010",
+      "title": "Filter the restaurant leaderboard by cuisine",
+      "problem": "Residents cannot narrow restaurant rankings to comparable cuisines even though every restaurant already stores cuisine.",
+      "evidence": "research.md#R-002; components/restaurants/app/controllers/restaurants/leaderboard_controller.rb accepts no filter while restaurants_restaurants.cuisine is already populated and displayed.",
+      "acceptance": [
+        "The leaderboard accepts a cuisine query param through a by_cuisine scope",
+        "A shared FormFieldComponent select lists cuisines present in the catalog",
+        "No selection preserves the complete leaderboard",
+        "A request spec proves the selected cuisine narrows results"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.8,
+      "score": 1.2,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "restaurants",
+      "milestone": "cuisine-ranking"
+    },
+    {
+      "id": "F-011",
+      "title": "Add event calendar actions",
+      "problem": "Residents who discover an event cannot carry it into their calendar, making it easy to forget after leaving CitySocial.",
+      "evidence": "research.md#R-003; components/events/app/views/events/events/show.html.erb has ticket details but no calendar action despite complete start, optional end, venue, and description fields.",
+      "acceptance": [
+        "Event detail adds a Google Calendar link built from existing event fields",
+        "A read-only controller action downloads a valid ICS file with a defined fallback end time",
+        "Existing ticket behavior remains unchanged",
+        "Request specs cover both calendar formats and the fallback"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.8,
+      "score": 1.2,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "events",
+      "milestone": "calendar-export"
+    },
+    {
       "id": "F-007",
       "title": "Create public resident profiles with avatars",
       "problem": "Residents have no public identity surface beyond a handle, so their activity across CitySocial lacks context, trust, and a consistent way to discover who is participating.",
@@ -121,7 +217,32 @@
       "milestone": "public-profile-mvp",
       "notes": "Persona: city resident participating across multiple modules. Job: understand who another resident is and present a consistent public identity. Loop: resident updates profile -> activity links bring others to it -> public identity context supports follows and reactions; profile updates publish for future notification/search subscribers."
     },
-
+    {
+      "id": "F-008",
+      "title": "Create a follower activity notifications inbox",
+      "problem": "Residents have no durable way to learn when people they follow publish activity across CitySocial, so the social loop ends at creation instead of bringing others back to react.",
+      "evidence": "docs/roadmap.md Next explicitly promises a notifications module subscribing to feed.post_created and communities.post_created and fanning out to followers; both events and PlatformCore::Graph.follower_ids already exist.",
+      "acceptance": [
+        "A generated Notifications engine owns an additive, reversible notification schema and depends only on platform_core",
+        "Feed and community post events asynchronously create one idempotent notification for each follower, never the actor or non-followers",
+        "Signed-in residents have an inbox with unread count, empty state, recent activity, per-item read-through, and mark-all-read actions built from shared UI components",
+        "Residents can read only their own notifications, and stored destinations are restricted to internal paths",
+        "Model, delivery, event wiring, public API, and request specs cover the complete flow"
+      ],
+      "impact": 5,
+      "effort": 4,
+      "confidence": 0.9,
+      "score": 1.125,
+      "status": "in_progress",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "app_wide_capability",
+      "product_family": "notifications",
+      "milestone": "follower-activity-inbox",
+      "notes": "Persona: a city resident following neighbors across modules. Job: notice relevant activity and return to it without monitoring every product. Loop: followed resident posts -> Notifications consumes the event and fans out -> follower opens the inbox and returns to react. Expansion path: marketplace activity, feedback updates, mentions, delivery preferences, and grouping."
+    },
     {
       "id": "F-005",
       "title": "External ticket/detail links open in a new tab",
