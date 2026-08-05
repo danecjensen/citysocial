@@ -49,6 +49,18 @@ RSpec.describe "Communities", type: :request do
     end.to change(Communities::Comment, :count).by(1)
   end
 
+  it "labels the vote buttons on a post for assistive tech" do
+    community = create(:community)
+    post_record = create(:community_post, community: community)
+    login_as(create(:user))
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('aria-label="Upvote"')
+    expect(response.body).to include('aria-label="Downvote"')
+  end
+
   it "blocks the module when it is disabled, then restores it" do
     create(:community, name: "austinfood")
     PlatformCore::Modules.disable!("communities")

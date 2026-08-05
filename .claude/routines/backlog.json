@@ -25,6 +25,21 @@
       ],
       "impact": 2,
       "effort": 1,
+  "next_id": 6,
+  "items": [
+    {
+      "id": "F-001",
+      "title": "Give icon-only vote buttons accessible labels",
+      "problem": "The upvote/downvote controls are icon-only glyphs with no accessible name, so screen readers announce only the raw arrow character.",
+      "evidence": "components/communities/app/views/communities/posts/_vote.html.erb:4,8 — ButtonComponent renders the up (▲) and down (▼) glyphs, and PlatformCore::Ui::ButtonComponent has no way to pass an aria-label.",
+      "acceptance": [
+        "PlatformCore::Ui::ButtonComponent accepts an optional aria_label: and renders it as aria-label on all three branches (plain <button>, link, button_to button); when omitted, no aria-label attribute is emitted.",
+        "The upvote and downvote buttons in the vote partial expose aria-label=\"Upvote\" and aria-label=\"Downvote\" to assistive tech.",
+        "The /design catalog documents the new aria_label: option.",
+        "Component specs cover aria-label rendering on each branch and its omission when not given."
+      ],
+      "impact": 4,
+      "effort": 2,
       "confidence": 0.9,
       "score": 1.8,
       "status": "done",
@@ -46,6 +61,20 @@
       ],
       "impact": 4,
       "effort": 2,
+      "pr": "https://github.com/danecjensen/citysocial/pull/2"
+    },
+    {
+      "id": "F-002",
+      "title": "Empty state for the restaurants leaderboard",
+      "problem": "When no restaurants are ranked yet, the leaderboard renders a bare header and an empty table instead of an empty state.",
+      "evidence": "components/restaurants/app/views/restaurants/leaderboard/index.html.erb:10 — @restaurants.each fills a TableComponent with no zero-case branch (leaderboard_controller.rb:6).",
+      "acceptance": [
+        "An empty leaderboard renders PlatformCore::Ui::EmptyStateComponent instead of an empty table.",
+        "A populated leaderboard is unchanged.",
+        "A request spec covers the empty case."
+      ],
+      "impact": 2,
+      "effort": 1,
       "confidence": 0.85,
       "score": 1.7,
       "status": "ready",
@@ -69,6 +98,18 @@
       "effort": 2,
       "confidence": 0.7,
       "score": 1.05,
+      "title": "Empty state for the restaurants admin index",
+      "problem": "The admin 'All restaurants' table has no zero-case; a fresh install with no restaurants shows an empty table under the count (0).",
+      "evidence": "components/restaurants/app/views/restaurants/admin/restaurants/index.html.erb:34 — @restaurants.each table with no empty branch.",
+      "acceptance": [
+        "An empty admin restaurants list renders an EmptyStateComponent.",
+        "A populated list is unchanged.",
+        "A request or component spec covers the empty case."
+      ],
+      "impact": 2,
+      "effort": 1,
+      "confidence": 0.8,
+      "score": 1.6,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
@@ -90,6 +131,38 @@
       "effort": 2,
       "confidence": 0.65,
       "score": 0.975,
+      "title": "Make the feed compose action reachable from the UI",
+      "problem": "feed posts#create is implemented and routed but nothing in the UI links to or renders a compose form, so a user cannot create a feed post.",
+      "evidence": "components/feed/config/routes.rb:2 + components/feed/app/controllers/feed/posts_controller.rb:9 implement create; no view renders a compose form or 'new post' link posting to /feed.",
+      "acceptance": [
+        "A logged-in user can reach a compose form and create a feed post from the feed UI.",
+        "The new post appears in the timeline and the feed.post_created event still fires.",
+        "A request spec covers create-from-UI."
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 0.6,
+      "score": 0.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-04",
+      "pr": null
+    },
+    {
+      "id": "F-005",
+      "title": "Remove N+1 author lookups on post/comment lists",
+      "problem": "Rendering post and comment lists issues one PlatformCore::Graph.user query per row because author is resolved individually, with no batch preload.",
+      "evidence": "components/feed/app/views/feed/posts/index.html.erb:5-8, components/communities/app/views/communities/communities/show.html.erb:23-37, components/communities/app/views/communities/posts/show.html.erb:44-51 — author via PlatformCore::Graph.user per row; PlatformCore::Graph has no batch users(ids) API.",
+      "acceptance": [
+        "PlatformCore::Graph exposes a batch lookup (e.g. users(ids)) in its app/public API.",
+        "Feed and communities list views resolve authors via a single preloaded query instead of one-per-row.",
+        "A spec asserts the reduced query count (or the batch API) on a multi-row list."
+      ],
+      "impact": 3,
+      "effort": 3,
+      "confidence": 0.65,
+      "score": 0.65,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
