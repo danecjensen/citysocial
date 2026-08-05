@@ -40,8 +40,10 @@
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm) do %>Small<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg) do %>Large<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "/design") do %>Link button<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, aria_label: "Upvote") do %><span aria-hidden="true">▲</span><% end %>
     </div>
-    <p class="mt-2 font-mono text-xs text-ink-faint">PlatformCore::Ui::ButtonComponent.new(variant: :primary/:secondary/:danger/:ghost, size: :sm/:md/:lg, href:, method:, confirm:)</p>
+    <p class="mt-2 font-mono text-xs text-ink-faint">PlatformCore::Ui::ButtonComponent.new(variant: :primary/:secondary/:danger/:ghost, size: :sm/:md/:lg, href:, method:, confirm:, aria_label:)</p>
+    <p class="mt-1 font-mono text-xs text-ink-faint">Pass aria_label: for icon-only buttons so assistive tech announces a meaningful name.</p>
   </section>
 
   <section>

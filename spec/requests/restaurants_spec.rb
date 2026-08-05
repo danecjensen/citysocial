@@ -45,6 +45,15 @@ RSpec.describe "Restaurants", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body.index("High")).to be < response.body.index("Low")
     end
+
+    it "renders an empty state instead of a bare table when there are no restaurants" do
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("No restaurants on the board yet")
+    end
   end
 
   describe "admin restaurant management" do
