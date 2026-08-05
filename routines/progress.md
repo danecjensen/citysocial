@@ -103,7 +103,7 @@ current remote master at the publish gate, so no new brief was recorded.
 
 ## 2026-08-05 — master-red fix (test env queue adapter)
 Outcome: shipped (Phase 0 defect fix; skipped Phases 1-2 per routine)
-PR: https://github.com/danecjensen/citysocial/pull/10
+PR: https://github.com/danecjensen/citysocial/pull/11
 Changed: config/environments/test.rb, spec/config/active_job_adapter_spec.rb
 Notes: Default branch bin/verify was genuinely RED — 6 restaurants specs failed with
 RedisClient::CannotConnectError. Root cause: PR #6 added Active Storage photos, whose
