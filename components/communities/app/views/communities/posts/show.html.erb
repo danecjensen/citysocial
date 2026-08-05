@@ -2,6 +2,7 @@
   <%= link_to "← c/#{@community.name}", community_path(@community), class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
 </div>
 
+<% post_author = @post.author %>
 <%= render PlatformCore::Ui::CardComponent.new do %>
   <div class="flex gap-3">
     <%= render "communities/posts/vote", score: @post.score,
@@ -10,7 +11,11 @@
     <div class="min-w-0 flex-1">
       <h1 class="font-display text-2xl font-black text-ink"><%= @post.title %></h1>
       <div class="mt-1 flex items-center gap-2 font-mono text-xs text-ink-faint">
-        <span class="text-brand-700">@<%= @post.author&.handle %></span>
+        <% if post_author %>
+          <%= link_to "@#{post_author.handle}", "/people/#{post_author.handle}", class: "text-brand-700 hover:underline" %>
+        <% else %>
+          <span>former resident</span>
+        <% end %>
         <span><%= time_ago_in_words(@post.created_at) %> ago</span>
       </div>
       <% if @post.url.present? %>
@@ -42,13 +47,18 @@
   <% if @comments.any? %>
     <div class="space-y-3">
       <% @comments.each do |comment| %>
+        <% comment_author = comment.author %>
         <div id="comment-<%= comment.id %>" class="flex gap-3 rounded-lg border border-line bg-surface p-4">
           <%= render "communities/posts/vote", score: comment.score,
                      up_url: upvote_community_post_comment_path(@community, @post, comment),
                      down_url: downvote_community_post_comment_path(@community, @post, comment) %>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 font-mono text-xs text-ink-faint">
-              <span class="text-brand-700">@<%= comment.author&.handle %></span>
+              <% if comment_author %>
+                <%= link_to "@#{comment_author.handle}", "/people/#{comment_author.handle}", class: "text-brand-700 hover:underline" %>
+              <% else %>
+                <span>former resident</span>
+              <% end %>
               <span><%= time_ago_in_words(comment.created_at) %> ago</span>
             </div>
             <p class="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink"><%= comment.body %></p>

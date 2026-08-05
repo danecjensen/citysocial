@@ -31,6 +31,18 @@
   </section>
 
   <section>
+    <h2 class="mb-4 text-xl font-bold">Resident avatars</h2>
+    <% demo_user = PlatformCore::User.new(handle: "cityneighbor", display_name: "City Neighbor") %>
+    <div class="flex items-center gap-4">
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: demo_user, size: :sm) %>
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: demo_user, size: :md) %>
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: demo_user, size: :lg) %>
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: demo_user, size: :xl) %>
+    </div>
+    <p class="mt-2 font-mono text-xs text-ink-faint">AvatarComponent sizes: :sm, :md, :lg, :xl. An initial is shown when no image is attached.</p>
+  </section>
+
+  <section>
     <h2 class="mb-4 text-xl font-bold">Buttons</h2>
     <div class="flex flex-wrap items-center gap-3">
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>Primary<% end %>
@@ -104,6 +116,7 @@
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :email, type: :email_field, label: "Email", hint: "We never share this.") %>
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :password, type: :password_field, label: "Password") %>
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :category, type: :select, label: "Category", collection: [["Housing", "housing"], ["For sale", "for_sale"]], include_blank: "Choose one") %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :avatar, type: :file_field, label: "Profile photo", accept: "image/png,image/jpeg,image/webp") %>
       <% end %>
     </div>
   </section>

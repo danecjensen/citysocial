@@ -10,7 +10,7 @@ module PlatformCore
     #         type: :select, label: "Category", collection: [["Furniture", "furniture"]],
     #         include_blank: "Choose one") %>
     class FormFieldComponent < ViewComponent::Base
-      INPUT_TYPES = %i[text_field email_field password_field number_field text_area].freeze
+      INPUT_TYPES = %i[text_field email_field password_field number_field text_area file_field].freeze
 
       INPUT_CLASSES = "w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink " \
                       "placeholder:text-ink-faint focus:border-brand-500 focus:outline-none " \

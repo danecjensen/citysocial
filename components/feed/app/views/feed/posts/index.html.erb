@@ -3,9 +3,13 @@
 <% if @posts.any? %>
   <div class="mx-auto max-w-2xl space-y-4">
     <% @posts.each do |post| %>
+      <% author = post.author %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
-        <div class="mb-2 flex items-baseline gap-2">
-          <span class="font-mono text-sm font-semibold text-brand-700">@<%= post.author&.handle %></span>
+        <div class="mb-2 flex items-center gap-2">
+          <% if author %>
+            <%= render PlatformCore::Ui::AvatarComponent.new(user: author, size: :sm, alt: "") %>
+            <%= link_to "@#{author.handle}", "/people/#{author.handle}", class: "font-mono text-sm font-semibold text-brand-700 hover:underline" %>
+          <% end %>
           <% if post.created_at %>
             <span class="font-mono text-xs text-ink-faint"><%= time_ago_in_words(post.created_at) %> ago</span>
           <% end %>

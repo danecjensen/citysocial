@@ -21,6 +21,7 @@
 <% if @posts.any? %>
   <div class="space-y-3">
     <% @posts.each do |post| %>
+      <% author = post.author %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
         <div class="flex gap-3">
           <%= render "communities/posts/vote", score: post.score,
@@ -34,7 +35,11 @@
               <%= link_to post.title, community_post_path(@community, post), class: "font-display text-lg font-bold text-ink hover:text-brand-700" %>
             </div>
             <div class="mt-1 flex items-center gap-2 font-mono text-xs text-ink-faint">
-              <span class="text-brand-700">@<%= post.author&.handle %></span>
+              <% if author %>
+                <%= link_to "@#{author.handle}", "/people/#{author.handle}", class: "text-brand-700 hover:underline" %>
+              <% else %>
+                <span>former resident</span>
+              <% end %>
               <span><%= time_ago_in_words(post.created_at) %> ago</span>
               <span><%= pluralize(post.comments_count, "comment") %></span>
             </div>

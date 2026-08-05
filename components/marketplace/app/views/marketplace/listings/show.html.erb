@@ -40,9 +40,14 @@
       <% end %>
     </div>
 
+    <% author = @listing.author %>
     <dl class="mt-4 space-y-1 font-mono text-xs text-ink-muted">
       <% if @listing.location.present? %><div>Location · <%= @listing.location %></div><% end %>
-      <div>Posted by @<%= @listing.author&.handle %> · <%= time_ago_in_words(@listing.created_at) %> ago</div>
+      <div>
+        Posted by
+        <% if author %><%= link_to "@#{author.handle}", "/people/#{author.handle}", class: "text-brand-700 hover:underline" %><% else %>a former resident<% end %>
+        · <%= time_ago_in_words(@listing.created_at) %> ago
+      </div>
       <div><%= pluralize(@listing.views_count, "view") %></div>
     </dl>
 

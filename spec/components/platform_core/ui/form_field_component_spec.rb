@@ -22,8 +22,15 @@ RSpec.describe PlatformCore::Ui::FormFieldComponent do
     expect(page).to have_css("input.border-danger")
   end
 
+  it "renders a styled file field with accepted content types" do
+    render_inline(described_class.new(form: form, attribute: :avatar, type: :file_field,
+                                      accept: "image/png,image/jpeg"))
+
+    expect(page).to have_css("input[type=file][name='user[avatar]'][accept='image/png,image/jpeg']")
+  end
+
   it "rejects unsupported input types" do
-    expect { described_class.new(form: form, attribute: :email, type: :file_field) }
+    expect { described_class.new(form: form, attribute: :email, type: :date_field) }
       .to raise_error(ArgumentError)
   end
 
