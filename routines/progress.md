@@ -138,3 +138,12 @@ Learnings:
 - ButtonComponent `pressed:` toggle state: pass true/false to emit aria-pressed; leave nil for non-toggle buttons so the attribute is omitted. Any button whose meaning toggles (vote, feedback Support) should set it.
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
+
+## 2026-08-06 05:13 — research
+Outcome: skipped (queue full: 4 fresh briefs on current remote master)
+Briefs: none
+Cut: none (scouting, verification, and grading did not start)
+Notes: Product questions researched: none. Capability questions researched: none.
+The Phase 0 queue circuit breaker remained active for R-001 through R-004. Open PR
+#12 records their intended consumption, and PR #14 implements R-004, but neither state
+has landed on the default branch; current `master` still contains all four as fresh.
