@@ -145,4 +145,4 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
   - Covered by a request/model spec asserting renew updates timestamps and is blocked
     inside the cooldown window
 - Grader score: 10/10
-- Status: fresh
+- Status: consumed (F-012)

@@ -33,7 +33,7 @@ Examples of the right kind of line:
 - Modules cross boundaries only via `PlatformCore::EventBus` or a sibling's `app/public`
   API; a module references users by id through `PlatformCore::Graph`, never the User model.
 - Check suite is `bin/verify`; in this sandbox `bundle exec <exe>` is broken, so run tools via generated binstubs (`bin/rspec`/`bin/rubocop`/`bin/packwerk`) — but do NOT commit those binstubs.
-- Test setup: start Postgres (`pg_ctlcluster 16 main start`, trust auth for localhost) and run `bin/rails tailwindcss:build` — specs render the layout which needs the built `tailwind.css`, else every request spec fails with Propshaft::MissingAssetError.
+- A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
 - `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
 - Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
@@ -120,6 +120,28 @@ was a Phase 0 fix, not a scheduled feature.
 Learnings:
 - Promoted to Codebase Patterns: tests must not depend on Redis; test env uses the
   ActiveJob `:test` adapter.
+## 2026-08-06 — F-012
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/14
+Changed: components/marketplace/app/models/marketplace/listing.rb, components/marketplace/app/controllers/marketplace/listings_controller.rb, components/marketplace/config/routes.rb, components/marketplace/app/views/marketplace/listings/show.html.erb, spec/models/marketplace/listing_spec.rb, spec/requests/marketplace_spec.rb, routines/backlog.json, routines/research.md, routines/progress.md
+Notes: Master was fully green (rspec 131/0, packwerk + rubocop clean). No unprocessed
+DanesIdeas (Inbox empty). Consumed research brief R-004 (grader 10/10) as F-012:
+owner-only marketplace listing renewal. renew! resets created_at (doubles as the 48h
+cooldown clock — no migration) and pushes expires_at 30 days out; Renew button shows only
+when renewable?. Full suite 136 examples, 0 failures. Chose R-004 because it is the
+top-graded fresh brief in a module with ZERO file overlap with the two open draft PRs
+(#12 notifications, #13 vote-state), unlike the existing ready items F-005/F-006 which
+both collide with #13's ButtonComponent / communities-view edits.
+Learnings:
+- Two automation tracks are diverging on master: a codex track opened PR #12 which BUILT
+  the notifications module (F-008) and QUEUED F-009-F-012 (from R-001..R-004, status ready)
+  but implemented none of the four and never touched research.md. To avoid ID collisions,
+  reused codex's assigned id F-012 for R-004 and bumped next_id to 13. Expect a
+  human-resolved backlog.json merge conflict if #12 lands.
+- Reconciled F-004: an earlier session already opened draft PR #13 for it, but master's
+  backlog still showed it ready. Marked it done so it isn't re-picked. Check open PRs
+  against ready-item state every run — the fresh clone lags in-flight PR branches.
+
 ## 2026-08-05 12:11 — F-007
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/10
