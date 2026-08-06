@@ -10,6 +10,12 @@ module Marketplace
 
     CONDITIONS = %w[new like_new good fair poor].freeze
 
+    # A listing may be resurfaced (bumped back to the top of `recent` and given a
+    # fresh 30-day expiry) only after it has sat for this long since it was last
+    # created or renewed — `created_at` doubles as the cooldown clock, so no new
+    # column is needed.
+    RENEW_COOLDOWN = 48.hours
+
     enum :status, { active: 0, sold: 1, expired: 2 }
 
     has_many_attached :photos
@@ -72,6 +78,22 @@ module Marketplace
     def mark_sold!
       update!(status: :sold)
       PlatformCore::EventBus.publish("marketplace.listing_sold", listing_id: id, author_id: author_id)
+    end
+
+    # True when the owner may renew: the listing is not sold and the cooldown
+    # since its last create/renew has elapsed.
+    def renewable?
+      !sold? && created_at.present? && created_at <= RENEW_COOLDOWN.ago
+    end
+
+    # Resurface a stale listing: reset `created_at` so it returns to the top of
+    # `recent` order, and push `expires_at` out 30 days. Rewriting `created_at`
+    # is intentional — the "Posted … ago" line moves too, matching how bump/renew
+    # works on comparable classifieds. Returns false (a no-op) when not renewable.
+    def renew!
+      return false unless renewable?
+
+      update!(created_at: Time.current, expires_at: 30.days.from_now)
     end
 
     private

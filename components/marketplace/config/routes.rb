@@ -4,6 +4,7 @@ Marketplace::Engine.routes.draw do
   resources :listings, path: "", param: :slug do
     member do
       post :mark_sold
+      post :renew
     end
     collection do
       get :mine
