@@ -20,7 +20,7 @@ module Messaging
 
       ActiveRecord::Base.transaction do
         first_participant_id, second_participant_id = [sender_id, recipient_profile.id].sort
-        @conversation = Conversation.create_or_find_by!(
+        @conversation = Conversation.find_or_create_by!(
           first_participant_id: first_participant_id,
           second_participant_id: second_participant_id
         )

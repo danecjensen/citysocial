@@ -1,8 +1,8 @@
 module Marketplace
   class ListingsController < PlatformCore::BaseController
     before_action :require_login, except: %i[index show]
-    before_action :set_listing, only: %i[show edit update destroy mark_sold]
-    before_action :require_owner, only: %i[edit update destroy mark_sold]
+    before_action :set_listing, only: %i[show edit update destroy mark_sold renew]
+    before_action :require_owner, only: %i[edit update destroy mark_sold renew]
 
     def index
       @category = params[:category].presence
@@ -48,6 +48,14 @@ module Marketplace
     def mark_sold
       @listing.mark_sold!
       redirect_to listing_path(@listing), notice: "Marked as sold."
+    end
+
+    def renew
+      if @listing.renew!
+        redirect_to listing_path(@listing), notice: "Listing renewed — it's back at the top."
+      else
+        redirect_to listing_path(@listing), alert: "This listing can't be renewed right now."
+      end
     end
 
     def mine

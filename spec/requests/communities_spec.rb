@@ -61,6 +61,47 @@ RSpec.describe "Communities", type: :request do
     expect(response.body).to include('aria-label="Downvote"')
   end
 
+  it "highlights the vote arrow matching the current user's vote on the post list and show pages" do
+    community = create(:community, name: "eastside")
+    post_record = create(:community_post, community: community)
+    voter = create(:user)
+    login_as(voter)
+    post_record.cast_vote(voter.id, 1)
+
+    get "/communities/#{community.slug}"
+    list = Capybara.string(response.body)
+    expect(list).to have_css("button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600")
+    expect(list).to have_css("button[aria-label='Downvote'][aria-pressed='false']")
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}"
+    show = Capybara.string(response.body)
+    expect(show).to have_css("button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600")
+  end
+
+  it "highlights the downvoted comment for the voter" do
+    community = create(:community)
+    post_record = create(:community_post, community: community)
+    comment = Communities::Comment.create!(post: post_record, body: "A comment", author_id: create(:user).id)
+    voter = create(:user)
+    login_as(voter)
+    comment.cast_vote(voter.id, -1)
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}"
+    show = Capybara.string(response.body)
+    expect(show).to have_css("button[aria-label='Downvote'][aria-pressed='true'].bg-danger")
+  end
+
+  it "renders the neutral vote state for a logged-in user who has not voted" do
+    community = create(:community)
+    post_record = create(:community_post, community: community)
+    login_as(create(:user))
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}"
+    show = Capybara.string(response.body)
+    expect(show).to have_css("button[aria-label='Upvote'][aria-pressed='false']")
+    expect(show).to have_no_css("button[aria-pressed='true']")
+  end
+
   it "blocks the module when it is disabled, then restores it" do
     create(:community, name: "austinfood")
     PlatformCore::Modules.disable!("communities")

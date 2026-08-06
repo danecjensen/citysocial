@@ -18,7 +18,7 @@ Examples of the right kind of line:
 - Tests must NOT require Redis: `config/environments/test.rb` sets `config.active_job.queue_adapter = :test` (app uses `:sidekiq` elsewhere, set in config/application.rb). Any job enqueued in a spec (e.g. Active Storage `AnalyzeJob` on photo attach) otherwise raises `RedisClient::CannotConnectError`. Redis IS installed here but the suite must stay self-contained.
 - PG needs trust auth: set 127.0.0.1/::1/local to `trust` in /etc/postgresql/16/main/pg_hba.conf, then reload; config/database.yml uses user postgres, no password.
 - `git push` over Bash is blocked here. Push via GitHub MCP: create_branch (from master) → push_files (all changed files, one commit) → create_pull_request (draft). Default branch is `master`.
-- Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent now supports type: :select. ButtonComponent takes only variant/size/href/method/params/confirm/type (no arbitrary classes).
+- Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent supports type: :select. ButtonComponent takes variant/size/href/method/params/confirm/type/aria_label/pressed (no arbitrary classes); toggle buttons (vote, feedback Support) pass pressed: true/false to emit aria-pressed and pair it with an emphasized variant.
 - Never hand-roll button/table/form/select/flash markup — compose the Ui components. Update /design (app/views/design/show.html.erb) when adding a component option.
 - Env setup a fresh clone needs before `bin/verify` works: `bundle install`, then put
   gem exe wrappers on PATH — `export PATH="/opt/rbenv/versions/3.3.6/bin:$PATH"` (else
@@ -32,11 +32,12 @@ Examples of the right kind of line:
   strings as literals (never interpolate) or the standalone Tailwind build purges them.
 - Modules cross boundaries only via `PlatformCore::EventBus` or a sibling's `app/public`
   API; a module references users by id through `PlatformCore::Graph`, never the User model.
-- Check suite is `bin/verify`; in this sandbox `bundle exec <exe>` is broken, so run tools via generated binstubs (`bin/rspec`/`bin/rubocop`/`bin/packwerk`) — but do NOT commit those binstubs.
-- Test setup: start Postgres (`pg_ctlcluster 16 main start`, trust auth for localhost) and run `bin/rails tailwindcss:build` — specs render the layout which needs the built `tailwind.css`, else every request spec fails with Propshaft::MissingAssetError.
+- Check suite is `bin/verify`. Tool wrappers vary by container: `bundle exec rspec/rubocop/packwerk` works once `/opt/rbenv/versions/3.3.6/bin` is on PATH; `bin/rspec` binstubs may not exist (generate with `bundle binstubs`, but never commit them). In request specs use `Capybara.string(response.body)` + have_css to assert several attrs on one element.
+- A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
 - `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
 - Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
+- The `app_module` generator currently needs two RuboCop cleanups after generation: alphabetize its injected Gemfile entry and freeze the generated VERSION constant.
 
 ---
 
@@ -120,6 +121,28 @@ was a Phase 0 fix, not a scheduled feature.
 Learnings:
 - Promoted to Codebase Patterns: tests must not depend on Redis; test env uses the
   ActiveJob `:test` adapter.
+## 2026-08-06 — F-012
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/14
+Changed: components/marketplace/app/models/marketplace/listing.rb, components/marketplace/app/controllers/marketplace/listings_controller.rb, components/marketplace/config/routes.rb, components/marketplace/app/views/marketplace/listings/show.html.erb, spec/models/marketplace/listing_spec.rb, spec/requests/marketplace_spec.rb, routines/backlog.json, routines/research.md, routines/progress.md
+Notes: Master was fully green (rspec 131/0, packwerk + rubocop clean). No unprocessed
+DanesIdeas (Inbox empty). Consumed research brief R-004 (grader 10/10) as F-012:
+owner-only marketplace listing renewal. renew! resets created_at (doubles as the 48h
+cooldown clock — no migration) and pushes expires_at 30 days out; Renew button shows only
+when renewable?. Full suite 136 examples, 0 failures. Chose R-004 because it is the
+top-graded fresh brief in a module with ZERO file overlap with the two open draft PRs
+(#12 notifications, #13 vote-state), unlike the existing ready items F-005/F-006 which
+both collide with #13's ButtonComponent / communities-view edits.
+Learnings:
+- Two automation tracks are diverging on master: a codex track opened PR #12 which BUILT
+  the notifications module (F-008) and QUEUED F-009-F-012 (from R-001..R-004, status ready)
+  but implemented none of the four and never touched research.md. To avoid ID collisions,
+  reused codex's assigned id F-012 for R-004 and bumped next_id to 13. Expect a
+  human-resolved backlog.json merge conflict if #12 lands.
+- Reconciled F-004: an earlier session already opened draft PR #13 for it, but master's
+  backlog still showed it ready. Marked it done so it isn't re-picked. Check open PRs
+  against ready-item state every run — the fresh clone lags in-flight PR branches.
+
 ## 2026-08-05 12:11 — F-007
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/10
@@ -127,6 +150,24 @@ Changed: components/platform_core/app/models/platform_core/user.rb, components/p
 Notes: Capability lane. Shipped the human-priority public resident profile MVP with safe optional fields, validated avatar, discoverable author links, a PII-safe Graph snapshot, and platform_core.profile_updated. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, routes, Rails ERB compilation, Ruby syntax, Tailwind, and diff checks passed; PostgreSQL-backed migration/spec execution was blocked by managed TCP denial before examples loaded.
 Learnings:
 - Resolve Ruby through the repository's active rbenv shims and .ruby-version; the old hardcoded /opt/rbenv path can silently fall back to macOS Ruby.
+
+## 2026-08-05 17:16 — F-008
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/12
+Changed: components/notifications/, app/views/layouts/application.html.erb, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, routines/research.md, docs/roadmap.md, docs/lessons.md
+Notes: Capability lane. Generated the Notifications engine and shipped a durable follower activity inbox consuming feed.post_created and communities.post_created asynchronously through the event bus. Followers get idempotent, owner-only notifications with unread shell count, empty state, read-through, and mark-all-read; no sibling model references or PII are stored. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails boot/routes/event wiring, ERB compilation, Ruby syntax, Tailwind, factory load, JSON, and diff checks passed; PostgreSQL denial blocked migration execution, screenshots, and all RSpec examples before they ran. Consumed R-001 through R-004 as F-009 through F-012 for future module-feature runs.
+Learnings:
+- The app_module generator currently inserts a new path gem out of alphabetical order and emits a mutable VERSION constant; correct both before RuboCop.
+## 2026-08-05 23:25 — F-004
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/13
+Changed: components/platform_core/app/public/platform_core/ui/button_component.rb, components/communities/app/views/communities/posts/_vote.html.erb, components/communities/app/views/communities/communities/show.html.erb, components/communities/app/views/communities/posts/show.html.erb, app/views/design/show.html.erb, spec/components/platform_core/ui/button_component_spec.rb, spec/requests/communities_spec.rb
+Notes: Master was green here (131 examples) — the initial container churn was only env setup. F-001 (PR #2) merged, so F-004's ButtonComponent-conflict hold lifted and it rescored to the top (1.7). Added an optional `pressed:` to ButtonComponent (emits aria-pressed; omitted = attribute absent) and drove the highlight from the `_vote` partial: up-active = :primary, down-active = :danger, else :ghost, wired through my_vote on all three surfaces (post list, show, comments). Full suite green: 137 examples, packwerk + rubocop clean.
+1a: DanesIdeas Inbox empty — nothing ingested. 1b (gate open, 3 ready<5): the easy grounded veins are drained (no TODO/FIXME, every collection view guards its zero-case, all images have alt text, events pagination guarded). Proposed 2 genuinely-grounded items rather than pad to 3 with speculation: F-013 (feedback Support toggle needs aria-pressed, enabled by this PR — score 2.55, next-run top pick) and F-014 (the per-row vote_value_for N+1 this PR introduces — score 0.75, honest but below threshold). Did NOT re-consume research briefs R-001..R-004: open PR #12 (codex F-008 notifications) already consumed them into F-009..F-012 on its branch, so I reserved the F-008..F-012 id range (next_id jumped to 15) to avoid id collisions when #12 merges.
+Learnings:
+- ButtonComponent `pressed:` toggle state: pass true/false to emit aria-pressed; leave nil for non-toggle buttons so the attribute is omitted. Any button whose meaning toggles (vote, feedback Support) should set it.
+- In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
+- Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
 
 ## 2026-08-05 23:33 — F-013
 Outcome: shipped

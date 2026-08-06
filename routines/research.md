@@ -57,7 +57,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
   - Covered by a model spec for the new scope and a request spec asserting both sort
     orders render the expected comment order
 - Grader score: 10/10
-- Status: fresh
+- Status: consumed (F-009)
 
 ### R-002 — Filter the restaurants leaderboard by cuisine
 - Date: 2026-08-05
@@ -85,7 +85,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
 - Grader score: 8/10 (−2: a read-only filter doesn't itself tighten a do→see→react
   loop; the cited demand is really about scoping the head-to-head matchup, not the
   results table — a fair, weaker cousin of what users asked for)
-- Status: fresh
+- Status: consumed (F-010)
 
 ### R-003 — Add an "Add to Calendar" action to the event detail page
 - Date: 2026-08-05
@@ -112,7 +112,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     render with correct event data
 - Grader score: 8/10 (−2: a solo utility — nobody else sees it, nothing published to
   the event bus — net-new surface rather than a loop tightened)
-- Status: fresh
+- Status: consumed (F-011)
 
 ### R-004 — Let marketplace sellers renew a stale listing
 - Date: 2026-08-05
@@ -145,4 +145,4 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
   - Covered by a request/model spec asserting renew updates timestamps and is blocked
     inside the cooldown window
 - Grader score: 10/10
-- Status: fresh
+- Status: consumed (F-012)

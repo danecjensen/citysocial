@@ -206,6 +206,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_180700) do
     t.index ["sender_id"], name: "index_messaging_messages_on_sender_id"
   end
 
+  create_table "notifications_notifications", force: :cascade do |t|
+    t.bigint "recipient_id", null: false
+    t.bigint "actor_id", null: false
+    t.string "event_name", null: false
+    t.bigint "source_id", null: false
+    t.string "message", null: false
+    t.string "target_path", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipient_id", "event_name", "source_id"], name: "index_notifications_delivery_uniqueness", unique: true
+    t.index ["recipient_id", "read_at", "created_at"], name: "index_notifications_inbox"
+  end
+
   create_table "platform_core_follows", force: :cascade do |t|
     t.bigint "follower_id", null: false
     t.bigint "followed_id", null: false
@@ -225,13 +239,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_180700) do
   create_table "platform_core_users", force: :cascade do |t|
     t.string "handle", null: false
     t.string "email", null: false
-    t.string "display_name"
-    t.string "neighborhood"
-    t.text "bio"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "password_digest", null: false
     t.boolean "admin", default: false, null: false
+    t.string "display_name"
+    t.string "neighborhood"
+    t.text "bio"
     t.index ["email"], name: "index_platform_core_users_on_email", unique: true
     t.index ["handle"], name: "index_platform_core_users_on_handle", unique: true
   end

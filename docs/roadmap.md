@@ -30,6 +30,9 @@
   context, one support per member, public roadmap statuses, and an admin triage
   queue. Emits feedback.submission_created, feedback.submission_supported, and
   feedback.submission_status_changed for the notification loop.
+- notifications: durable follower activity inbox consuming feed.post_created and
+  communities.post_created asynchronously; idempotent fan-out over the public
+  follow graph, unread badge, owner-only read controls, and public unread-count API.
 - messaging milestone 1: private one-to-one resident conversations, profile and
   handle entry points, owner-scoped inbox/history, unread/read state, replies,
   and a content-free messaging.message_created event for delivery integrations.
@@ -38,8 +41,6 @@
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
       repo (adapt v2/atx-events/ROUTINE.md) + a post-deploy `events:ingest` step,
       so the loop actually populates the module in production.
-- [ ] notifications module — subscribes to feed.post_created /
-      communities.post_created, fans out to followers.
 - [ ] messaging milestone 2 — archive conversations and search the inbox as
       residents build longer histories.
 - [ ] messaging milestone 3 — carry safe listing/community context into a new
