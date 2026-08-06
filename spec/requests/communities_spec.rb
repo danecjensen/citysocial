@@ -49,6 +49,31 @@ RSpec.describe "Communities", type: :request do
     end.to change(Communities::Comment, :count).by(1)
   end
 
+  it "sorts comments by conversation order by default and score when requested" do
+    community = create(:community)
+    post_record = create(:community_post, community: community)
+    author = create(:user)
+    older_low_score = Communities::Comment.create!(post: post_record, author_id: author.id, body: "Older low score",
+                                                   created_at: 2.hours.ago)
+    newer_top_score = Communities::Comment.create!(post: post_record, author_id: author.id, body: "Newer top score",
+                                                   created_at: 1.hour.ago)
+    older_low_score.update_column(:score, 1)
+    newer_top_score.update_column(:score, 8)
+    scores = [older_low_score, newer_top_score].to_h { |comment| [comment.id, comment.score] }
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}"
+    expect(response.body.index("Older low score")).to be < response.body.index("Newer top score")
+    page = Capybara.string(response.body)
+    expect(page).to have_css("nav[aria-label='Comment sort'] a", text: "New")
+    expect(page).to have_css("nav[aria-label='Comment sort'] a", text: "Top")
+
+    get "/communities/#{community.slug}/posts/#{post_record.id}", params: { sort: "top" }
+    expect(response.body.index("Newer top score")).to be < response.body.index("Older low score")
+    expect([older_low_score.reload, newer_top_score.reload].to_h do |comment|
+      [comment.id, comment.score]
+    end).to eq(scores)
+  end
+
   it "labels the vote buttons on a post for assistive tech" do
     community = create(:community)
     post_record = create(:community_post, community: community)

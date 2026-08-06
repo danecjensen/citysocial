@@ -9,6 +9,7 @@ module Communities
     after_create :auto_upvote
 
     scope :chronological, -> { order(created_at: :asc) }
+    scope :top, -> { order(score: :desc, created_at: :desc) }
 
     def author
       PlatformCore::Graph.user(author_id)
