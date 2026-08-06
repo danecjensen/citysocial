@@ -51,13 +51,14 @@
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost) do %>Ghost<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm) do %>Small<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg) do %>Large<% end %>
-      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "/design") do %>Link button<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "https://example.com", target: "_blank", rel: "noopener noreferrer") do %>External link<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, aria_label: "Upvote") do %><span aria-hidden="true">▲</span><% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm, aria_label: "Upvote", pressed: true) do %><span aria-hidden="true">▲</span><% end %>
     </div>
-    <p class="mt-2 font-mono text-xs text-ink-faint">PlatformCore::Ui::ButtonComponent.new(variant: :primary/:secondary/:danger/:ghost, size: :sm/:md/:lg, href:, method:, confirm:, aria_label:, pressed:)</p>
+    <p class="mt-2 font-mono text-xs text-ink-faint">PlatformCore::Ui::ButtonComponent.new(variant: :primary/:secondary/:danger/:ghost, size: :sm/:md/:lg, href:, method:, confirm:, aria_label:, pressed:, target:, rel:)</p>
     <p class="mt-1 font-mono text-xs text-ink-faint">Pass aria_label: for icon-only buttons so assistive tech announces a meaningful name.</p>
     <p class="mt-1 font-mono text-xs text-ink-faint">Pass pressed: true/false for toggle buttons (e.g. the cast vote) to emit aria-pressed and pair it with an emphasized variant.</p>
+    <p class="mt-1 font-mono text-xs text-ink-faint">For external links opened with target: "_blank", also pass rel: "noopener noreferrer".</p>
   </section>
 
   <section>

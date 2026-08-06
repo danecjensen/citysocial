@@ -29,7 +29,13 @@
 
   <% if @event.url.present? %>
     <div class="mt-8">
-      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :lg, href: @event.url) do %>🎟️ Tickets &amp; details<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+        variant: :primary,
+        size: :lg,
+        href: @event.url,
+        target: "_blank",
+        rel: "noopener noreferrer"
+      ) do %>🎟️ Tickets &amp; details<% end %>
     </div>
   <% end %>
 </article>

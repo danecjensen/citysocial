@@ -39,13 +39,18 @@ RSpec.describe "Events", type: :request do
   end
 
   describe "GET /events/e/:id" do
-    it "shows a single event with its ticket link" do
+    it "shows a single event with a safe new-tab ticket link" do
       event = create(:event, title: "La Bohème", url: "https://austinopera.org/la-boheme")
 
       get "/events/e/#{event.id}"
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("La Bohème").and include("austinopera.org/la-boheme")
+      page = Capybara.string(response.body)
+      expect(page).to have_css(
+        "a[href='https://austinopera.org/la-boheme'][target='_blank'][rel='noopener noreferrer']",
+        text: "Tickets & details"
+      )
     end
   end
 

@@ -128,9 +128,9 @@
       "effort": 2,
       "confidence": 0.8,
       "score": 1.2,
-      "status": "ready",
+      "status": "in_progress",
       "origin": "auto",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
       "pr": null,
       "notes": "F-001 (PR #2) has merged, so the ButtonComponent-conflict hold is lifted. Still needs ButtonComponent to accept target:/rel: (it currently only takes variant/size/href/method/params/confirm/type/aria_label/pressed) — add that passthrough as part of the item."
