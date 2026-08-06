@@ -1,10 +1,11 @@
-<%# Vertical vote control. Locals: up_url, down_url, score. %>
+<%# Vertical vote control. Locals: up_url, down_url, score, my_vote (-1/0/1, default 0). %>
+<% my_vote = local_assigns.fetch(:my_vote, 0) %>
 <div class="flex w-10 flex-col items-center gap-0.5">
   <% if logged_in? %>
-    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: up_url, method: :post, aria_label: "Upvote") do %><span aria-hidden="true">▲</span><% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: (my_vote == 1 ? :primary : :ghost), size: :sm, href: up_url, method: :post, aria_label: "Upvote", pressed: my_vote == 1) do %><span aria-hidden="true">▲</span><% end %>
   <% end %>
   <span class="font-mono text-sm font-bold tabular-nums text-ink"><%= score %></span>
   <% if logged_in? %>
-    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: down_url, method: :post, aria_label: "Downvote") do %><span aria-hidden="true">▼</span><% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: (my_vote == -1 ? :danger : :ghost), size: :sm, href: down_url, method: :post, aria_label: "Downvote", pressed: my_vote == -1) do %><span aria-hidden="true">▼</span><% end %>
   <% end %>
 </div>

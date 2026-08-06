@@ -26,7 +26,8 @@
         <div class="flex gap-3">
           <%= render "communities/posts/vote", score: post.score,
                      up_url: upvote_community_post_path(@community, post),
-                     down_url: downvote_community_post_path(@community, post) %>
+                     down_url: downvote_community_post_path(@community, post),
+                     my_vote: post.vote_value_for(current_user&.id) %>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <% if post.pinned %>

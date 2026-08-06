@@ -7,7 +7,8 @@
   <div class="flex gap-3">
     <%= render "communities/posts/vote", score: @post.score,
                up_url: upvote_community_post_path(@community, @post),
-               down_url: downvote_community_post_path(@community, @post) %>
+               down_url: downvote_community_post_path(@community, @post),
+               my_vote: @post.vote_value_for(current_user&.id) %>
     <div class="min-w-0 flex-1">
       <h1 class="font-display text-2xl font-black text-ink"><%= @post.title %></h1>
       <div class="mt-1 flex items-center gap-2 font-mono text-xs text-ink-faint">
@@ -51,7 +52,8 @@
         <div id="comment-<%= comment.id %>" class="flex gap-3 rounded-lg border border-line bg-surface p-4">
           <%= render "communities/posts/vote", score: comment.score,
                      up_url: upvote_community_post_comment_path(@community, @post, comment),
-                     down_url: downvote_community_post_comment_path(@community, @post, comment) %>
+                     down_url: downvote_community_post_comment_path(@community, @post, comment),
+                     my_vote: comment.vote_value_for(current_user&.id) %>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 font-mono text-xs text-ink-faint">
               <% if comment_author %>
