@@ -80,7 +80,32 @@
       "attempts": 0,
       "created": "2026-08-05",
       "pr": null,
-      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). Schedule after #13 merges; until then confidence should stay <=0.85 so it does not race the same component change."
+      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). PR #13 has now merged, so the hold is lifted and this is schedulable."
+    },
+    {
+      "id": "F-012",
+      "title": "Let sellers renew stale marketplace listings",
+      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
+      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
+      "acceptance": [
+        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
+        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
+        "The existing owner actions show Renew only when eligible",
+        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-06",
+      "pr": "https://github.com/danecjensen/citysocial/pull/14",
+      "kind": "module_feature",
+      "product_family": "marketplace",
+      "milestone": "listing-renewal",
+      "notes": "Consumed R-004 (grader 10/10). renew! resets created_at (doubles as the 48h cooldown clock, no migration) and pushes expires_at 30 days out; owner-only via the existing require_owner guard; Renew button rendered only when renewable?. Reused codex-assigned id F-012 to stay consistent with open PR #12, which had queued F-009-F-012 (ready) but implemented none of them."
     },
     {
       "id": "F-004",

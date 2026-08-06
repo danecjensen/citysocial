@@ -39,4 +39,29 @@ RSpec.describe Marketplace::Listing, type: :model do
     expect(active.reload).to be_sold
     expect(events.last).to include(listing_id: active.id)
   end
+
+  describe "#renew!" do
+    it "resurfaces a stale listing and extends the expiration" do
+      listing = create(:listing, created_at: 3.days.ago, expires_at: 2.days.from_now)
+
+      expect(listing.renew!).to be(true)
+      listing.reload
+      expect(listing.created_at).to be_within(1.minute).of(Time.current)
+      expect(listing.expires_at).to be_within(1.minute).of(30.days.from_now)
+    end
+
+    it "is blocked inside the 48-hour cooldown" do
+      listing = create(:listing, created_at: 1.hour.ago)
+
+      expect(listing.renewable?).to be(false)
+      expect(listing.renew!).to be(false)
+    end
+
+    it "is blocked once the listing is sold" do
+      listing = create(:listing, created_at: 3.days.ago, status: :sold)
+
+      expect(listing.renewable?).to be(false)
+      expect(listing.renew!).to be(false)
+    end
+  end
 end
