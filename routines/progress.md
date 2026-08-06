@@ -101,6 +101,24 @@ Notes: Shell DNS failure prevented refreshing the stale local origin/master befo
 research. The connected GitHub app revealed R-001 through R-004 already fresh on
 current remote master at the publish gate, so no new brief was recorded.
 
+## 2026-08-06 10:14 — research
+Outcome: skipped (queue full: 4 fresh briefs on current remote master)
+Briefs: none
+Cut: none — stopped at the Phase 0 circuit breaker before drafting any questions
+Notes: research.md still holds R-001..R-004 all at Status: fresh (unchanged since the
+2026-08-05 10:24 run). Open PRs #12 (F-008 notifications), #14 (F-012 marketplace
+renew), and #16 (F-005 event links) appear to have consumed some of these briefs into
+backlog items on their own branches, but none are merged to master yet, so research.md
+on master — the only source of truth this routine reads — still shows all 4 as fresh.
+Per the routine, only feature-loop changes a brief's Status, and only research.md's
+own state (not branch-local backlog copies) governs the breaker. More research now
+would be pure churn; skipping instead of drafting new questions.
+Learnings:
+- Queue-full skips recur while feature-loop's consuming PRs sit open/unmerged; the
+  fix is on the feature-loop side (merge faster or mark Status: consumed sooner), not
+  something this routine can act on. No repeat action needed here — just keep skipping
+  honestly until briefs actually flip status on master.
+
 ## 2026-08-05 — master-red fix (test env queue adapter)
 Outcome: shipped (Phase 0 defect fix; skipped Phases 1-2 per routine)
 PR: https://github.com/danecjensen/citysocial/pull/11
