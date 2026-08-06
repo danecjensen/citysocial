@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount Messaging::Engine => "/messaging"
   mount Feedback::Engine => "/feedback"
   mount Events::Engine => "/events"
   mount Marketplace::Engine => "/marketplace"

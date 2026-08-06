@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 8,
+  "next_id": 17,
   "items": [
     {
       "id": "F-001",
@@ -142,6 +142,79 @@
       "created": "2026-08-05",
       "pr": null,
       "notes": "Needs ButtonComponent to accept target:/rel:, which overlaps F-001's (PR #2) in-flight edit to ButtonComponent — sequence after F-001 merges."
+    },
+    {
+      "id": "F-013",
+      "title": "Create private resident messaging",
+      "problem": "Residents can discover and react to one another across CitySocial, but they have no private place to coordinate a meetup, marketplace handoff, or neighbor-to-neighbor follow-up.",
+      "evidence": "docs/roadmap.md Next explicitly promises a messaging module for resident-to-resident conversations, and public resident profiles now provide the safe identity surface and entry point.",
+      "acceptance": [
+        "A generated Messaging engine owns an additive, reversible one-to-one conversation and message schema and depends only on platform_core",
+        "A signed-in resident can start a conversation from another resident's public profile or handle and send an initial message",
+        "Participants can view one shared thread, reply, and see unread state in an owner-scoped inbox while non-participants cannot read or write it",
+        "Unknown and self recipients plus blank or oversized messages render inline errors without creating records",
+        "messaging.message_created publishes participant and record IDs but never private message content",
+        "Model, public API, request, route, event, and module-boundary checks cover the complete flow"
+      ],
+      "impact": 5,
+      "effort": 5,
+      "confidence": 0.9,
+      "score": 0.9,
+      "status": "in_progress",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "one-to-one-conversations-mvp",
+      "notes": "Persona: a city resident who needs to coordinate privately after discovering a neighbor, seller, or community member. Job: move a public connection into a safe one-to-one follow-up without sharing email or hidden PII. Loop: resident sends -> recipient sees unread state/event -> recipient opens and replies. Messaging deserves a separate product surface because private conversation history, read state, access control, and future safety controls are distinct from public feed/community content."
+    },
+    {
+      "id": "F-015",
+      "title": "Add messaging inbox management",
+      "problem": "As conversation history grows, residents will need a way to find active threads and clear inactive ones from the primary inbox.",
+      "evidence": "F-013 messaging milestone 1 intentionally caps the inbox at 50 recent conversations and ships no archive or search controls.",
+      "acceptance": [
+        "A participant can archive and restore a conversation only for their own inbox",
+        "Inbox search matches the other participant's public handle or display name without exposing private identity fields",
+        "Archived conversations remain readable by direct participant access and return to the inbox when a new reply arrives"
+      ],
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "inbox-management"
+    },
+    {
+      "id": "F-016",
+      "title": "Carry public context into new conversations",
+      "problem": "A message started from a listing or community post can lose the public context that prompted the resident to reach out.",
+      "evidence": "F-013 establishes a profile/handle conversation entry point but intentionally stores no sibling record references or context links.",
+      "acceptance": [
+        "Messaging accepts a validated internal context path and short public context label when a conversation starts",
+        "The thread header links back to that context without reading a sibling model",
+        "Marketplace and communities can pass context through URL parameters without adding module dependencies"
+      ],
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "contextual-entry-points"
     },
     {
       "id": "F-006",
