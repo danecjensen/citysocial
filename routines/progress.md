@@ -168,3 +168,20 @@ Learnings:
 - ButtonComponent `pressed:` toggle state: pass true/false to emit aria-pressed; leave nil for non-toggle buttons so the attribute is omitted. Any button whose meaning toggles (vote, feedback Support) should set it.
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
+
+## 2026-08-06 11:12 — F-009
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/20
+Changed: components/communities/app/models/communities/comment.rb, components/communities/app/controllers/communities/posts_controller.rb, components/communities/app/views/communities/posts/show.html.erb, spec/models/communities/comment_spec.rb, spec/requests/communities_spec.rb, routines/backlog.json, routines/progress.md, docs/lessons.md
+Notes: The preferred Capability lane had no safe unreserved candidate: profiles and
+notifications are shipped, while messaging is already open in PR #15. Used the authorized
+smaller-feature fallback and implemented F-009 from consumed research brief R-001. Residents
+can keep the existing chronological conversation order or switch to Top, ordered by score
+then recency; sorting is read-only and covered by model/request specs. Repaired the malformed
+backlog JSON left by the concurrent F-008/F-012 merges, reconciled open F-005/F-013 work, and
+reserved messaging follow-up IDs F-015/F-016. DanesIdeas Inbox was empty; research status was
+already consumed and unchanged. Verification incomplete: Packwerk, RuboCop, Zeitwerk,
+Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, diff checks, and
+remote-tree equality passed; PostgreSQL TCP denial blocked all RSpec examples and screenshots.
+PR #20 raises the open queue from five to six, so the queue circuit breaker should stop the
+next run until an open PR lands or closes.

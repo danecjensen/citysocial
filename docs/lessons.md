@@ -31,3 +31,5 @@ into CLAUDE.md.
   explicit HTTP(S) URLs, and reject protocol-relative or executable schemes.
 - After running `app_module`, sort its injected Gemfile entry and freeze the generated
   VERSION constant; the current generator templates need both cleanups for RuboCop.
+- Parse `routines/backlog.json` after merging concurrent automation branches; resolving
+  overlapping `next_id` and `items` blocks by concatenation can silently corrupt the queue.

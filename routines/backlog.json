@@ -48,14 +48,15 @@
       "effort": 2,
       "confidence": 1.0,
       "score": 2.0,
-      "status": "in_progress",
+      "status": "done",
       "origin": "research",
       "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/20",
       "kind": "module_feature",
       "product_family": "communities",
-      "milestone": "comment-ranking"
+      "milestone": "comment-ranking",
+      "notes": "Capability lane had no unreserved evidence-backed candidate, so the 2026-08-06 cycle used the authorized smaller-feature fallback. Draft PR #20 adds read-only New/Top comment sorting and repairs the malformed backlog state left by the concurrent F-008/F-012 merges."
     },
     {
       "id": "F-012",
