@@ -2,10 +2,19 @@
       title: @user.display_name_or_handle,
       subtitle: "@#{@user.handle}"
     ) do |header| %>
-  <% if logged_in? && current_user == @user %>
+  <% if logged_in? %>
     <% header.with_actions do %>
-      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: edit_profile_path) do %>
-        Edit profile
+      <% if current_user == @user %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: edit_profile_path) do %>
+          Edit profile
+        <% end %>
+      <% elsif PlatformCore::Modules.enabled?("messaging") %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :primary,
+              href: "/messaging/conversations/new?recipient=#{ERB::Util.url_encode(@user.handle)}"
+            ) do %>
+          Message resident
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

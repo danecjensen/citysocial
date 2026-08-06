@@ -31,3 +31,6 @@ into CLAUDE.md.
   explicit HTTP(S) URLs, and reject protocol-relative or executable schemes.
 - After running `app_module`, sort its injected Gemfile entry and freeze the generated
   VERSION constant; the current generator templates need both cleanups for RuboCop.
+- When concurrent module PRs conflict in shared registries, keep every module entry,
+  regenerate Gemfile.lock and db/schema.rb, and parse-check routines/backlog.json;
+  choosing one side can silently drop a module or commit invalid generated state.

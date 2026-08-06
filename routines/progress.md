@@ -168,3 +168,9 @@ Learnings:
 - ButtonComponent `pressed:` toggle state: pass true/false to emit aria-pressed; leave nil for non-toggle buttons so the attribute is omitted. Any button whose meaning toggles (vote, feedback Support) should set it.
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
+
+## 2026-08-05 23:33 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/15
+Changed: components/messaging/, components/platform_core/app/public/platform_core/graph.rb, components/platform_core/app/public/platform_core/modules.rb, components/platform_core/app/views/platform_core/profiles/show.html.erb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, docs/roadmap.md
+Notes: Product fallback lane. The preferred late-night Capability lane had no unreserved evidence-backed candidate: the human-priority profile capability is shipped, notifications F-008 is already represented by open PR #12, and the remaining research queue contains module features. The third consecutive Codex implementation therefore satisfied the product-cadence requirement with the roadmap-backed Messaging MVP: generated engine, canonical one-to-one threads, private replies, unread/read state, profile entry point, owner scoping, a PII-safe handle lookup, and a content-free messaging.message_created event. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails/route smoke checks, ERB/Ruby syntax, Tailwind, backlog integrity, and diff checks passed; PostgreSQL denial blocked the full and focused specs before examples.

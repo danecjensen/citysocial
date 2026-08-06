@@ -10,124 +10,8 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 13,
+  "next_id": 18,
   "items": [
-    {
-      "id": "F-009",
-      "title": "Add Top sorting to community comments",
-      "problem": "Community conversations can only show comments chronologically even though comment vote scores are already stored, so the most useful responses stay buried.",
-      "evidence": "research.md#R-001; components/communities/app/models/communities/comment.rb defines only chronological while its Votable concern maintains score.",
-      "acceptance": [
-        "Communities::Comment gets a top scope ordering by score descending and created_at descending",
-        "The post page offers New and Top query-param sorting while keeping New as the default",
-        "Changing sort order does not alter vote casting",
-        "Model and request specs cover both orders"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 1.0,
-      "score": 2.0,
-      "status": "ready",
-      "origin": "research",
-      "attempts": 0,
-      "created": "2026-08-05",
-      "pr": null,
-      "kind": "module_feature",
-      "product_family": "communities",
-      "milestone": "comment-ranking"
-    },
-    {
-      "id": "F-012",
-      "title": "Let sellers renew stale marketplace listings",
-      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
-      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
-      "acceptance": [
-        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
-        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
-        "The existing owner actions show Renew only when eligible",
-        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 1.0,
-      "score": 2.0,
-      "status": "ready",
-      "origin": "research",
-      "attempts": 0,
-      "created": "2026-08-05",
-      "pr": null,
-      "kind": "module_feature",
-      "product_family": "marketplace",
-      "milestone": "listing-renewal"
-  "next_id": 15,
-  "items": [
-    {
-      "id": "F-013",
-      "title": "Feedback 'Support' toggle emits aria-pressed",
-      "problem": "The feedback 'Support' button is a toggle whose supported/unsupported state is conveyed only by color and label swap, so assistive-tech users get no pressed-state signal.",
-      "evidence": "components/feedback/app/views/feedback/submissions/_submission.html.erb:4-9 and components/feedback/app/views/feedback/submissions/show.html.erb:41 — the support ButtonComponent switches variant (:primary/:secondary) on `supported` but never sets pressed:. ButtonComponent now accepts pressed: (F-004, PR #13), so this is a one-line wire-up per call.",
-      "acceptance": [
-        "The support button on the feedback list and show page renders aria-pressed=true when the current user supports it, false otherwise",
-        "The existing variant swap and supports_count display are unchanged",
-        "Covered by a request spec asserting aria-pressed reflects support state"
-      ],
-      "impact": 3,
-      "effort": 1,
-      "confidence": 0.85,
-      "score": 2.55,
-      "status": "ready",
-      "origin": "auto",
-      "attempts": 0,
-      "created": "2026-08-05",
-      "pr": null,
-      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). PR #13 has now merged, so the hold is lifted and this is schedulable."
-    },
-    {
-      "id": "F-012",
-      "title": "Let sellers renew stale marketplace listings",
-      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
-      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
-      "acceptance": [
-        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
-        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
-        "The existing owner actions show Renew only when eligible",
-        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 1.0,
-      "score": 2.0,
-      "status": "done",
-      "origin": "research",
-      "attempts": 1,
-      "created": "2026-08-06",
-      "pr": "https://github.com/danecjensen/citysocial/pull/14",
-      "kind": "module_feature",
-      "product_family": "marketplace",
-      "milestone": "listing-renewal",
-      "notes": "Consumed R-004 (grader 10/10). renew! resets created_at (doubles as the 48h cooldown clock, no migration) and pushes expires_at 30 days out; owner-only via the existing require_owner guard; Renew button rendered only when renewable?. Reused codex-assigned id F-012 to stay consistent with open PR #12, which had queued F-009-F-012 (ready) but implemented none of them."
-    },
-    {
-      "id": "F-004",
-      "title": "Vote control reflects the current user's own vote",
-      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
-      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
-      "acceptance": [
-        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
-        "Anonymous users and un-voted items render the neutral state as today",
-        "Applies on the community post list, the post show page, and comments",
-        "Covered by a request/component spec asserting the active state renders for the voter"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 0.85,
-      "score": 1.7,
-      "status": "done",
-      "origin": "auto",
-      "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/13"
-    },
     {
       "id": "F-001",
       "title": "Give icon-only vote buttons accessible labels",
@@ -189,6 +73,27 @@
       "pr": "https://github.com/danecjensen/citysocial/pull/3"
     },
     {
+      "id": "F-004",
+      "title": "Vote control reflects the current user's own vote",
+      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
+      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
+      "acceptance": [
+        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
+        "Anonymous users and un-voted items render the neutral state as today",
+        "Applies on the community post list, the post show page, and comments",
+        "Covered by a request/component spec asserting the active state renders for the voter"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.7,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/13"
+    },
+    {
       "id": "F-005",
       "title": "External ticket/detail links open in a new tab",
       "problem": "The events 'Tickets & details' CTA (and other external links) navigate away from CitySocial in the same tab, losing the user's place — an engagement leak. Community post URLs already open in a new tab with rel=noopener; events don't.",
@@ -210,52 +115,24 @@
       "notes": "F-001 (PR #2) has merged, so the ButtonComponent-conflict hold is lifted. Still needs ButtonComponent to accept target:/rel: (it currently only takes variant/size/href/method/params/confirm/type/aria_label/pressed) — add that passthrough as part of the item."
     },
     {
-      "id": "F-010",
-      "title": "Filter the restaurant leaderboard by cuisine",
-      "problem": "Residents cannot narrow restaurant rankings to comparable cuisines even though every restaurant already stores cuisine.",
-      "evidence": "research.md#R-002; components/restaurants/app/controllers/restaurants/leaderboard_controller.rb accepts no filter while restaurants_restaurants.cuisine is already populated and displayed.",
+      "id": "F-006",
+      "title": "Semantic <time> timestamps with exact-date tooltips",
+      "problem": "Relative timestamps (time_ago_in_words) render as plain text with no machine-readable datetime and no hover-to-see-exact-date.",
+      "evidence": "feed/posts/index.html.erb:10, communities/communities/show.html.erb:38, communities/posts/show.html.erb:14,52, marketplace/listings/show.html.erb:45 — 'X ago' rendered as bare text, no <time datetime title>",
       "acceptance": [
-        "The leaderboard accepts a cuisine query param through a by_cuisine scope",
-        "A shared FormFieldComponent select lists cuisines present in the catalog",
-        "No selection preserves the complete leaderboard",
-        "A request spec proves the selected cuisine narrows results"
+        "Relative timestamps wrap a <time datetime=...> element with a title showing the exact date/time",
+        "Rendered text is unchanged",
+        "Covered by a spec on at least one surface"
       ],
-      "impact": 3,
-      "effort": 2,
-      "confidence": 0.8,
-      "score": 1.2,
+      "impact": 2,
+      "effort": 3,
+      "confidence": 0.7,
+      "score": 0.47,
       "status": "ready",
-      "origin": "research",
+      "origin": "auto",
       "attempts": 0,
       "created": "2026-08-05",
-      "pr": null,
-      "kind": "module_feature",
-      "product_family": "restaurants",
-      "milestone": "cuisine-ranking"
-    },
-    {
-      "id": "F-011",
-      "title": "Add event calendar actions",
-      "problem": "Residents who discover an event cannot carry it into their calendar, making it easy to forget after leaving CitySocial.",
-      "evidence": "research.md#R-003; components/events/app/views/events/events/show.html.erb has ticket details but no calendar action despite complete start, optional end, venue, and description fields.",
-      "acceptance": [
-        "Event detail adds a Google Calendar link built from existing event fields",
-        "A read-only controller action downloads a valid ICS file with a defined fallback end time",
-        "Existing ticket behavior remains unchanged",
-        "Request specs cover both calendar formats and the fallback"
-      ],
-      "impact": 3,
-      "effort": 2,
-      "confidence": 0.8,
-      "score": 1.2,
-      "status": "ready",
-      "origin": "research",
-      "attempts": 0,
-      "created": "2026-08-05",
-      "pr": null,
-      "kind": "module_feature",
-      "product_family": "events",
-      "milestone": "calendar-export"
+      "pr": null
     },
     {
       "id": "F-007",
@@ -311,6 +188,130 @@
       "notes": "Persona: a city resident following neighbors across modules. Job: notice relevant activity and return to it without monitoring every product. Loop: followed resident posts -> Notifications consumes the event and fans out -> follower opens the inbox and returns to react. Expansion path: marketplace activity, feedback updates, mentions, delivery preferences, and grouping."
     },
     {
+      "id": "F-009",
+      "title": "Add Top sorting to community comments",
+      "problem": "Community conversations can only show comments chronologically even though comment vote scores are already stored, so the most useful responses stay buried.",
+      "evidence": "research.md#R-001; components/communities/app/models/communities/comment.rb defines only chronological while its Votable concern maintains score.",
+      "acceptance": [
+        "Communities::Comment gets a top scope ordering by score descending and created_at descending",
+        "The post page offers New and Top query-param sorting while keeping New as the default",
+        "Changing sort order does not alter vote casting",
+        "Model and request specs cover both orders"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "communities",
+      "milestone": "comment-ranking"
+    },
+    {
+      "id": "F-010",
+      "title": "Filter the restaurant leaderboard by cuisine",
+      "problem": "Residents cannot narrow restaurant rankings to comparable cuisines even though every restaurant already stores cuisine.",
+      "evidence": "research.md#R-002; components/restaurants/app/controllers/restaurants/leaderboard_controller.rb accepts no filter while restaurants_restaurants.cuisine is already populated and displayed.",
+      "acceptance": [
+        "The leaderboard accepts a cuisine query param through a by_cuisine scope",
+        "A shared FormFieldComponent select lists cuisines present in the catalog",
+        "No selection preserves the complete leaderboard",
+        "A request spec proves the selected cuisine narrows results"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.8,
+      "score": 1.2,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "restaurants",
+      "milestone": "cuisine-ranking"
+    },
+    {
+      "id": "F-011",
+      "title": "Add event calendar actions",
+      "problem": "Residents who discover an event cannot carry it into their calendar, making it easy to forget after leaving CitySocial.",
+      "evidence": "research.md#R-003; components/events/app/views/events/events/show.html.erb has ticket details but no calendar action despite complete start, optional end, venue, and description fields.",
+      "acceptance": [
+        "Event detail adds a Google Calendar link built from existing event fields",
+        "A read-only controller action downloads a valid ICS file with a defined fallback end time",
+        "Existing ticket behavior remains unchanged",
+        "Request specs cover both calendar formats and the fallback"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.8,
+      "score": 1.2,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "events",
+      "milestone": "calendar-export"
+    },
+    {
+      "id": "F-012",
+      "title": "Let sellers renew stale marketplace listings",
+      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
+      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
+      "acceptance": [
+        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
+        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
+        "The existing owner actions show Renew only when eligible",
+        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-06",
+      "pr": "https://github.com/danecjensen/citysocial/pull/14",
+      "kind": "module_feature",
+      "product_family": "marketplace",
+      "milestone": "listing-renewal",
+      "notes": "Consumed R-004 (grader 10/10). renew! resets created_at (doubles as the 48h cooldown clock, no migration) and pushes expires_at 30 days out; owner-only via the existing require_owner guard; Renew button rendered only when renewable?. Reused codex-assigned id F-012 to stay consistent with open PR #12, which had queued F-009-F-012 (ready) but implemented none of them."
+    },
+    {
+      "id": "F-013",
+      "title": "Create private resident messaging",
+      "problem": "Residents can discover and react to one another across CitySocial, but they have no private place to coordinate a meetup, marketplace handoff, or neighbor-to-neighbor follow-up.",
+      "evidence": "docs/roadmap.md Next explicitly promises a messaging module for resident-to-resident conversations, and public resident profiles now provide the safe identity surface and entry point.",
+      "acceptance": [
+        "A generated Messaging engine owns an additive, reversible one-to-one conversation and message schema and depends only on platform_core",
+        "A signed-in resident can start a conversation from another resident's public profile or handle and send an initial message",
+        "Participants can view one shared thread, reply, and see unread state in an owner-scoped inbox while non-participants cannot read or write it",
+        "Unknown and self recipients plus blank or oversized messages render inline errors without creating records",
+        "messaging.message_created publishes participant and record IDs but never private message content",
+        "Model, public API, request, route, event, and module-boundary checks cover the complete flow"
+      ],
+      "impact": 5,
+      "effort": 5,
+      "confidence": 0.9,
+      "score": 0.9,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/15",
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "one-to-one-conversations-mvp",
+      "notes": "Persona: a city resident who needs to coordinate privately after discovering a neighbor, seller, or community member. Job: move a public connection into a safe one-to-one follow-up without sharing email or hidden PII. Loop: resident sends -> recipient sees unread state/event -> recipient opens and replies. Messaging deserves a separate product surface because private conversation history, read state, access control, and future safety controls are distinct from public feed/community content."
+    },
+    {
       "id": "F-014",
       "title": "Batch-load the viewer's votes on the community post list",
       "problem": "Rendering the community post list now calls vote_value_for(current_user.id) once per post (and per comment), issuing one communities_votes lookup per row — an N+1 that grows with the page size.",
@@ -332,24 +333,71 @@
       "notes": "Below the 1.0 schedule threshold; grounded and honest but low-value (one indexed lookup per row). Strengthen or split if it ever matters; do not force-schedule."
     },
     {
-      "id": "F-006",
-      "title": "Semantic <time> timestamps with exact-date tooltips",
-      "problem": "Relative timestamps (time_ago_in_words) render as plain text with no machine-readable datetime and no hover-to-see-exact-date.",
-      "evidence": "feed/posts/index.html.erb:10, communities/communities/show.html.erb:38, communities/posts/show.html.erb:14,52, marketplace/listings/show.html.erb:45 — 'X ago' rendered as bare text, no <time datetime title>",
+      "id": "F-015",
+      "title": "Add messaging inbox management",
+      "problem": "As conversation history grows, residents will need a way to find active threads and clear inactive ones from the primary inbox.",
+      "evidence": "F-013 messaging milestone 1 intentionally caps the inbox at 50 recent conversations and ships no archive or search controls.",
       "acceptance": [
-        "Relative timestamps wrap a <time datetime=...> element with a title showing the exact date/time",
-        "Rendered text is unchanged",
-        "Covered by a spec on at least one surface"
+        "A participant can archive and restore a conversation only for their own inbox",
+        "Inbox search matches the other participant's public handle or display name without exposing private identity fields",
+        "Archived conversations remain readable by direct participant access and return to the inbox when a new reply arrives"
       ],
-      "impact": 2,
-      "effort": 3,
-      "confidence": 0.7,
-      "score": 0.47,
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 0.8,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
       "created": "2026-08-05",
-      "pr": null
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "inbox-management"
+    },
+    {
+      "id": "F-016",
+      "title": "Carry public context into new conversations",
+      "problem": "A message started from a listing or community post can lose the public context that prompted the resident to reach out.",
+      "evidence": "F-013 establishes a profile/handle conversation entry point but intentionally stores no sibling record references or context links.",
+      "acceptance": [
+        "Messaging accepts a validated internal context path and short public context label when a conversation starts",
+        "The thread header links back to that context without reading a sibling model",
+        "Marketplace and communities can pass context through URL parameters without adding module dependencies"
+      ],
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "contextual-entry-points"
+    },
+    {
+      "id": "F-017",
+      "title": "Feedback 'Support' toggle emits aria-pressed",
+      "problem": "The feedback 'Support' button is a toggle whose supported/unsupported state is conveyed only by color and label swap, so assistive-tech users get no pressed-state signal.",
+      "evidence": "components/feedback/app/views/feedback/submissions/_submission.html.erb:4-9 and components/feedback/app/views/feedback/submissions/show.html.erb:41 — the support ButtonComponent switches variant (:primary/:secondary) on `supported` but never sets pressed:. ButtonComponent now accepts pressed: (F-004, PR #13), so this is a one-line wire-up per call.",
+      "acceptance": [
+        "The support button on the feedback list and show page renders aria-pressed=true when the current user supports it, false otherwise",
+        "The existing variant swap and supports_count display are unchanged",
+        "Covered by a request spec asserting aria-pressed reflects support state"
+      ],
+      "impact": 3,
+      "effort": 1,
+      "confidence": 0.85,
+      "score": 2.55,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). PR #13 has now merged, so the hold is lifted and this is schedulable. Renumbered from F-013 while resolving PR #15 so the shipped Messaging feature keeps the ID used by its PR and progress record."
     }
   ]
 }

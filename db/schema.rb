@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_05_170519) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_05_180700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -181,6 +181,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_170519) do
     t.index ["status"], name: "index_marketplace_listings_on_status"
   end
 
+  create_table "messaging_conversations", force: :cascade do |t|
+    t.bigint "first_participant_id", null: false
+    t.bigint "second_participant_id", null: false
+    t.datetime "last_message_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["first_participant_id", "second_participant_id"], name: "index_messaging_conversations_on_participant_pair", unique: true
+    t.index ["first_participant_id"], name: "index_messaging_conversations_on_first_participant_id"
+    t.index ["last_message_at"], name: "index_messaging_conversations_on_last_message_at"
+    t.index ["second_participant_id"], name: "index_messaging_conversations_on_second_participant_id"
+  end
+
+  create_table "messaging_messages", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.bigint "sender_id", null: false
+    t.text "body", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id", "created_at"], name: "index_messaging_messages_on_conversation_id_and_created_at"
+    t.index ["conversation_id", "read_at"], name: "index_messaging_messages_on_conversation_id_and_read_at"
+    t.index ["conversation_id"], name: "index_messaging_messages_on_conversation_id"
+    t.index ["sender_id"], name: "index_messaging_messages_on_sender_id"
+  end
+
   create_table "notifications_notifications", force: :cascade do |t|
     t.bigint "recipient_id", null: false
     t.bigint "actor_id", null: false
@@ -214,13 +239,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_170519) do
   create_table "platform_core_users", force: :cascade do |t|
     t.string "handle", null: false
     t.string "email", null: false
-    t.string "display_name"
-    t.string "neighborhood"
-    t.text "bio"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "password_digest", null: false
     t.boolean "admin", default: false, null: false
+    t.string "display_name"
+    t.string "neighborhood"
+    t.text "bio"
     t.index ["email"], name: "index_platform_core_users_on_email", unique: true
     t.index ["handle"], name: "index_platform_core_users_on_handle", unique: true
   end
@@ -250,4 +275,5 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_170519) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "feedback_supports", "feedback_submissions", column: "submission_id"
+  add_foreign_key "messaging_messages", "messaging_conversations", column: "conversation_id"
 end
