@@ -10,8 +10,50 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 8,
+  "next_id": 15,
   "items": [
+    {
+      "id": "F-013",
+      "title": "Feedback 'Support' toggle emits aria-pressed",
+      "problem": "The feedback 'Support' button is a toggle whose supported/unsupported state is conveyed only by color and label swap, so assistive-tech users get no pressed-state signal.",
+      "evidence": "components/feedback/app/views/feedback/submissions/_submission.html.erb:4-9 and components/feedback/app/views/feedback/submissions/show.html.erb:41 — the support ButtonComponent switches variant (:primary/:secondary) on `supported` but never sets pressed:. ButtonComponent now accepts pressed: (F-004, PR #13), so this is a one-line wire-up per call.",
+      "acceptance": [
+        "The support button on the feedback list and show page renders aria-pressed=true when the current user supports it, false otherwise",
+        "The existing variant swap and supports_count display are unchanged",
+        "Covered by a request spec asserting aria-pressed reflects support state"
+      ],
+      "impact": 3,
+      "effort": 1,
+      "confidence": 0.85,
+      "score": 2.55,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). Schedule after #13 merges; until then confidence should stay <=0.85 so it does not race the same component change."
+    },
+    {
+      "id": "F-004",
+      "title": "Vote control reflects the current user's own vote",
+      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
+      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
+      "acceptance": [
+        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
+        "Anonymous users and un-voted items render the neutral state as today",
+        "Applies on the community post list, the post show page, and comments",
+        "Covered by a request/component spec asserting the active state renders for the voter"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.7,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/13"
+    },
     {
       "id": "F-001",
       "title": "Give icon-only vote buttons accessible labels",
@@ -73,26 +115,25 @@
       "pr": "https://github.com/danecjensen/citysocial/pull/3"
     },
     {
-      "id": "F-004",
-      "title": "Vote control reflects the current user's own vote",
-      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
-      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
+      "id": "F-005",
+      "title": "External ticket/detail links open in a new tab",
+      "problem": "The events 'Tickets & details' CTA (and other external links) navigate away from CitySocial in the same tab, losing the user's place — an engagement leak. Community post URLs already open in a new tab with rel=noopener; events don't.",
+      "evidence": "components/events/app/views/events/events/show.html.erb:32 — external @event.url button has no target/rel, vs communities/app/views/communities/posts/show.html.erb:17 which uses target=_blank rel=noopener",
       "acceptance": [
-        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
-        "Anonymous users and un-voted items render the neutral state as today",
-        "Applies on the community post list, the post show page, and comments",
-        "Covered by a request/component spec asserting the active state renders for the voter"
+        "External event ticket links open in a new tab with rel=noopener noreferrer",
+        "Internal links are unchanged",
+        "Covered by a request spec asserting target/rel on the ticket link"
       ],
-      "impact": 4,
+      "impact": 3,
       "effort": 2,
-      "confidence": 0.6,
+      "confidence": 0.8,
       "score": 1.2,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
       "created": "2026-08-05",
       "pr": null,
-      "notes": "Confidence held down while F-001 (PR #2) is open on the same _vote.html.erb partial — building this now would conflict. Confidence rises to ~0.85 (score ~1.7) once F-001 merges; prefer to schedule it after."
+      "notes": "F-001 (PR #2) has merged, so the ButtonComponent-conflict hold is lifted. Still needs ButtonComponent to accept target:/rel: (it currently only takes variant/size/href/method/params/confirm/type/aria_label/pressed) — add that passthrough as part of the item."
     },
     {
       "id": "F-007",
@@ -121,27 +162,26 @@
       "milestone": "public-profile-mvp",
       "notes": "Persona: city resident participating across multiple modules. Job: understand who another resident is and present a consistent public identity. Loop: resident updates profile -> activity links bring others to it -> public identity context supports follows and reactions; profile updates publish for future notification/search subscribers."
     },
-
     {
-      "id": "F-005",
-      "title": "External ticket/detail links open in a new tab",
-      "problem": "The events 'Tickets & details' CTA (and other external links) navigate away from CitySocial in the same tab, losing the user's place — an engagement leak. Community post URLs already open in a new tab with rel=noopener; events don't.",
-      "evidence": "components/events/app/views/events/events/show.html.erb:32 — external @event.url button has no target/rel, vs communities/app/views/communities/posts/show.html.erb:17 which uses target=_blank rel=noopener",
+      "id": "F-014",
+      "title": "Batch-load the viewer's votes on the community post list",
+      "problem": "Rendering the community post list now calls vote_value_for(current_user.id) once per post (and per comment), issuing one communities_votes lookup per row — an N+1 that grows with the page size.",
+      "evidence": "components/communities/app/views/communities/communities/show.html.erb:30 and posts/show.html.erb:11,56 — each `<record>.vote_value_for(current_user&.id)` runs a separate indexed SELECT inside the @posts / @comments loop (introduced with F-004).",
       "acceptance": [
-        "External event ticket links open in a new tab with rel=noopener noreferrer",
-        "Internal links are unchanged",
-        "Covered by a request spec asserting target/rel on the ticket link"
+        "The viewer's votes for a page of posts/comments are loaded in a single query and passed into the vote partial",
+        "Rendered vote highlighting is unchanged from F-004",
+        "Covered by a spec asserting the vote query count does not grow with the number of rows"
       ],
-      "impact": 3,
+      "impact": 2,
       "effort": 2,
-      "confidence": 0.6,
-      "score": 0.9,
+      "confidence": 0.75,
+      "score": 0.75,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
       "created": "2026-08-05",
       "pr": null,
-      "notes": "Needs ButtonComponent to accept target:/rel:, which overlaps F-001's (PR #2) in-flight edit to ButtonComponent — sequence after F-001 merges."
+      "notes": "Below the 1.0 schedule threshold; grounded and honest but low-value (one indexed lookup per row). Strengthen or split if it ever matters; do not force-schedule."
     },
     {
       "id": "F-006",
