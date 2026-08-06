@@ -52,4 +52,52 @@ RSpec.describe Messaging::Conversation, type: :model do
     expect(conversation.unread_count_for(outsider.id)).to eq(0)
     expect(conversation.mark_read_for!(outsider.id)).to eq(0)
   end
+
+  it "archives independently for each participant and restores the selected inbox" do
+    first_user = create(:user)
+    second_user = create(:user)
+    conversation = create(
+      :messaging_conversation,
+      first_participant: first_user,
+      second_participant: second_user
+    )
+
+    expect(conversation.archive_for!(first_user.id)).to be(true)
+    expect(conversation.reload).to be_archived_for(first_user.id)
+    expect(conversation).not_to be_archived_for(second_user.id)
+    expect(described_class.archived_for(first_user.id)).to contain_exactly(conversation)
+    expect(described_class.active_for(second_user.id)).to contain_exactly(conversation)
+
+    expect(conversation.restore_for!(first_user.id)).to be(true)
+    expect(conversation.reload).not_to be_archived_for(first_user.id)
+    expect(described_class.active_for(first_user.id)).to contain_exactly(conversation)
+  end
+
+  it "does not archive or restore for a non-participant" do
+    conversation = create(:messaging_conversation)
+    outsider = create(:user)
+
+    expect(conversation.archive_for!(outsider.id)).to be(false)
+    expect(conversation.restore_for!(outsider.id)).to be(false)
+    expect(conversation).not_to be_archived_for(outsider.id)
+  end
+
+  it "filters conversations by the other participant ids" do
+    resident = create(:user)
+    matching_neighbor = create(:user)
+    other_neighbor = create(:user)
+    matching = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: matching_neighbor
+    )
+    create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: other_neighbor
+    )
+
+    expect(described_class.with_other_participant_ids(resident.id, [matching_neighbor.id])).to contain_exactly(matching)
+    expect(described_class.with_other_participant_ids(resident.id, [])).to be_empty
+  end
 end

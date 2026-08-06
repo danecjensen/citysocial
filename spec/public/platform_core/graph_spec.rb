@@ -34,4 +34,16 @@ RSpec.describe PlatformCore::Graph do
     expect(profile.to_h).not_to have_key(:email)
     expect(described_class.public_profile_by_handle("missing")).to be_nil
   end
+
+  it "finds public profile ids by handle or display name without returning identity records" do
+    handle_match = create(:user, handle: "eastside_neighbor", display_name: "Taylor")
+    name_match = create(:user, handle: "runner", display_name: "Helpful Neighbor")
+    create(:user, handle: "unrelated", display_name: "Someone Else")
+
+    expect(described_class.public_profile_ids_matching("neighbor")).to match_array(
+      [handle_match.id, name_match.id]
+    )
+    expect(described_class.public_profile_ids_matching("HELPFUL")).to eq([name_match.id])
+    expect(described_class.public_profile_ids_matching(" ")).to eq([])
+  end
 end

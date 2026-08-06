@@ -15,7 +15,29 @@ module Messaging
     scope :for_participant, lambda { |user_id|
       where(first_participant_id: user_id).or(where(second_participant_id: user_id))
     }
+    scope :active_for, lambda { |user_id|
+      where(
+        "(first_participant_id = :user_id AND first_participant_archived_at IS NULL) OR " \
+        "(second_participant_id = :user_id AND second_participant_archived_at IS NULL)",
+        user_id: user_id
+      )
+    }
+    scope :archived_for, lambda { |user_id|
+      where(
+        "(first_participant_id = :user_id AND first_participant_archived_at IS NOT NULL) OR " \
+        "(second_participant_id = :user_id AND second_participant_archived_at IS NOT NULL)",
+        user_id: user_id
+      )
+    }
     scope :recent, -> { order(last_message_at: :desc, updated_at: :desc, id: :desc) }
+
+    def self.with_other_participant_ids(user_id, participant_ids)
+      ids = Array(participant_ids).map(&:to_i)
+      return none if ids.empty?
+
+      where(first_participant_id: user_id, second_participant_id: ids)
+        .or(where(second_participant_id: user_id, first_participant_id: ids))
+    end
 
     def self.between(first_user_id, second_user_id)
       first_id, second_id = [first_user_id, second_user_id].map(&:to_i).sort
@@ -52,7 +74,32 @@ module Messaging
       messages.where(read_at: nil).where.not(sender_id: user_id).update_all(read_at: Time.current)
     end
 
+    def archived_for?(user_id)
+      attribute = archive_attribute_for(user_id)
+      attribute ? public_send(attribute).present? : false
+    end
+
+    def archive_for!(user_id)
+      attribute = archive_attribute_for(user_id)
+      return false unless attribute
+
+      update!(attribute => Time.current)
+    end
+
+    def restore_for!(user_id)
+      attribute = archive_attribute_for(user_id)
+      return false unless attribute
+
+      update!(attribute => nil)
+    end
+
     private
+
+    def archive_attribute_for(user_id)
+      return :first_participant_archived_at if first_participant_id == user_id.to_i
+
+      :second_participant_archived_at if second_participant_id == user_id.to_i
+    end
 
     def canonicalize_participants
       return if first_participant_id.blank? || second_participant_id.blank?

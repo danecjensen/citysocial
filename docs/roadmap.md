@@ -36,13 +36,14 @@
 - messaging milestone 1: private one-to-one resident conversations, profile and
   handle entry points, owner-scoped inbox/history, unread/read state, replies,
   and a content-free messaging.message_created event for delivery integrations.
+- messaging milestone 2: per-resident archive/restore controls, active and archived
+  inbox search by public handle or display name, and automatic reactivation when a
+  participant replies.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
       repo (adapt v2/atx-events/ROUTINE.md) + a post-deploy `events:ingest` step,
       so the loop actually populates the module in production.
-- [ ] messaging milestone 2 — archive conversations and search the inbox as
-      residents build longer histories.
 - [ ] messaging milestone 3 — carry safe listing/community context into a new
       conversation without coupling Messaging to sibling models.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
