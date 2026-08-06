@@ -169,6 +169,11 @@ Learnings:
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
 
+## 2026-08-06 05:09 — F-005
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/16
+Changed: components/platform_core/app/public/platform_core/ui/button_component.rb, components/events/app/views/events/events/show.html.erb, app/views/design/show.html.erb, spec/components/platform_core/ui/button_component_spec.rb, spec/requests/events_spec.rb, routines/backlog.json
+Notes: Capability was the preferred lane, but profiles are shipped, notifications and messaging are already represented by open draft PRs, and research briefs R-001 through R-004 are reserved by F-009 through F-012. Used the authorized smaller-feature fallback and shipped the highest-scoring unclaimed item: event ticket links now preserve CitySocial in the original tab while opening with noopener/noreferrer. DanesIdeas Inbox was empty; research.md was unchanged. Verification incomplete only because the managed environment denied PostgreSQL before examples: Packwerk, RuboCop, Zeitwerk, Ruby/ERB checks, Tailwind, backlog integrity, and diff checks passed.
 ## 2026-08-05 23:33 — F-013
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/15

@@ -12,6 +12,18 @@ RSpec.describe PlatformCore::Ui::ButtonComponent do
     render_inline(described_class.new(variant: :secondary, href: "/somewhere")) { "Go" }
 
     expect(page).to have_css("a[href='/somewhere']", text: "Go")
+    expect(page).to have_no_css("a[target], a[rel]")
+  end
+
+  it "passes target and rel through to link buttons" do
+    render_inline(described_class.new(href: "https://example.com", target: "_blank", rel: "noopener noreferrer")) do
+      "External"
+    end
+
+    expect(page).to have_css(
+      "a[href='https://example.com'][target='_blank'][rel='noopener noreferrer']",
+      text: "External"
+    )
   end
 
   it "renders a button_to form when given href and method" do
