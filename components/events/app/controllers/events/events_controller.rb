@@ -31,5 +31,15 @@ module Events
     def show
       @event = Events::Event.find(params[:id])
     end
+
+    # Downloads the event as an .ics file so residents can carry it into any
+    # calendar app. Read-only: it only serializes fields already on the record.
+    def calendar
+      event = Events::Event.find(params[:id])
+      send_data event.to_ics,
+                type: "text/calendar; charset=utf-8",
+                disposition: "attachment",
+                filename: "#{event.calendar_filename}.ics"
+    end
   end
 end

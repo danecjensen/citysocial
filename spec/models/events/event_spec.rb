@@ -62,4 +62,78 @@ RSpec.describe Events::Event, type: :model do
       expect(Events::Event.search("VINTAGE")).to contain_exactly(match)
     end
   end
+
+  describe "calendar export" do
+    let(:start) { Time.zone.parse("2026-08-08T20:00:00-05:00") }
+
+    describe "#calendar_ends_at" do
+      it "uses the event's own end time when present" do
+        finish = start + 3.hours
+        event = build(:event, starts_at: start, ends_at: finish)
+        expect(event.calendar_ends_at).to eq(finish)
+      end
+
+      it "falls back to a defined duration after the start when ends_at is blank" do
+        event = build(:event, starts_at: start, ends_at: nil)
+        expect(event.calendar_ends_at).to eq(start + Events::Event::DEFAULT_DURATION)
+      end
+    end
+
+    describe "#google_calendar_url" do
+      it "builds a template link with UTC start/end, title, location, and details" do
+        event = build(
+          :event,
+          title: "Sun June",
+          venue: "Mohawk",
+          description: "Dream pop",
+          url: "https://mohawkaustin.com/sun-june",
+          starts_at: start,
+          ends_at: nil
+        )
+
+        url = event.google_calendar_url
+
+        expect(url).to start_with("https://calendar.google.com/calendar/render?")
+        expect(url).to include("action=TEMPLATE")
+        expect(url).to include("text=Sun+June")
+        expect(url).to include("dates=20260809T010000Z%2F20260809T030000Z")
+        expect(url).to include("location=Mohawk")
+        expect(url).to include(CGI.escape("https://mohawkaustin.com/sun-june"))
+      end
+    end
+
+    describe "#to_ics" do
+      it "produces a valid VCALENDAR with escaped text and CRLF lines" do
+        event = build(
+          :event,
+          title: "Jazz, Blues; & More",
+          venue: "The Elephant Room",
+          description: "Line one\nLine two",
+          url: "https://example.com/jazz",
+          starts_at: start,
+          ends_at: start + 90.minutes
+        )
+        now = Time.zone.parse("2026-08-01T12:00:00-05:00")
+
+        ics = event.to_ics(now: now)
+
+        expect(ics).to start_with("BEGIN:VCALENDAR\r\n")
+        expect(ics).to end_with("END:VCALENDAR\r\n")
+        expect(ics).to include("VERSION:2.0")
+        expect(ics).to include("BEGIN:VEVENT").and include("END:VEVENT")
+        expect(ics).to include("DTSTAMP:20260801T170000Z")
+        expect(ics).to include("DTSTART:20260809T010000Z")
+        expect(ics).to include("DTEND:20260809T023000Z")
+        expect(ics).to include("SUMMARY:Jazz\\, Blues\\; & More")
+        expect(ics).to include("DESCRIPTION:Line one\\nLine two")
+        expect(ics).to include("LOCATION:The Elephant Room")
+        expect(ics).to include("URL:https://example.com/jazz")
+      end
+
+      it "uses the fallback end time in the ICS when ends_at is blank" do
+        event = build(:event, starts_at: start, ends_at: nil)
+        expect(event.to_ics).to include("DTEND:20260809T030000Z")
+      end
+    end
+  end
 end

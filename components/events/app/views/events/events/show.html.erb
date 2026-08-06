@@ -38,4 +38,20 @@
       ) do %>🎟️ Tickets &amp; details<% end %>
     </div>
   <% end %>
+
+  <div class="mt-6 border-t border-line pt-6">
+    <h2 class="mb-3 font-mono text-xs uppercase tracking-wide text-ink-muted">Add to calendar</h2>
+    <div class="flex flex-wrap gap-2">
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+        variant: :secondary,
+        href: @event.google_calendar_url,
+        target: "_blank",
+        rel: "noopener noreferrer"
+      ) do %>📅 Google Calendar<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+        variant: :secondary,
+        href: event_calendar_path(@event)
+      ) do %>⬇️ Download .ics<% end %>
+    </div>
+  </div>
 </article>

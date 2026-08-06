@@ -54,6 +54,50 @@ RSpec.describe "Events", type: :request do
     end
   end
 
+  describe "calendar actions on the event page" do
+    it "offers a Google Calendar link and an .ics download alongside the ticket link" do
+      event = create(:event, title: "La Bohème", url: "https://austinopera.org/la-boheme")
+
+      get "/events/e/#{event.id}"
+
+      expect(response).to have_http_status(:ok)
+      page = Capybara.string(response.body)
+      # Ticket link still opens safely in a new tab (unchanged).
+      expect(page).to have_css("a[href='https://austinopera.org/la-boheme'][target='_blank']")
+      # Google Calendar link opens in a new tab.
+      expect(page).to have_css(
+        "a[href^='https://calendar.google.com/calendar/render'][target='_blank'][rel='noopener noreferrer']",
+        text: "Google Calendar"
+      )
+      # Internal .ics download link.
+      expect(page).to have_css("a[href='/events/e/#{event.id}/calendar']", text: "Download .ics")
+    end
+  end
+
+  describe "GET /events/e/:id/calendar (ICS download)" do
+    it "downloads a valid iCalendar file built from the event's fields" do
+      event = create(
+        :event,
+        title: "Psych Rock Show",
+        venue: "Hotel Vegas",
+        starts_at: Time.zone.parse("2026-08-08T20:00:00-05:00"),
+        ends_at: nil
+      )
+
+      get "/events/e/#{event.id}/calendar"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("text/calendar")
+      expect(response.headers["Content-Disposition"]).to include("attachment")
+      expect(response.headers["Content-Disposition"]).to include("psych-rock-show.ics")
+      expect(response.body).to include("BEGIN:VCALENDAR").and include("BEGIN:VEVENT")
+      expect(response.body).to include("SUMMARY:Psych Rock Show")
+      expect(response.body).to include("DTSTART:20260809T010000Z")
+      # ends_at was blank, so the defined 2h fallback is used.
+      expect(response.body).to include("DTEND:20260809T030000Z")
+    end
+  end
+
   it "is gated by the module flag" do
     create(:event, title: "Some Event", starts_at: 2.days.from_now)
 
