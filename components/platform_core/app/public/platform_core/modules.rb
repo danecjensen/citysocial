@@ -18,7 +18,8 @@ module PlatformCore
       { key: "communities",  label: "Communities",  path: "/communities",  nav: true },
       { key: "marketplace",  label: "Marketplace",  path: "/marketplace",  nav: true },
       { key: "events",       label: "Events",       path: "/events",       nav: true },
-      { key: "feedback",     label: "Feedback",     path: "/feedback",     nav: true }
+      { key: "feedback",     label: "Feedback",     path: "/feedback",     nav: true },
+      { key: "notifications", label: "Notifications", path: "/notifications", nav: false }
     ].freeze
 
     def all

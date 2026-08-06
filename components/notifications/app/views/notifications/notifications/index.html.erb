@@ -1,0 +1,56 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Notifications",
+      subtitle: "New activity from people you follow across CitySocial."
+    ) do |header| %>
+  <% if @notifications.any?(&:unread?) %>
+    <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :secondary,
+            size: :sm,
+            href: read_all_notifications_path,
+            method: :patch
+          ) do %>
+        Mark all read
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @notifications.any? %>
+  <div class="space-y-3">
+    <% @notifications.each do |notification| %>
+      <% actor = notification.actor %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex min-w-0 items-center gap-3">
+            <% if actor %>
+              <%= render PlatformCore::Ui::AvatarComponent.new(user: actor, size: :sm, alt: "") %>
+            <% end %>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="text-sm font-semibold text-ink"><%= notification.message %></p>
+                <% if notification.unread? %>
+                  <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>New<% end %>
+                <% end %>
+              </div>
+              <p class="mt-1 font-mono text-xs text-ink-faint"><%= time_ago_in_words(notification.created_at) %> ago</p>
+            </div>
+          </div>
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: :ghost,
+                size: :sm,
+                href: read_notification_path(notification),
+                method: :patch
+              ) do %>
+            View
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "You're all caught up",
+        body: "New posts from people you follow will appear here."
+      ) %>
+<% end %>
