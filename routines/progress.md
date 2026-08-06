@@ -17,7 +17,7 @@ Examples of the right kind of line:
 
 - Tests must NOT require Redis: `config/environments/test.rb` sets `config.active_job.queue_adapter = :test` (app uses `:sidekiq` elsewhere, set in config/application.rb). Any job enqueued in a spec (e.g. Active Storage `AnalyzeJob` on photo attach) otherwise raises `RedisClient::CannotConnectError`. Redis IS installed here but the suite must stay self-contained.
 - PG needs trust auth: set 127.0.0.1/::1/local to `trust` in /etc/postgresql/16/main/pg_hba.conf, then reload; config/database.yml uses user postgres, no password.
-- `git push` over Bash is blocked here. Push via GitHub MCP: create_branch (from master) → push_files (all changed files, one commit) → create_pull_request (draft). Default branch is `master`.
+- `git push` over Bash WORKS now (was blocked in earlier runs — env changed): commit locally, `git push -u origin <branch>`, then `create_pull_request` (draft) via GitHub MCP. GitHub MCP `create_branch`/`push_files` remain a fallback if Bash push ever fails. Default branch is `master`.
 - Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent supports type: :select. ButtonComponent takes variant/size/href/method/params/confirm/type/aria_label/pressed (no arbitrary classes); toggle buttons (vote, feedback Support) pass pressed: true/false to emit aria-pressed and pair it with an emphasized variant.
 - Never hand-roll button/table/form/select/flash markup — compose the Ui components. Update /design (app/views/design/show.html.erb) when adding a component option.
 - Env setup a fresh clone needs before `bin/verify` works: `bundle install`, then put
@@ -42,6 +42,30 @@ Examples of the right kind of line:
 ---
 
 ## Runs
+
+## 2026-08-06 23:22 — F-011
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/23
+Changed: components/events/app/models/events/event.rb, components/events/app/controllers/events/events_controller.rb, components/events/config/routes.rb, components/events/app/views/events/events/show.html.erb, spec/models/events/event_spec.rb, spec/requests/events_spec.rb
+Notes: Master green (168 examples). 1a: DanesIdeas Inbox empty. 1b gated (8 ready ≥5).
+Picked F-011 (event calendar actions, R-003, score 1.2) — the top unclaimed ready item;
+the higher scorers F-017 (2.55) and F-009 (2.0) already have open draft PRs (#19, #20).
+Added #google_calendar_url + #to_ics (pure-Ruby RFC-5545, CRLF + TEXT escaping) +
+#calendar_ends_at (2h fallback when ends_at blank) to Events::Event, a read-only
+#calendar controller action sending the .ics, and Google/ICS buttons on the show page
+(ticket button untouched). Full bin/verify green: 175 examples, packwerk + rubocop clean.
+Booted the dev server and captured a real screenshot + a live .ics fetch (both verified).
+Reconciled 4 ready items that already have open draft PRs to done so they aren't rebuilt:
+F-009 (#20), F-010 (#21), F-015 (#22), F-017 (#19). Ready queue now F-006/F-014/F-016, all
+below the 1.0 threshold.
+Learnings:
+- `git push` over Bash works in this environment now (earlier runs recorded it as blocked);
+  promoted the correction to Codebase Patterns.
+- Screenshots ARE capturable here: Postgres runs locally (trust auth), and Playwright is a
+  GLOBAL node module — require('/opt/node22/lib/node_modules/playwright') from a .cjs and
+  launch chromium with executablePath '/opt/pw-browsers/chromium' (ESM import ignores NODE_PATH).
+- Rails `Hash#to_query` sorts keys and encodes space as `+`, `/` as `%2F` — assert the
+  Google Calendar URL with those exact encodings, not raw chars.
 
 <!--
 Format, appended newest-last:
