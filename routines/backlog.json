@@ -112,7 +112,7 @@
       "attempts": 1,
       "created": "2026-08-05",
       "pr": "https://github.com/danecjensen/citysocial/pull/16",
-      "notes": "F-001 (PR #2) has merged, so the ButtonComponent-conflict hold is lifted. Still needs ButtonComponent to accept target:/rel: (it currently only takes variant/size/href/method/params/confirm/type/aria_label/pressed) — add that passthrough as part of the item."
+      "notes": "Shipped by codex PR #16 (merged 2026-08-06): added target:/rel: passthrough to ButtonComponent link mode and opened the event ticket CTA in a new tab with rel=noopener noreferrer. Reconciled ready->done in the F-010 run."
     },
     {
       "id": "F-006",
@@ -202,14 +202,15 @@
       "effort": 2,
       "confidence": 1.0,
       "score": 2.0,
-      "status": "ready",
+      "status": "done",
       "origin": "research",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/20",
       "kind": "module_feature",
       "product_family": "communities",
-      "milestone": "comment-ranking"
+      "milestone": "comment-ranking",
+      "notes": "Built by codex draft PR #20 (open, not yet merged). Reconciled ready->done in the F-010 run so it is not rebuilt; master's backlog will re-sync when #20 merges."
     },
     {
       "id": "F-010",
@@ -226,14 +227,15 @@
       "effort": 2,
       "confidence": 0.8,
       "score": 1.2,
-      "status": "ready",
+      "status": "done",
       "origin": "research",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/21",
       "kind": "module_feature",
       "product_family": "restaurants",
-      "milestone": "cuisine-ranking"
+      "milestone": "cuisine-ranking",
+      "notes": "Consumed R-002 (grader 8/10). Added by_cuisine scope + cuisines class method on Restaurants::Restaurant; leaderboard controller reads params[:cuisine].presence_in(catalog cuisines) so an unknown value falls back to the full board; a FormFieldComponent :select (from F-003) drives a GET filter form above the table. No schema/route/dependency change."
     },
     {
       "id": "F-011",
@@ -392,12 +394,12 @@
       "effort": 1,
       "confidence": 0.85,
       "score": 2.55,
-      "status": "ready",
+      "status": "done",
       "origin": "auto",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
-      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). PR #13 has now merged, so the hold is lifted and this is schedulable. Renumbered from F-013 while resolving PR #15 so the shipped Messaging feature keeps the ID used by its PR and progress record."
+      "pr": "https://github.com/danecjensen/citysocial/pull/19",
+      "notes": "Built by claude draft PR #19 (open, not yet merged; branch claude/f-013-feedback-support-aria-pressed wires pressed: on the two Support toggles). Reconciled ready->done in the F-010 run so it is not rebuilt. Renumbered from F-013 while resolving PR #15 so the shipped Messaging feature keeps the ID used by its PR and progress record."
     }
   ]
 }
