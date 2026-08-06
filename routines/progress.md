@@ -32,11 +32,12 @@ Examples of the right kind of line:
   strings as literals (never interpolate) or the standalone Tailwind build purges them.
 - Modules cross boundaries only via `PlatformCore::EventBus` or a sibling's `app/public`
   API; a module references users by id through `PlatformCore::Graph`, never the User model.
-- Check suite is `bin/verify`. Tool wrappers vary by container: `bundle exec rspec/rubocop/packwerk` works once `/opt/rbenv/versions/3.3.6/bin` is on PATH; `bin/rspec` binstubs may not exist — try bundle exec first, never commit generated binstubs. In request specs use `Capybara.string(response.body)` + have_css to assert several attrs on one element.
-- Test setup: start Postgres (`pg_ctlcluster 16 main start`, trust auth for localhost) and run `bin/rails tailwindcss:build` — specs render the layout which needs the built `tailwind.css`, else every request spec fails with Propshaft::MissingAssetError.
+- Check suite is `bin/verify`. Tool wrappers vary by container: `bundle exec rspec/rubocop/packwerk` works once `/opt/rbenv/versions/3.3.6/bin` is on PATH; `bin/rspec` binstubs may not exist (generate with `bundle binstubs`, but never commit them). In request specs use `Capybara.string(response.body)` + have_css to assert several attrs on one element.
+- A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
 - `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
 - Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
+- The `app_module` generator currently needs two RuboCop cleanups after generation: alphabetize its injected Gemfile entry and freeze the generated VERSION constant.
 
 ---
 
@@ -120,6 +121,28 @@ was a Phase 0 fix, not a scheduled feature.
 Learnings:
 - Promoted to Codebase Patterns: tests must not depend on Redis; test env uses the
   ActiveJob `:test` adapter.
+## 2026-08-06 — F-012
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/14
+Changed: components/marketplace/app/models/marketplace/listing.rb, components/marketplace/app/controllers/marketplace/listings_controller.rb, components/marketplace/config/routes.rb, components/marketplace/app/views/marketplace/listings/show.html.erb, spec/models/marketplace/listing_spec.rb, spec/requests/marketplace_spec.rb, routines/backlog.json, routines/research.md, routines/progress.md
+Notes: Master was fully green (rspec 131/0, packwerk + rubocop clean). No unprocessed
+DanesIdeas (Inbox empty). Consumed research brief R-004 (grader 10/10) as F-012:
+owner-only marketplace listing renewal. renew! resets created_at (doubles as the 48h
+cooldown clock — no migration) and pushes expires_at 30 days out; Renew button shows only
+when renewable?. Full suite 136 examples, 0 failures. Chose R-004 because it is the
+top-graded fresh brief in a module with ZERO file overlap with the two open draft PRs
+(#12 notifications, #13 vote-state), unlike the existing ready items F-005/F-006 which
+both collide with #13's ButtonComponent / communities-view edits.
+Learnings:
+- Two automation tracks are diverging on master: a codex track opened PR #12 which BUILT
+  the notifications module (F-008) and QUEUED F-009-F-012 (from R-001..R-004, status ready)
+  but implemented none of the four and never touched research.md. To avoid ID collisions,
+  reused codex's assigned id F-012 for R-004 and bumped next_id to 13. Expect a
+  human-resolved backlog.json merge conflict if #12 lands.
+- Reconciled F-004: an earlier session already opened draft PR #13 for it, but master's
+  backlog still showed it ready. Marked it done so it isn't re-picked. Check open PRs
+  against ready-item state every run — the fresh clone lags in-flight PR branches.
+
 ## 2026-08-05 12:11 — F-007
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/10
@@ -128,6 +151,13 @@ Notes: Capability lane. Shipped the human-priority public resident profile MVP w
 Learnings:
 - Resolve Ruby through the repository's active rbenv shims and .ruby-version; the old hardcoded /opt/rbenv path can silently fall back to macOS Ruby.
 
+## 2026-08-05 17:16 — F-008
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/12
+Changed: components/notifications/, app/views/layouts/application.html.erb, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, routines/research.md, docs/roadmap.md, docs/lessons.md
+Notes: Capability lane. Generated the Notifications engine and shipped a durable follower activity inbox consuming feed.post_created and communities.post_created asynchronously through the event bus. Followers get idempotent, owner-only notifications with unread shell count, empty state, read-through, and mark-all-read; no sibling model references or PII are stored. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails boot/routes/event wiring, ERB compilation, Ruby syntax, Tailwind, factory load, JSON, and diff checks passed; PostgreSQL denial blocked migration execution, screenshots, and all RSpec examples before they ran. Consumed R-001 through R-004 as F-009 through F-012 for future module-feature runs.
+Learnings:
+- The app_module generator currently inserts a new path gem out of alphabetical order and emits a mutable VERSION constant; correct both before RuboCop.
 ## 2026-08-05 23:25 — F-004
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/13
@@ -144,3 +174,8 @@ Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/16
 Changed: components/platform_core/app/public/platform_core/ui/button_component.rb, components/events/app/views/events/events/show.html.erb, app/views/design/show.html.erb, spec/components/platform_core/ui/button_component_spec.rb, spec/requests/events_spec.rb, routines/backlog.json
 Notes: Capability was the preferred lane, but profiles are shipped, notifications and messaging are already represented by open draft PRs, and research briefs R-001 through R-004 are reserved by F-009 through F-012. Used the authorized smaller-feature fallback and shipped the highest-scoring unclaimed item: event ticket links now preserve CitySocial in the original tab while opening with noopener/noreferrer. DanesIdeas Inbox was empty; research.md was unchanged. Verification incomplete only because the managed environment denied PostgreSQL before examples: Packwerk, RuboCop, Zeitwerk, Ruby/ERB checks, Tailwind, backlog integrity, and diff checks passed.
+## 2026-08-05 23:33 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/15
+Changed: components/messaging/, components/platform_core/app/public/platform_core/graph.rb, components/platform_core/app/public/platform_core/modules.rb, components/platform_core/app/views/platform_core/profiles/show.html.erb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, docs/roadmap.md
+Notes: Product fallback lane. The preferred late-night Capability lane had no unreserved evidence-backed candidate: the human-priority profile capability is shipped, notifications F-008 is already represented by open PR #12, and the remaining research queue contains module features. The third consecutive Codex implementation therefore satisfied the product-cadence requirement with the roadmap-backed Messaging MVP: generated engine, canonical one-to-one threads, private replies, unread/read state, profile entry point, owner scoping, a PII-safe handle lookup, and a content-free messaging.message_created event. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails/route smoke checks, ERB/Ruby syntax, Tailwind, backlog integrity, and diff checks passed; PostgreSQL denial blocked the full and focused specs before examples.

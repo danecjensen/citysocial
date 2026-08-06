@@ -1,0 +1,6 @@
+enforce_dependencies: true
+enforce_privacy: true
+# App-modules may depend ONLY on the shared kernel. To talk to a sibling module,
+# publish/subscribe through PlatformCore::EventBus -- never add it here.
+dependencies:
+  - components/platform_core

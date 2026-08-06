@@ -60,6 +60,9 @@
         <% unless @listing.sold? %>
           <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: mark_sold_listing_path(@listing), method: :post) do %>Mark sold<% end %>
         <% end %>
+        <% if @listing.renewable? %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: renew_listing_path(@listing), method: :post) do %>Renew<% end %>
+        <% end %>
         <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: edit_listing_path(@listing)) do %>Edit<% end %>
         <%= render PlatformCore::Ui::ButtonComponent.new(variant: :danger, href: listing_path(@listing), method: :delete, confirm: "Delete this listing?") do %>Delete<% end %>
       </div>

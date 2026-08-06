@@ -68,6 +68,35 @@ RSpec.describe "Marketplace", type: :request do
     expect(listing.reload).to be_sold
   end
 
+  it "lets only the owner renew a stale listing, resurfacing it" do
+    owner = create(:user)
+    listing = create(:listing, author_id: owner.id, created_at: 3.days.ago, expires_at: 1.day.from_now)
+
+    login_as(create(:user)) # not the owner
+    post "/marketplace/#{listing.slug}/renew"
+    expect(listing.reload.created_at).to be_within(1.minute).of(3.days.ago)
+
+    login_as(owner)
+    post "/marketplace/#{listing.slug}/renew"
+    expect(response).to redirect_to("/marketplace/#{listing.slug}")
+    listing.reload
+    expect(listing.created_at).to be_within(1.minute).of(Time.current)
+    expect(listing.expires_at).to be_within(1.minute).of(30.days.from_now)
+  end
+
+  it "shows the renew button only when the listing is eligible" do
+    owner = create(:user)
+    stale = create(:listing, author_id: owner.id, title: "Stale Lamp", created_at: 3.days.ago)
+    fresh = create(:listing, author_id: owner.id, title: "Fresh Lamp", created_at: 1.hour.ago)
+
+    login_as(owner)
+    get "/marketplace/#{stale.slug}"
+    expect(response.body).to include(">Renew<")
+
+    get "/marketplace/#{fresh.slug}"
+    expect(response.body).not_to include(">Renew<")
+  end
+
   it "blocks the module when disabled, then restores it" do
     create(:listing, title: "Vintage Bicycle")
     PlatformCore::Modules.disable!("marketplace")
