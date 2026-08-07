@@ -13,6 +13,48 @@
   "next_id": 18,
   "items": [
     {
+      "id": "F-013",
+      "title": "Feedback 'Support' toggle emits aria-pressed",
+      "problem": "The feedback 'Support' button is a toggle whose supported/unsupported state is conveyed only by color and label swap, so assistive-tech users get no pressed-state signal.",
+      "evidence": "components/feedback/app/views/feedback/submissions/_submission.html.erb:4-9 and components/feedback/app/views/feedback/submissions/show.html.erb:41 — the support ButtonComponent switches variant (:primary/:secondary) on `supported` but never sets pressed:. ButtonComponent now accepts pressed: (F-004, PR #13), so this is a one-line wire-up per call.",
+      "acceptance": [
+        "The support button on the feedback list and show page renders aria-pressed=true when the current user supports it, false otherwise",
+        "The existing variant swap and supports_count display are unchanged",
+        "Covered by a request spec asserting aria-pressed reflects support state"
+      ],
+      "impact": 3,
+      "effort": 1,
+      "confidence": 0.85,
+      "score": 2.55,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/19",
+      "notes": "Shipped: wired ButtonComponent#pressed: (from F-004/PR #13, now merged) through the list partial and show page so aria-pressed reflects support state. No /design change (pressed: already documented)."
+    },
+    {
+      "id": "F-004",
+      "title": "Vote control reflects the current user's own vote",
+      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
+      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
+      "acceptance": [
+        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
+        "Anonymous users and un-voted items render the neutral state as today",
+        "Applies on the community post list, the post show page, and comments",
+        "Covered by a request/component spec asserting the active state renders for the voter"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.7,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-05",
+      "pr": "https://github.com/danecjensen/citysocial/pull/13"
+    },
+    {
       "id": "F-001",
       "title": "Give icon-only vote buttons accessible labels",
       "problem": "The upvote/downvote controls are icon-only glyphs with no accessible name.",

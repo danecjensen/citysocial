@@ -169,6 +169,14 @@ Learnings:
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
 
+## 2026-08-06 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/19
+Changed: components/feedback/app/views/feedback/submissions/_submission.html.erb, components/feedback/app/views/feedback/submissions/show.html.erb, spec/requests/feedback_spec.rb
+Notes: Master green on arrival (137 examples) — the F-004/PR #13 merge landed ButtonComponent#pressed:, lifting F-013's hold, so it was the top ready item (2.55). Wired `pressed: supported` on the list partial and `pressed: @supported` on the show page; the existing variant/label swap and supports_count were left untouched. New request spec asserts aria-pressed='true' on a supported item (list + show) and 'false' on an unsupported one via Capybara.string + have_css. Full suite green: 138 examples, packwerk + rubocop clean. No /design change — `pressed:` was already documented by F-004.
+1a: DanesIdeas Inbox empty — nothing ingested. 1b (gate open, 4 ready<5): added 0 items. The easy grounded veins stay drained (no TODO/FIXME anywhere; collection views guard their zero-case), and the only outward-looking source — research briefs R-001..R-004 — are still `fresh` on master but already in flight on open PRs #12/#14/#16 under the codex-track F-009..F-012 ids the prior run reserved (next_id=15). Re-proposing them would be duplicate churn, so I left the backlog as-is rather than pad.
+Learnings:
+- (none new — the ButtonComponent `pressed:` toggle pattern is already in Codebase Patterns; F-013 was its second, clean application. Feedback Support show-page button has no aria_label because its text content ("Support this"/"Remove support") is its accessible name — only icon-only toggles need both aria_label and pressed.)
 ## 2026-08-06 05:09 — F-005
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/16

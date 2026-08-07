@@ -39,7 +39,8 @@
         <%= render PlatformCore::Ui::ButtonComponent.new(
               variant: @supported ? :secondary : :primary,
               href: toggle_support_submission_path(@submission),
-              method: :post
+              method: :post,
+              pressed: @supported
             ) do %>
           <%= @supported ? "Remove support" : "Support this" %>
         <% end %>
