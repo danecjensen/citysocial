@@ -34,6 +34,20 @@ PATH
       rails (~> 7.2)
 
 PATH
+  remote: components/messaging
+  specs:
+    messaging (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
+  remote: components/notifications
+  specs:
+    notifications (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
   remote: components/platform_core
   specs:
     platform_core (0.1.0)
@@ -453,6 +467,8 @@ DEPENDENCIES
   feedback!
   importmap-rails
   marketplace!
+  messaging!
+  notifications!
   packwerk (~> 3.0)
   pg (~> 1.5)
   platform_core!

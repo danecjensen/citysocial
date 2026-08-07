@@ -39,6 +39,8 @@ gem "events", path: "components/events"
 gem "feed", path: "components/feed"
 gem "feedback", path: "components/feedback"
 gem "marketplace", path: "components/marketplace"
+gem "messaging", path: "components/messaging"
+gem "notifications", path: "components/notifications"
 gem "platform_core", path: "components/platform_core"
 gem "restaurants",   path: "components/restaurants"
 

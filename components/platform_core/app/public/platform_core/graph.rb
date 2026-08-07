@@ -23,6 +23,17 @@ module PlatformCore
       user = PlatformCore::User.find_by(id: id)
       return unless user
 
+      public_profile_snapshot(user)
+    end
+
+    def public_profile_by_handle(handle)
+      user = PlatformCore::User.find_by(handle: handle.to_s)
+      return unless user
+
+      public_profile_snapshot(user)
+    end
+
+    def public_profile_snapshot(user)
       PublicProfile.new(
         id: user.id,
         handle: user.handle,
@@ -32,5 +43,6 @@ module PlatformCore
         avatar_attached: user.avatar.attached?
       )
     end
+    private_class_method :public_profile_snapshot
   end
 end

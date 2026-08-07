@@ -1,0 +1,63 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Messages",
+      subtitle: @unread_count.positive? ? "#{@unread_count} unread" : "Private conversations with people in your city."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_conversation_path) do %>
+      New conversation
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @conversations.any? %>
+  <div class="mx-auto max-w-3xl space-y-3">
+    <% @conversations.each do |conversation| %>
+      <% other_participant = conversation.other_participant(current_user.id) %>
+      <% last_message = conversation.messages.last %>
+      <% unread_count = conversation.unread_count_for(current_user.id) %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="flex flex-wrap items-center gap-4">
+          <% if other_participant %>
+            <%= render PlatformCore::Ui::AvatarComponent.new(user: other_participant, size: :md, alt: "") %>
+          <% end %>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="font-display font-bold text-ink">
+                <%= other_participant&.display_name_or_handle || "Resident" %>
+              </p>
+              <% if unread_count.positive? %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>
+                  <%= pluralize(unread_count, "unread") %>
+                <% end %>
+              <% end %>
+            </div>
+            <% if last_message %>
+              <p class="mt-1 truncate text-sm text-ink-muted"><%= last_message.body %></p>
+              <p class="mt-1 font-mono text-xs text-ink-faint">
+                <%= time_ago_in_words(last_message.created_at) %> ago
+              </p>
+            <% end %>
+          </div>
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: unread_count.positive? ? :primary : :secondary,
+                size: :sm,
+                href: conversation_path(conversation)
+              ) do %>
+            Open
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No conversations yet",
+        body: "Start with a resident's handle, or use the Message resident action on their public profile."
+      ) do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_conversation_path) do %>
+        Start a conversation
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
