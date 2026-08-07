@@ -30,7 +30,21 @@
 <% end %>
 
 <section class="mt-8">
-  <h2 class="mb-4 font-display text-lg font-bold text-ink"><%= pluralize(@post.comments_count, "comment") %></h2>
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-display text-lg font-bold text-ink"><%= pluralize(@post.comments_count, "comment") %></h2>
+    <nav aria-label="Comment sort" class="flex items-center gap-1">
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+        variant: @comment_sort == :new ? :primary : :ghost,
+        size: :sm,
+        href: community_post_path(@community, @post, sort: "new")
+      ) do %>New<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+        variant: @comment_sort == :top ? :primary : :ghost,
+        size: :sm,
+        href: community_post_path(@community, @post, sort: "top")
+      ) do %>Top<% end %>
+    </nav>
+  </div>
 
   <% if logged_in? %>
     <% unless @post.locked %>
