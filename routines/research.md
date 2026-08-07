@@ -16,11 +16,11 @@ slop-producing questions when adding.
   already use (Nextdoor, local subreddits, Facebook groups)?
 - What makes people come back daily to community/classifieds/restaurant-ranking apps —
   which notification or "others see it" loops actually retain?
-- Generic "reddit"/"nextdoor" search terms produce slop (complaint-board noise, no
-  fetchable primary source) — prefer direct competitor product docs (Discourse,
-  Craigslist/Kijiji help pages) and App Store reviews, which cited cleanly this run.
+- Prefer direct product docs and specific local forums; generic searches produce slop.
 - Which columns/data does the app already store per module but never surface in the UI
   (sort by, filter by, export/act on)? Cheap, no-migration wins tend to live there.
+- Resident discovery needs explicit search consent; public profile URLs alone do not
+  justify a citywide directory, so revisit only when a visibility migration is allowed.
 
 ## Briefs
 
@@ -146,3 +146,130 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     inside the cooldown window
 - Grader score: 10/10
 - Status: consumed (F-012)
+
+### R-008 — Coordinate reliable Austin pickup games
+- Date: 2026-08-07
+- Type: module-product
+- Module: new `pickup_sports` engine
+- Product thesis and city-specific differentiation: Give Austin residents a
+  roster-first place to find casual games that are actually playable this week:
+  explicit sport, date, neighborhood or venue, skill and welcome cues, live capacity,
+  a fair waitlist, cancellation state, and turnout. This is not a generic event
+  calendar, discussion group, league manager, or chat clone.
+- Primary persona and job-to-be-done: An Austin adult — especially a newcomer,
+  visitor, rusty beginner, or resident crossing town — wants to find a suitable
+  casual game and know there is a spot and enough players before leaving.
+- Engagement loop: A host posts a game; residents find it by sport, date, and
+  neighborhood and join; roster and capacity changes become visible and waitlisted
+  residents are promoted deterministically; participants react by joining, leaving,
+  or attending; the host closes attendance and posts the next run. Milestone 1 emits
+  notification-ready events but does not claim current Notifications delivery.
+- Competitor inspiration and what not to copy: Reuse Meetup's attendee caps,
+  waitlists, automatic promotion, and attendance concepts, plus Nextdoor's local
+  activity coordination. Do not copy Meetup's paid waitlist priority, mandatory
+  group prerequisite, payments, or broad planning surface; do not copy Nextdoor's
+  generic chat hierarchy or address-verification model.
+- Proposed module name and boundary: Generate `pickup_sports` with
+  `bin/rails g app_module pickup_sports`. It owns games and per-game rosters,
+  depends only on `platform_core`, stores kernel user ids, resolves identity through
+  `PlatformCore::Graph`, references no sibling classes, publishes primitive event
+  payloads, and exposes only a read API from `app/public/pickup_sports/`.
+- Existing-module overlap analysis: `events` is an externally ingested, read-only
+  discovery store with no resident host or RSVP actions. `communities` owns durable
+  membership, posts, comments, and votes, not per-game commitments, capacity,
+  promotion, cancellation, or attendance. `messaging` remains the private
+  conversation owner and is not duplicated.
+- MVP vertical slice:
+  - Models/data: `PickupSports::Game` owns host, title, sport, start/end,
+    neighborhood, venue, skill level, capacity, and lifecycle status;
+    `PickupSports::RosterEntry` owns game, resident, and joined/waitlisted/
+    attended/absent state, with a unique game/resident constraint and indexes for
+    upcoming filters.
+  - Routes and primary flow: browse/filter by sport, date, and neighborhood text;
+    show; authenticated host create/edit/cancel; join/leave; capacity assigns joined
+    versus waitlisted; leaving a joined slot promotes the first waitlisted entry
+    inside a game lock/transaction ordered by `created_at, id`; the host closes
+    attendance after the start.
+  - Events/public APIs: publish `pickup_sports.game_created`,
+    `pickup_sports.game_changed`, and `pickup_sports.roster_promoted` with only
+    primitive game, actor, and recipient ids, internal target path, and change kind.
+    Expose `PickupSports::UpcomingGames` as the read-only public API. Never reference
+    Notifications; subscriber delivery is a later milestone.
+  - UI states: compose shared components/tokens for empty, open, nearly full, full
+    and waitlisted, promoted-on-refresh, canceled, completed, owner controls, and
+    validation errors.
+  - Tests: model, request, event, public-API, and boundary coverage for ownership,
+    authentication, transitions, unique/double join, final-slot contention, FIFO
+    promotion, cancellation, attendance closeout, filtering, payloads, and absence
+    of sibling dependencies.
+- Additive/reversible migration needs: Create `pickup_sports_games` and
+  `pickup_sports_roster_entries` with reversible migrations, foreign-key/index
+  constraints inside the module's schema, and no destructive auth, payment, or
+  external-service changes.
+- Expansion path:
+  - Recurring game series and host templates
+  - A Notifications subscriber for roster and game-change events
+  - Lightweight team or position balancing
+  - Carefully designed reliability signals with correction and appeal paths
+- Repo tie-in: `components/events/config/routes.rb` and
+  `components/events/app/controllers/events/events_controller.rb` prove Events is
+  browse/show/calendar only and read-only; `components/events/app/models/events/event.rb`
+  models discovered happenings, not rosters; `components/communities/config/routes.rb`,
+  `community.rb`, and `post.rb` cover discussion membership without per-game
+  state; current Notifications event/model files do not accept pickup events.
+- Sources:
+  - https://www.reddit.com/r/Austin/comments/179ccs9/pickup_soccer_games_around_austin/ — Austin player reports stale or incomplete groups and needs recurring drop-in play (fetched 2026-08-07)
+  - https://www.reddit.com/r/Austin/comments/11pgs6s/are_there_any_soccer_pickup_games_in_austin_if_so/ — beginner, location, and availability uncertainty in Austin (fetched 2026-08-07)
+  - https://www.reddit.com/r/Austin/comments/12cka6x/pickup_basketball/ — cross-sport demand and list-based court access (fetched 2026-08-07)
+  - https://www.reddit.com/r/Austin/comments/1nektvj/pickup_soccer_leagues/ — recurring Austin schedules show structured local supply (fetched 2026-08-07)
+  - https://help.meetup.com/hc/en-us/articles/360003883411-Enable-a-Waitlist-for-your-Meetup-event — attendee caps, waitlists, and automatic promotion (fetched 2026-08-07)
+  - https://help.meetup.com/hc/en-us/articles/9389668230541-Manage-attendees-and-track-attendance-for-your-Meetup-event-on-the-web — roster, waitlist, check-in, and no-show states (fetched 2026-08-07)
+  - https://help.meetup.com/hc/en-us/articles/40708711818637-What-notifications-Meetup-can-send — participant change notifications as later inspiration (fetched 2026-08-07)
+  - https://blog.nextdoor.com/2024/07/22/new-communities-feature-opens-lines-of-communication-between-neighbors — nearby activity partners and sports-team coordination (fetched 2026-08-07)
+- Grader score: 8/10 (−2: milestone 1 combines several independently reviewable
+  workflows; the deduction is not for module size, engine generation, or migrations)
+- Status: product-fresh
+
+### R-009 — Share a CitySocial event into existing chats
+- Date: 2026-08-07
+- Type: app-wide-capability
+- Module: platform_core
+- Ownership: `platform_core` owns a public `PlatformCore::Ui::ShareComponent`
+  and its Stimulus behavior; `events` is only the first milestone consumer and
+  supplies public title and canonical URL through that sanctioned API.
+- Demand signal: Austin residents and organizers describe local-event discovery and
+  attendance moving through friends, DMs, and word of mouth; Meetup treats event-page
+  sharing plus copy-link as a standard public-event action.
+- Sources:
+  - https://www.reddit.com/r/Austin/comments/1iwhcni/how_do_you_find_out_about_austin_events/ — residents send local-event discoveries to friends across fragmented channels (fetched 2026-08-07)
+  - https://www.reddit.com/r/Austin/comments/1uipqj1/how_to_get_people_to_join_and_attend_your_meetup/ — Austin organizers and attendees rely on friends, word of mouth, and DM'd details (fetched 2026-08-07)
+  - https://help.meetup.com/hc/en-us/articles/360002882691-Sharing-an-event-on-social-media — event-page sharing and an always-available copy-link precedent (fetched 2026-08-07)
+  - https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share — feature detection, HTTPS, activation, and failure constraints for native sharing (fetched 2026-08-07)
+  - https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API — secure-context and permission constraints for copy behavior (fetched 2026-08-07)
+  - https://aublog.nextdoor.com/2020/11/10/introducing-the-new-anyone-audience — off-platform sharing requires explicit public-audience semantics (fetched 2026-08-07)
+- Repo tie-in: `components/events/app/views/events/events/show.html.erb` already has
+  ticket and calendar actions; `components/events/config/routes.rb` provides a
+  stable public event route; `components/events/package.yml` already depends on
+  platform_core; shared components live under
+  `components/platform_core/app/public/platform_core/ui/`; Stimulus/importmap are
+  already wired in `config/importmap.rb` and `app/javascript/controllers/index.js`.
+- Acceptance sketch:
+  - The public ShareComponent accepts a title and canonical URL, composes the shared
+    ButtonComponent and design tokens, always renders Copy link, and reveals a
+    separate native Share action only when `navigator.share` is supported.
+  - Copy and native share are click-triggered; secure-context, permission, cancel,
+    and failure paths leave the permanent copy fallback usable and report accessible
+    success or failure status.
+  - Event detail adopts it with CitySocial `event_url(@event)`, never the external
+    ticket/source `@event.url`; existing ticket and calendar actions stay unchanged.
+  - `/design` documents the component. Component/request tests cover options,
+    canonical URL, controller/action/status markup, fallback, and unchanged event
+    actions; use existing browser/system tooling for behavior if available, with no
+    test dependency added.
+  - No route, model, migration, record, counter, provider integration, or new
+    dependency is added. Community-post adoption waits for explicit audience rules.
+- Engagement loop: A resident shares a public CitySocial event; friends see it in
+  the chat they already use and receive that chat's notification; they open the
+  canonical CitySocial event and react by coordinating or attending.
+- Grader score: 10/10
+- Status: fresh
