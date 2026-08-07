@@ -252,3 +252,18 @@ Notes: Master was fully GREEN this run (bin/verify 168/0, packwerk + rubocop cle
 Learnings:
 - Screenshots ARE achievable in this managed env (correcting several prior runs that claimed PostgreSQL denial made them impossible): pg_ctlcluster starts, RAILS_ENV=development bin/rails db:prepare loads the schema (only the photo-attaching seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, then drive Playwright from the global install at /opt/node22/lib/node_modules with chromium at /opt/pw-browsers/chromium-1194/chrome-linux/chrome and --no-sandbox.
 - A GET filter form can reuse FormFieldComponent :select with `form_with url:, method: :get` (no model): f.object is nil, so the component's inline-error branch is a safe no-op. Sanitize the incoming value with `params[:x].presence_in(allowed_values)` so an unknown/hand-crafted param falls back to the unfiltered view instead of a misleading empty state.
+
+## 2026-08-07 09:32 — research
+Outcome: produced 2 briefs (1 module-product, 1 app-wide-capability)
+Briefs: R-008, R-009
+Cut: 1 capability finding — a public resident directory had contextual discovery
+demand but no evidence supporting citywide enumeration without an explicit search
+visibility control; that control requires an out-of-scope migration.
+Notes: Researched pickup-sports coordination, public resident discovery, and reusable
+sharing with independent scouts, verifiers, and grader. R-008 preserves the full
+pickup-sports product thesis while limiting milestone 1 to its roster workflow and
+notification-ready events; R-009 makes Events the first consumer of a platform-owned
+share/copy primitive. Deep product comparison stayed with Meetup and Nextdoor. Open
+research PR #25 already reserves R-005 through R-007, so this run started at R-008;
+if both PRs land, the regular fresh queue reaches its cap of four while R-008 remains
+separately `product-fresh`. Backlog JSON is still malformed and was not edited.
