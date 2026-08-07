@@ -1,10 +1,22 @@
 module Messaging
   class ConversationsController < PlatformCore::BaseController
     before_action :require_login
-    before_action :set_conversation, only: :show
+    before_action :set_conversation, only: %i[show archive restore]
 
     def index
-      @conversations = Conversation.for_participant(current_user.id).recent.limit(50)
+      @archived = params[:view] == "archived"
+      @query = params[:q].to_s.strip
+      @conversations = Conversation.for_participant(current_user.id)
+      @conversations = if @archived
+                         @conversations.archived_for(current_user.id)
+                       else
+                         @conversations.active_for(current_user.id)
+                       end
+      if @query.present?
+        matching_ids = PlatformCore::Graph.public_profile_ids_matching(@query)
+        @conversations = @conversations.with_other_participant_ids(current_user.id, matching_ids)
+      end
+      @conversations = @conversations.recent.limit(50)
       @unread_count = Messaging::Inbox.unread_count(current_user.id)
     end
 
@@ -27,6 +39,16 @@ module Messaging
       else
         render :new, status: :unprocessable_content
       end
+    end
+
+    def archive
+      @conversation.archive_for!(current_user.id)
+      redirect_to conversations_path, notice: "Conversation archived."
+    end
+
+    def restore
+      @conversation.restore_for!(current_user.id)
+      redirect_to conversations_path(view: "archived"), notice: "Conversation restored."
     end
 
     private
