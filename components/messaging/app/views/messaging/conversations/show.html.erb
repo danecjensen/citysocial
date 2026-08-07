@@ -3,6 +3,11 @@
       subtitle: @other_participant ? "@#{@other_participant.handle}" : "Private conversation"
     ) do |header| %>
   <% header.with_actions do %>
+    <% if @conversation.context? %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: @conversation.context_path) do %>
+        View <%= @conversation.context_label %>
+      <% end %>
+    <% end %>
     <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: conversations_path) do %>
       Back to messages
     <% end %>

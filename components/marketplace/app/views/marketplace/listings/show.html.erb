@@ -55,6 +55,15 @@
       <p class="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= @listing.description %></p>
     <% end %>
 
+    <% if logged_in? && author && @listing.author_id != current_user.id && PlatformCore::Modules.enabled?("messaging") %>
+      <% message_path = "/messaging/conversations/new?recipient=#{ERB::Util.url_encode(author.handle)}&context_path=#{ERB::Util.url_encode("/marketplace/#{@listing.to_param}")}&context_label=#{ERB::Util.url_encode(truncate(@listing.title, length: 120))}" %>
+      <div class="mt-6">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: message_path) do %>
+          Message seller
+        <% end %>
+      </div>
+    <% end %>
+
     <% if logged_in? && @listing.author_id == current_user.id %>
       <div class="mt-6 flex flex-wrap gap-2 border-t border-line pt-4">
         <% unless @listing.sold? %>

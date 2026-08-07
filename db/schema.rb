@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_06_180700) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_07_091300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -187,6 +187,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_06_180700) do
     t.datetime "last_message_at"
     t.datetime "first_participant_archived_at"
     t.datetime "second_participant_archived_at"
+    t.string "context_path", limit: 500
+    t.string "context_label", limit: 120
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["first_participant_id", "first_participant_archived_at"], name: "index_messaging_conversations_on_first_archive"
