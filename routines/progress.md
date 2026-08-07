@@ -300,3 +300,21 @@ share/copy primitive. Deep product comparison stayed with Meetup and Nextdoor. O
 research PR #25 already reserves R-005 through R-007, so this run started at R-008;
 if both PRs land, the regular fresh queue reaches its cap of four while R-008 remains
 separately `product-fresh`. Backlog JSON is still malformed and was not edited.
+
+## 2026-08-07 17:18 — F-023
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/30
+Changed: components/pickup_sports/, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, Gemfile, Gemfile.lock, db/schema.rb, spec/factories/pickup_sports.rb, spec/models/pickup_sports/game_spec.rb, spec/public/pickup_sports/upcoming_games_spec.rb, spec/requests/pickup_sports_spec.rb, routines/backlog.json, routines/research.md, docs/roadmap.md
+Notes: Product lane. Consumed product-fresh R-008 and generated the PickupSports engine
+for Austin residents who need a reliable spot before traveling to a casual game. Milestone
+1 ships host-owned future games, sport/date/neighborhood discovery, public rosters, clear
+capacity and waitlist states, row-locked duplicate-safe joins, FIFO promotion on leave,
+cancellation clarity, primitive notification-ready events, and an UpcomingGames public API.
+Reconciled the malformed backlog from canonical reviewed state, reserved open F-021/PR #26,
+and recorded follow-up attendance, recurring-game, and Notifications milestones in the
+roadmap. Verification incomplete only because PostgreSQL TCP was denied before examples
+(full: 38 load errors/0 examples; focused: 3 load errors/0 examples). Packwerk, RuboCop,
+Zeitwerk, Ruby/ERB syntax, routes, migration-path wiring, Tailwind, backlog integrity,
+boundary scan, diff checks, and local/remote tree equality passed. A real screenshot could
+not be captured without the database; the Playwright CLI wrapper also could not resolve in
+the network-restricted host.
