@@ -13,7 +13,7 @@ RSpec.describe "Notifications", type: :request do
     get "/notifications"
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("You're all caught up")
+    expect(Capybara.string(response.body)).to have_text("You're all caught up")
   end
 
   it "shows only the resident's notifications and exposes an unread badge" do
@@ -52,7 +52,7 @@ RSpec.describe "Notifications", type: :request do
 
     patch "/notifications/read_all"
 
-    expect(response).to redirect_to("/notifications")
+    expect(response).to redirect_to("/notifications/")
     expect(owned.map { |notification| notification.reload.read_at }).to all(be_present)
     expect(private_notification.reload).to be_unread
   end

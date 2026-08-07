@@ -33,3 +33,6 @@ into CLAUDE.md.
   VERSION constant; the current generator templates need both cleanups for RuboCop.
 - Parse `routines/backlog.json` after merging concurrent automation branches; resolving
   overlapping `next_id` and `items` blocks by concatenation can silently corrupt the queue.
+- When concurrent module PRs conflict in shared registries, keep every module entry,
+  regenerate Gemfile.lock and db/schema.rb, and parse-check routines/backlog.json;
+  choosing one side can silently drop a module or commit invalid generated state.

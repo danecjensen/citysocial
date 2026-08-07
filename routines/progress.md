@@ -185,3 +185,21 @@ Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, diff chec
 remote-tree equality passed; PostgreSQL TCP denial blocked all RSpec examples and screenshots.
 PR #20 raises the open queue from five to six, so the queue circuit breaker should stop the
 next run until an open PR lands or closes.
+## 2026-08-06 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/19
+Changed: components/feedback/app/views/feedback/submissions/_submission.html.erb, components/feedback/app/views/feedback/submissions/show.html.erb, spec/requests/feedback_spec.rb
+Notes: Master green on arrival (137 examples) — the F-004/PR #13 merge landed ButtonComponent#pressed:, lifting F-013's hold, so it was the top ready item (2.55). Wired `pressed: supported` on the list partial and `pressed: @supported` on the show page; the existing variant/label swap and supports_count were left untouched. New request spec asserts aria-pressed='true' on a supported item (list + show) and 'false' on an unsupported one via Capybara.string + have_css. Full suite green: 138 examples, packwerk + rubocop clean. No /design change — `pressed:` was already documented by F-004.
+1a: DanesIdeas Inbox empty — nothing ingested. 1b (gate open, 4 ready<5): added 0 items. The easy grounded veins stay drained (no TODO/FIXME anywhere; collection views guard their zero-case), and the only outward-looking source — research briefs R-001..R-004 — are still `fresh` on master but already in flight on open PRs #12/#14/#16 under the codex-track F-009..F-012 ids the prior run reserved (next_id=15). Re-proposing them would be duplicate churn, so I left the backlog as-is rather than pad.
+Learnings:
+- (none new — the ButtonComponent `pressed:` toggle pattern is already in Codebase Patterns; F-013 was its second, clean application. Feedback Support show-page button has no aria_label because its text content ("Support this"/"Remove support") is its accessible name — only icon-only toggles need both aria_label and pressed.)
+## 2026-08-06 05:09 — F-005
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/16
+Changed: components/platform_core/app/public/platform_core/ui/button_component.rb, components/events/app/views/events/events/show.html.erb, app/views/design/show.html.erb, spec/components/platform_core/ui/button_component_spec.rb, spec/requests/events_spec.rb, routines/backlog.json
+Notes: Capability was the preferred lane, but profiles are shipped, notifications and messaging are already represented by open draft PRs, and research briefs R-001 through R-004 are reserved by F-009 through F-012. Used the authorized smaller-feature fallback and shipped the highest-scoring unclaimed item: event ticket links now preserve CitySocial in the original tab while opening with noopener/noreferrer. DanesIdeas Inbox was empty; research.md was unchanged. Verification incomplete only because the managed environment denied PostgreSQL before examples: Packwerk, RuboCop, Zeitwerk, Ruby/ERB checks, Tailwind, backlog integrity, and diff checks passed.
+## 2026-08-05 23:33 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/15
+Changed: components/messaging/, components/platform_core/app/public/platform_core/graph.rb, components/platform_core/app/public/platform_core/modules.rb, components/platform_core/app/views/platform_core/profiles/show.html.erb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, docs/roadmap.md
+Notes: Product fallback lane. The preferred late-night Capability lane had no unreserved evidence-backed candidate: the human-priority profile capability is shipped, notifications F-008 is already represented by open PR #12, and the remaining research queue contains module features. The third consecutive Codex implementation therefore satisfied the product-cadence requirement with the roadmap-backed Messaging MVP: generated engine, canonical one-to-one threads, private replies, unread/read state, profile entry point, owner scoping, a PII-safe handle lookup, and a content-free messaging.message_created event. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails/route smoke checks, ERB/Ruby syntax, Tailwind, backlog integrity, and diff checks passed; PostgreSQL denial blocked the full and focused specs before examples.

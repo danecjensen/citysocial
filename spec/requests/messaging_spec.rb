@@ -1,0 +1,138 @@
+require "rails_helper"
+
+RSpec.describe "Messaging", type: :request do
+  let!(:resident) { create(:user, handle: "resident", display_name: "Resident One") }
+  let!(:neighbor) { create(:user, handle: "neighbor", display_name: "Helpful Neighbor") }
+
+  it "requires login for the messaging product" do
+    get "/messaging"
+    expect(response).to redirect_to("/login")
+
+    get "/messaging/conversations/new"
+    expect(response).to redirect_to("/login")
+  end
+
+  it "shows an empty inbox and discovers messaging from another resident's profile" do
+    sign_in(resident)
+
+    get "/messaging"
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("No conversations yet", "Start a conversation")
+
+    get "/people/neighbor"
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Message resident")
+    expect(response.body).to include("/messaging/conversations/new?recipient=neighbor")
+  end
+
+  it "starts one conversation, shows unread state to the recipient, and supports replies" do
+    sign_in(resident)
+
+    expect do
+      post "/messaging/conversations", params: {
+        messaging_conversation_start: {
+          recipient_handle: "@neighbor",
+          body: "Are you going to the block party?"
+        }
+      }
+    end.to change(Messaging::Conversation, :count).by(1)
+                                                  .and change(Messaging::Message, :count).by(1)
+
+    conversation = Messaging::Conversation.last
+    expect(response).to redirect_to("/messaging/conversations/#{conversation.id}")
+
+    sign_in(neighbor)
+    get "/messaging"
+    expect(response.body).to include("1 unread", "Are you going to the block party?")
+
+    get "/messaging/conversations/#{conversation.id}"
+    expect(response).to have_http_status(:ok)
+    expect(conversation.messages.first.reload.read_at).to be_present
+
+    expect do
+      post "/messaging/conversations/#{conversation.id}/messages", params: {
+        message: { body: "Yes — see you there!" }
+      }
+    end.to change(Messaging::Message, :count).by(1)
+
+    expect(response).to redirect_to("/messaging/conversations/#{conversation.id}")
+    expect(conversation.messages.last.sender_id).to eq(neighbor.id)
+  end
+
+  it "reuses the existing participant pair instead of creating duplicate conversations" do
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    sign_in(resident)
+
+    expect do
+      post "/messaging/conversations", params: {
+        messaging_conversation_start: {
+          recipient_handle: "neighbor",
+          body: "A second note in the same thread."
+        }
+      }
+    end.not_to change(Messaging::Conversation, :count)
+
+    expect(response).to redirect_to("/messaging/conversations/#{conversation.id}")
+    expect(conversation.messages.reload.last.body).to eq("A second note in the same thread.")
+  end
+
+  it "rejects unknown and self recipients with inline errors" do
+    sign_in(resident)
+
+    post "/messaging/conversations", params: {
+      messaging_conversation_start: { recipient_handle: "missing", body: "Hello there" }
+    }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include("Recipient handle does not match a resident")
+
+    post "/messaging/conversations", params: {
+      messaging_conversation_start: { recipient_handle: "resident", body: "Note to self" }
+    }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include("Recipient handle must be another resident")
+
+    post "/messaging/conversations", params: {
+      messaging_conversation_start: { recipient_handle: "neighbor", body: " " }
+    }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include("Body can&#39;t be blank")
+  end
+
+  it "prevents non-participants from reading or writing a conversation" do
+    outsider = create(:user)
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    sign_in(outsider)
+
+    get "/messaging/conversations/#{conversation.id}"
+    expect(response).to have_http_status(:not_found)
+
+    post "/messaging/conversations/#{conversation.id}/messages", params: {
+      message: { body: "I should not be here." }
+    }
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "blocks the module when disabled, then restores it" do
+    sign_in(resident)
+    PlatformCore::Modules.disable!("messaging")
+
+    get "/messaging"
+    expect(response).to redirect_to("/")
+
+    PlatformCore::Modules.enable!("messaging")
+    get "/messaging"
+    expect(response).to have_http_status(:ok)
+  end
+
+  def sign_in(user)
+    post "/login", params: { email: user.email, password: "s3cret-password" }
+  end
+end

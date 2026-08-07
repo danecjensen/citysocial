@@ -1,0 +1,48 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: @other_participant&.display_name_or_handle || "Conversation",
+      subtitle: @other_participant ? "@#{@other_participant.handle}" : "Private conversation"
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: conversations_path) do %>
+      Back to messages
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="mx-auto max-w-3xl space-y-6">
+  <div class="space-y-3">
+    <% @messages.each do |message| %>
+      <div class="<%= message.sender_id == current_user.id ? "ml-auto max-w-2xl" : "mr-auto max-w-2xl" %>">
+        <%= render PlatformCore::Ui::CardComponent.new do %>
+          <div class="mb-2 flex flex-wrap items-center gap-2">
+            <p class="font-display text-sm font-bold text-ink">
+              <%= message.sender_id == current_user.id ? "You" : (@other_participant&.display_name_or_handle || "Resident") %>
+            </p>
+            <p class="font-mono text-xs text-ink-faint">
+              <%= time_ago_in_words(message.created_at) %> ago
+            </p>
+          </div>
+          <p class="whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= message.body %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @message, url: conversation_messages_path(@conversation), method: :post do |f| %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f,
+            attribute: :body,
+            type: :text_area,
+            label: "Reply",
+            rows: 4,
+            maxlength: 2000,
+            placeholder: "Write a reply…",
+            autofocus: @message.errors.any?
+          ) %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>
+        Send reply
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

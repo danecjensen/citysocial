@@ -33,11 +33,17 @@
 - notifications: durable follower activity inbox consuming feed.post_created and
   communities.post_created asynchronously; idempotent fan-out over the public
   follow graph, unread badge, owner-only read controls, and public unread-count API.
+- messaging milestone 1: private one-to-one resident conversations, profile and
+  handle entry points, owner-scoped inbox/history, unread/read state, replies,
+  and a content-free messaging.message_created event for delivery integrations.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
       repo (adapt v2/atx-events/ROUTINE.md) + a post-deploy `events:ingest` step,
       so the loop actually populates the module in production.
-- [ ] messaging module — DMs over the social graph (buyer↔seller, member↔member).
+- [ ] messaging milestone 2 — archive conversations and search the inbox as
+      residents build longer histories.
+- [ ] messaging milestone 3 — carry safe listing/community context into a new
+      conversation without coupling Messaging to sibling models.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
       filesystem is ephemeral, so photos need a real bucket before launch.

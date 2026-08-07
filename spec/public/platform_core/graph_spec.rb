@@ -23,4 +23,15 @@ RSpec.describe PlatformCore::Graph do
     expect(profile.to_h).not_to have_key(:email)
     expect(profile.to_h).not_to have_key(:password_digest)
   end
+
+  it "finds the same PII-safe snapshot by public handle" do
+    user = create(:user, handle: "neighbor", email: "private@example.com")
+
+    profile = described_class.public_profile_by_handle("neighbor")
+
+    expect(profile.id).to eq(user.id)
+    expect(profile.handle).to eq("neighbor")
+    expect(profile.to_h).not_to have_key(:email)
+    expect(described_class.public_profile_by_handle("missing")).to be_nil
+  end
 end

@@ -1,0 +1,41 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "New conversation",
+      subtitle: "Send a private message to another CitySocial resident."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @conversation_start, url: conversations_path, method: :post do |f| %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f,
+            attribute: :recipient_handle,
+            label: "Resident handle",
+            placeholder: "neighbor",
+            hint: "Enter the public handle shown on their profile.",
+            autofocus: true
+          ) %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f,
+            attribute: :body,
+            type: :text_area,
+            label: "Message",
+            rows: 6,
+            maxlength: 2000,
+            placeholder: "Hi! I wanted to follow up about…"
+          ) %>
+
+      <% @conversation_start.errors.full_messages_for(:base).each do |message| %>
+        <p class="mb-4 text-sm font-bold text-danger"><%= message %></p>
+      <% end %>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>
+          Send message
+        <% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: conversations_path) do %>
+          Cancel
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
