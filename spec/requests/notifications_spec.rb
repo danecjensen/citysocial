@@ -5,6 +5,21 @@ RSpec.describe "Notifications", type: :request do
     post "/login", params: { email: user.email, password: "s3cret-password" }
   end
 
+  # Counts queries against the users table so we can prove the actor lookup is
+  # batched (constant) rather than one-per-row.
+  def count_user_queries
+    queries = 0
+    subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+      next if payload[:name].to_s.include?("SCHEMA")
+
+      queries += 1 if payload[:sql].to_s.match?(/platform_core_users/i)
+    end
+    yield
+    queries
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+  end
+
   it "requires login and renders the empty state" do
     get "/notifications"
     expect(response).to redirect_to("/login")
@@ -27,6 +42,23 @@ RSpec.describe "Notifications", type: :request do
 
     expect(response.body).to include(visible.message).and include("Notifications").and include("New")
     expect(response.body).not_to include("Private notification")
+  end
+
+  it "resolves notification actors without an N+1 as the inbox grows" do
+    small_resident = create(:user)
+    3.times { create(:notification, recipient: small_resident, actor: create(:user)) }
+    login_as(small_resident)
+    small = count_user_queries { get "/notifications" }
+    expect(response).to have_http_status(:ok)
+
+    large_resident = create(:user)
+    8.times { create(:notification, recipient: large_resident, actor: create(:user)) }
+    login_as(large_resident)
+    large = count_user_queries { get "/notifications" }
+    expect(response).to have_http_status(:ok)
+
+    # A per-row lookup would make `large` grow with the extra actors; a batch keeps it flat.
+    expect(large).to eq(small)
   end
 
   it "marks owned notifications read and refuses another resident's notification" do

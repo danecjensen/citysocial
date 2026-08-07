@@ -19,7 +19,7 @@
 <% if @notifications.any? %>
   <div class="space-y-3">
     <% @notifications.each do |notification| %>
-      <% actor = notification.actor %>
+      <% actor = @actors[notification.actor_id] %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex min-w-0 items-center gap-3">
