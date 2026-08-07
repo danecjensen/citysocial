@@ -231,6 +231,41 @@ RSpec.describe "Messaging", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  it "links to Messages from the global nav and badges the recipient's unread count" do
+    conversation = create(
+      :messaging_conversation,
+      first_participant: neighbor,
+      second_participant: resident
+    )
+    create(:messaging_message, conversation: conversation, sender_id: neighbor.id, read_at: nil)
+
+    sign_in(resident)
+    get "/people/resident"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_link("Messages", href: "/messaging/")
+    expect(doc).to have_css("a[aria-label='Messages'] .uppercase", text: "1")
+  end
+
+  it "omits the unread badge when the resident has no unread messages" do
+    sign_in(resident)
+    get "/people/resident"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_link("Messages", href: "/messaging/")
+    expect(doc).to have_no_css("a[aria-label='Messages'] .uppercase")
+  end
+
+  it "hides the Messages nav link when the messaging module is disabled" do
+    sign_in(resident)
+    PlatformCore::Modules.disable!("messaging")
+
+    get "/people/resident"
+    expect(response.body).not_to include("aria-label=\"Messages\"")
+  ensure
+    PlatformCore::Modules.enable!("messaging")
+  end
+
   def sign_in(user)
     post "/login", params: { email: user.email, password: "s3cret-password" }
   end

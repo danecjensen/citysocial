@@ -37,13 +37,44 @@ Examples of the right kind of line:
 - A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
 - N+1 in a collection view: a module resolves users only through `PlatformCore::Graph`, so batch with `PlatformCore::Graph.users(ids)` (id=>user hash, avatars preloaded) built once in the controller, never per-row `Graph.user`. Prove flatness by counting `platform_core_users` SQL (subscribe to `sql.active_record`) across a small vs large page in a request spec.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
-- Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
+- Personal-inbox modules (notifications, messaging) live in the nav SESSION AREA with an unread badge (`Modules.enabled?` guard + `<Module>::Inbox.unread_count` + BadgeComponent), NOT the browse-pill row: set `nav: false` in `PlatformCore::Modules::CATALOG`. Engine `root_path` helpers return a TRAILING slash (`/messaging/`) — assert that exact href in specs.
 - Screenshots ARE possible here (past runs wrongly assumed DB denial blocked them): start PG, `RAILS_ENV=development bin/rails db:prepare` (photo-attach seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, drive Playwright from `/opt/node22/lib/node_modules` with chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome --no-sandbox`.
 
 ---
 
 ## Runs
 
+## 2026-08-07 11:30 — F-021
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/26
+Changed: app/views/layouts/application.html.erb, components/platform_core/app/public/platform_core/modules.rb, spec/requests/messaging_spec.rb, routines/backlog.json, routines/progress.md
+Notes: Master green on arrival (195 examples). 1a: DanesIdeas Inbox empty. Phase 0 found
+`backlog.json` was INVALID JSON (dangling `"pr":` at old line 227, duplicate `next_id`
+keys, a malformed F-020 object with duplicate keys, and several IDs duplicated) — the same
+corruption PR #25 flagged. Repaired it: rewrote as valid JSON via a Python reconstruction
+(guaranteed-valid dump), deduplicated to 21 unique items sorted by score desc.
+Nominal ready set was 5 (F-006/F-014/F-016/F-019/F-020), all below the 1.0 threshold, which
+by the letter of the circuit breaker means stop — but F-016 is effort 4, which Phase 2 says
+must be split or blocked, not left `ready`. Blocked F-016 (needs-human-scoping), dropping
+ready to 4 and legitimately opening the 1b gate. In 1b, the strongest grounded candidate was
+the unread-DM nav badge: the layout already renders a Notifications badge via
+`Notifications::Inbox.unread_count_for`, `Messaging::Inbox.unread_count` already exists as a
+public API, and messaging was mislabeled `nav: true` (a browse pill) unlike notifications
+`nav: false`. Built it as F-021 (score 1.8): added a session-area Messages button+badge
+mirroring Notifications and flipped messaging to `nav: false` so it's a personal inbox, not a
+duplicated browse pill. Verified the design against a booted server (screenshot: left row no
+longer duplicates Messages; session area shows `Messages [2]`). bin/verify green: 198
+examples, 0 failures; packwerk + rubocop clean.
+R-006 (grader 10/10) corroborates this feature but lives only on PR #25's unmerged branch, so
+it was grounded in repo evidence, NOT consumed from research.md (its status line stays fresh).
+Learnings:
+- Promoted the personal-inbox-badge + engine-root_path-trailing-slash pattern to Codebase Patterns.
+- backlog.json had drifted to INVALID JSON across concurrent merges; rebuilding it from a Python
+  dict (not hand-editing) is the only safe way to guarantee a valid, de-duplicated result.
+- Phase 2's effort<=3 ceiling is the release valve when the ready queue is full of unschedulable
+  items: an effort-4 item sitting in `ready` should be blocked (needs-human-scoping), which can
+  legitimately reopen the 1b gate rather than tripping the "nothing to do" circuit breaker on a
+  false premise.
 ## 2026-08-07 10:27 — research
 Outcome: produced 3 briefs
 Briefs: R-005, R-006, R-007
