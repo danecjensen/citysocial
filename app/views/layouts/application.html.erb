@@ -55,6 +55,22 @@
 
       <% if respond_to?(:logged_in?) && logged_in? %>
         <% nav.with_session_area do %>
+          <% if PlatformCore::Modules.enabled?("messaging") %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :ghost,
+                  size: :sm,
+                  href: messaging.root_path,
+                  aria_label: "Messages"
+                ) do %>
+              Messages
+              <% unread_messages = Messaging::Inbox.unread_count(current_user.id) %>
+              <% if unread_messages.positive? %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>
+                  <%= unread_messages %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
           <% if PlatformCore::Modules.enabled?("notifications") %>
             <%= render PlatformCore::Ui::ButtonComponent.new(
                   variant: :ghost,
