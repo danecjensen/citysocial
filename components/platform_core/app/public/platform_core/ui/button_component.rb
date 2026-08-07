@@ -22,7 +22,7 @@ module PlatformCore
              "transition-colors cursor-pointer".freeze
 
       def initialize(variant: :primary, size: :md, href: nil, method: nil, params: nil, confirm: nil, type: :submit,
-                     aria_label: nil, pressed: nil, target: nil, rel: nil)
+                     aria_label: nil, pressed: nil, target: nil, rel: nil, data: nil)
         @variant = VARIANTS.fetch(variant)
         @size = SIZES.fetch(size)
         @href = href
@@ -34,18 +34,20 @@ module PlatformCore
         @pressed = pressed
         @target = target
         @rel = rel
+        @data = data
       end
 
       erb_template <<~ERB
         <% if @href && @method %>
-          <%= button_to @href, method: @method, params: @params, class: classes,
-                        form_class: "inline-flex", "aria-label": @aria_label, "aria-pressed": @pressed,
-                        data: ({ turbo_confirm: @confirm } if @confirm) do %><%= content %><% end %>
+          <%= button_to @href, method: @method, params: @params, class: classes, data: data_attributes,
+                        form_class: "inline-flex", "aria-label": @aria_label,
+                        "aria-pressed": @pressed do %><%= content %><% end %>
         <% elsif @href %>
-          <%= link_to @href, class: classes, target: @target, rel: @rel,
+          <%= link_to @href, class: classes, target: @target, rel: @rel, data: @data,
                       "aria-label": @aria_label, "aria-pressed": @pressed do %><%= content %><% end %>
         <% else %>
-          <%= content_tag :button, content, type: @type, class: classes, "aria-label": @aria_label, "aria-pressed": @pressed %>
+          <%= content_tag :button, content, type: @type, class: classes, data: @data,
+                          "aria-label": @aria_label, "aria-pressed": @pressed %>
         <% end %>
       ERB
 
@@ -53,6 +55,12 @@ module PlatformCore
 
       def classes
         [BASE, @variant, @size].join(" ")
+      end
+
+      def data_attributes
+        data = (@data || {}).dup
+        data[:turbo_confirm] = @confirm if @confirm
+        data
       end
     end
   end

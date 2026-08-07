@@ -10,99 +10,8 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 21,
-  "next_id": 17,
-  "next_id": 18,
+  "next_id": 23,
   "items": [
-    {
-      "id": "F-013",
-      "title": "Feedback 'Support' toggle emits aria-pressed",
-      "problem": "The feedback 'Support' button is a toggle whose supported/unsupported state is conveyed only by color and label swap, so assistive-tech users get no pressed-state signal.",
-      "evidence": "components/feedback/app/views/feedback/submissions/_submission.html.erb:4-9 and components/feedback/app/views/feedback/submissions/show.html.erb:41 — the support ButtonComponent switches variant (:primary/:secondary) on `supported` but never sets pressed:. ButtonComponent now accepts pressed: (F-004, PR #13), so this is a one-line wire-up per call.",
-      "acceptance": [
-        "The support button on the feedback list and show page renders aria-pressed=true when the current user supports it, false otherwise",
-        "The existing variant swap and supports_count display are unchanged",
-        "Covered by a request spec asserting aria-pressed reflects support state"
-      ],
-      "impact": 3,
-      "effort": 1,
-      "confidence": 0.85,
-      "score": 2.55,
-      "status": "done",
-      "origin": "auto",
-      "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/19",
-      "notes": "Depends on ButtonComponent#pressed from merged PR #13. Implemented in open PR #19. Messaging independently uses F-013 in open PR #15; F-015 and F-016 are reserved by that product branch, so next_id advances past them."
-    },
-    {
-      "id": "F-009",
-      "title": "Add Top sorting to community comments",
-      "problem": "Community conversations can only show comments chronologically even though comment vote scores are already stored, so the most useful responses stay buried.",
-      "evidence": "research.md#R-001; components/communities/app/models/communities/comment.rb defines only chronological while its Votable concern maintains score.",
-      "acceptance": [
-        "Communities::Comment gets a top scope ordering by score descending and created_at descending",
-        "The post page offers New and Top query-param sorting while keeping New as the default",
-        "Changing sort order does not alter vote casting",
-        "Model and request specs cover both orders"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 1.0,
-      "score": 2.0,
-      "status": "done",
-      "origin": "research",
-      "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/20",
-      "kind": "module_feature",
-      "product_family": "communities",
-      "milestone": "comment-ranking",
-      "notes": "Capability lane had no unreserved evidence-backed candidate, so the 2026-08-06 cycle used the authorized smaller-feature fallback. Draft PR #20 adds read-only New/Top comment sorting and repairs the malformed backlog state left by the concurrent F-008/F-012 merges."
-    },
-    {
-      "id": "F-012",
-      "title": "Let sellers renew stale marketplace listings",
-      "problem": "Marketplace sellers must recreate a stale listing to restore visibility even though the existing timestamps and expiration already support a safe renewal flow.",
-      "evidence": "research.md#R-004; components/marketplace/app/models/marketplace/listing.rb already owns expiration and recent ordering, and mark_sold provides the owner-action pattern.",
-      "acceptance": [
-        "An owner-only renew action resurfaces the listing and extends expiration by 30 days",
-        "Renewal is blocked for sold listings and within 48 hours of creation or renewal",
-        "The existing owner actions show Renew only when eligible",
-        "Model and request specs cover timestamps, ownership, sold state, and cooldown"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 1.0,
-      "score": 2.0,
-      "status": "done",
-      "origin": "auto",
-      "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/19",
-      "notes": "Shipped: wired ButtonComponent#pressed: (from F-004/PR #13, now merged) through the list partial and show page so aria-pressed reflects support state. No /design change (pressed: already documented)."
-    },
-    {
-      "id": "F-004",
-      "title": "Vote control reflects the current user's own vote",
-      "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation — breaking the do -> see-it-reflected loop.",
-      "evidence": "components/communities/app/models/communities/votable.rb:24 — vote_value_for(user_id) already returns -1/0/1, but components/communities/app/views/communities/posts/_vote.html.erb renders both arrows the same regardless. No schema change needed.",
-      "acceptance": [
-        "When the current user has upvoted, the up arrow renders in an active (highlighted) state; likewise the down arrow when downvoted",
-        "Anonymous users and un-voted items render the neutral state as today",
-        "Applies on the community post list, the post show page, and comments",
-        "Covered by a request/component spec asserting the active state renders for the voter"
-      ],
-      "impact": 4,
-      "effort": 2,
-      "confidence": 0.85,
-      "score": 1.7,
-      "status": "done",
-      "origin": "auto",
-      "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/13"
-    },
     {
       "id": "F-001",
       "title": "Give icon-only vote buttons accessible labels",
@@ -223,9 +132,8 @@
       "origin": "auto",
       "attempts": 1,
       "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/16",
-      "notes": "Implemented in open PR #16 after the F-001 component-conflict hold lifted."
-      "pr": null
+      "pr": null,
+      "notes": "Below the 1.0 schedule threshold; no implementation PR is open for this item."
     },
     {
       "id": "F-007",
@@ -464,14 +372,15 @@
       "effort": 4,
       "confidence": 0.8,
       "score": 0.8,
-      "status": "ready",
+      "status": "done",
       "origin": "auto",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/27",
       "kind": "module_product",
       "product_family": "messaging",
-      "milestone": "contextual-entry-points"
+      "milestone": "contextual-entry-points",
+      "notes": "Product lane milestone 3: Marketplace listings and community posts now open a context-preserving private compose flow; Messaging stores only a validated internal path and public label, then renders the backlink without reading sibling models."
     },
     {
       "id": "F-017",
@@ -566,12 +475,32 @@
       "product_family": "messaging",
       "milestone": "inbox-performance",
       "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold."
-      "origin": "auto",
+    },
+    {
+      "id": "F-022",
+      "title": "Share public events through a reusable capability",
+      "problem": "Residents who discover a CitySocial event have no reliable way to send its canonical page into the chats where local plans already happen.",
+      "evidence": "Research PR #28, R-009 (grader 10/10); components/events/app/views/events/events/show.html.erb already groups public ticket and calendar actions, while shared UI lives under components/platform_core/app/public/platform_core/ui/.",
+      "acceptance": [
+        "A public PlatformCore::Ui::ShareComponent accepts a title and canonical URL, composes shared buttons, and always renders a Copy link action",
+        "A Stimulus controller reveals a separate native Share action only when navigator.share is supported and keeps copy fallback usable after cancel, permission, or API failures",
+        "Accessible live status reports copy/share success or failure",
+        "Event detail shares event_url(@event), never the external ticket/source URL, while ticket and calendar actions remain unchanged",
+        "The design catalog plus component and request specs document and cover the capability without adding a dependency"
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 1.0,
+      "score": 1.333,
+      "status": "done",
+      "origin": "research",
       "attempts": 1,
-      "created": "2026-08-05",
-      "pr": "https://github.com/danecjensen/citysocial/pull/19",
-      "notes": "Depends on ButtonComponent#pressed: shipping via F-004 (PR #13). PR #13 has now merged, so the hold is lifted and this is schedulable. Renumbered from F-013 while resolving PR #15 so the shipped Messaging feature keeps the ID used by its PR and progress record. Reconciled to done in the F-011 run: open draft PR #19 already implements it."
-      "notes": "Built by claude draft PR #19 (open, not yet merged; branch claude/f-013-feedback-support-aria-pressed wires pressed: on the two Support toggles). Reconciled ready->done in the F-010 run so it is not rebuilt. Renumbered from F-013 while resolving PR #15 so the shipped Messaging feature keeps the ID used by its PR and progress record."
+      "created": "2026-08-07",
+      "pr": "https://github.com/danecjensen/citysocial/pull/29",
+      "kind": "app_wide_capability",
+      "product_family": "sharing",
+      "milestone": "public-event-sharing",
+      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
     }
   ]
 }

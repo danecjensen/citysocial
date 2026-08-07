@@ -8,6 +8,9 @@
 - feed: reference module (posts + timeline + feed.post_created event).
 - design system: Tailwind v4 tokens + PlatformCore::Ui ViewComponents + Hotwire;
   living catalog at /design.
+- public sharing: reusable progressive-enhancement ShareComponent with a permanent
+  canonical copy-link fallback, optional browser-native sharing, and accessible
+  outcome status; Events is the first public surface to adopt it.
 - design retheme: emerald/teal + slate palette (ported from reddcraigs), Inter
   type, atxatx favicon/logo, rebuilt NavBar (search + pills) + Footer, and
   class-based dark mode via `.dark` CSS-variable overrides (no per-view `dark:`).
