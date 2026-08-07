@@ -43,6 +43,18 @@ module PlatformCore
       public_profile_snapshot(user)
     end
 
+    # Public-field-only search used by modules that need resident discovery
+    # without querying the kernel's User model or exposing private identity.
+    def public_profile_ids_matching(query, limit: 100)
+      term = query.to_s.strip
+      return [] if term.blank?
+
+      pattern = "%#{PlatformCore::User.sanitize_sql_like(term)}%"
+      PlatformCore::User.where("handle ILIKE :pattern OR display_name ILIKE :pattern", pattern: pattern)
+                        .limit(limit)
+                        .pluck(:id)
+    end
+
     def public_profile_snapshot(user)
       PublicProfile.new(
         id: user.id,

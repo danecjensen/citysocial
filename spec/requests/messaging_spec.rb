@@ -120,6 +120,105 @@ RSpec.describe "Messaging", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "lets each participant archive and restore a conversation without deleting history" do
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    create(:messaging_message, conversation: conversation, sender_id: neighbor.id, body: "Keep this history")
+    sign_in(resident)
+
+    patch "/messaging/conversations/#{conversation.id}/archive"
+    expect(response).to redirect_to("/messaging/conversations")
+
+    get "/messaging"
+    expect(response.body).not_to include("Keep this history")
+
+    get "/messaging/conversations", params: { view: "archived" }
+    expect(response.body).to include("Archived messages", "Keep this history", "Restore")
+
+    get "/messaging/conversations/#{conversation.id}"
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Keep this history")
+
+    patch "/messaging/conversations/#{conversation.id}/restore"
+    expect(response).to redirect_to("/messaging/conversations?view=archived")
+
+    get "/messaging"
+    expect(response.body).to include("Keep this history")
+  end
+
+  it "keeps archive state private to one participant and rejects outsider archive actions" do
+    outsider = create(:user)
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    create(:messaging_message, conversation: conversation, sender_id: resident.id, body: "Neighbor still sees this")
+    sign_in(resident)
+
+    patch "/messaging/conversations/#{conversation.id}/archive"
+
+    sign_in(neighbor)
+    get "/messaging"
+    expect(response.body).to include("Neighbor still sees this")
+
+    sign_in(outsider)
+    patch "/messaging/conversations/#{conversation.id}/archive"
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "searches active and archived inboxes by public handle or display name" do
+    artist = create(:user, handle: "artist", display_name: "Mural Painter")
+    helpful_conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    artist_conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: artist
+    )
+    create(:messaging_message, conversation: helpful_conversation, sender_id: neighbor.id, body: "Block party details")
+    create(:messaging_message, conversation: artist_conversation, sender_id: artist.id, body: "Mural details")
+    sign_in(resident)
+
+    get "/messaging/conversations", params: { q: "helpful" }
+    expect(response.body).to include("Helpful Neighbor", "Block party details")
+    expect(response.body).not_to include("Mural Painter", "Mural details")
+
+    helpful_conversation.archive_for!(resident.id)
+    get "/messaging/conversations", params: { view: "archived", q: "neighbor" }
+    expect(response.body).to include("Helpful Neighbor", "Block party details")
+    expect(response.body).not_to include("Mural Painter", "Mural details")
+  end
+
+  it "returns an archived conversation to both inboxes when a participant replies" do
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    create(:messaging_message, conversation: conversation, sender_id: resident.id)
+    conversation.archive_for!(resident.id)
+    conversation.archive_for!(neighbor.id)
+    sign_in(neighbor)
+
+    post "/messaging/conversations/#{conversation.id}/messages", params: {
+      message: { body: "This brings the thread back." }
+    }
+
+    expect(conversation.reload).not_to be_archived_for(resident.id)
+    expect(conversation).not_to be_archived_for(neighbor.id)
+
+    sign_in(resident)
+    get "/messaging"
+    expect(response.body).to include("This brings the thread back.")
+  end
+
   it "blocks the module when disabled, then restores it" do
     sign_in(resident)
     PlatformCore::Modules.disable!("messaging")

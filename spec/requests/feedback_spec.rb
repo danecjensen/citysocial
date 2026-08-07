@@ -95,6 +95,25 @@ RSpec.describe "Feedback", type: :request do
     end.to change { submission.reload.supports_count }.from(1).to(0)
   end
 
+  it "reflects the viewer's support state via aria-pressed on the support toggle" do
+    supported = create(:feedback_submission, title: "Backed idea")
+    unsupported = create(:feedback_submission, title: "Fresh idea")
+    supporter = create(:user)
+    login_as(supporter)
+    post "/feedback/submissions/#{supported.id}/toggle_support"
+
+    get "/feedback"
+    list = Capybara.string(response.body)
+    expect(list).to have_css("button[aria-label='Remove support'][aria-pressed='true']")
+    expect(list).to have_css("button[aria-label='Support this feedback'][aria-pressed='false']")
+
+    get "/feedback/submissions/#{supported.id}"
+    expect(Capybara.string(response.body)).to have_css("button[aria-pressed='true']")
+
+    get "/feedback/submissions/#{unsupported.id}"
+    expect(Capybara.string(response.body)).to have_css("button[aria-pressed='false']")
+  end
+
   it "lets admins triage feedback and blocks non-admins" do
     submission = create(:feedback_submission)
 

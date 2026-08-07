@@ -123,7 +123,81 @@ module Events
       local_start.strftime("%a, %b %-d")
     end
 
+    # --- Calendar export ---------------------------------------------------
+
+    # Events are ingested with an optional end time. A calendar block still
+    # needs one, so exports fall back to a defined, bounded duration after the
+    # start rather than emitting an open-ended (and often rejected) event.
+    DEFAULT_DURATION = 2.hours
+
+    # The end time to hand a calendar: the real ends_at when present, otherwise
+    # the defined fallback so an export is always a valid bounded block.
+    def calendar_ends_at
+      ends_at.presence || (starts_at + DEFAULT_DURATION)
+    end
+
+    # A Google Calendar "add event" template URL built entirely from fields
+    # this module already stores. Times use Google's UTC `dates=` format.
+    def google_calendar_url
+      query = {
+        action: "TEMPLATE",
+        text: title,
+        dates: "#{ical_time(starts_at)}/#{ical_time(calendar_ends_at)}",
+        details: calendar_details.presence,
+        location: venue.presence
+      }.compact
+      "https://calendar.google.com/calendar/render?#{query.to_query}"
+    end
+
+    # A minimal but valid iCalendar (RFC 5545) document for this one event,
+    # suitable for a downloaded .ics file. `now` is injectable so specs stay
+    # deterministic.
+    def to_ics(now: Time.current)
+      lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//CitySocial//Events//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        "UID:#{fingerprint}@citysocial",
+        "DTSTAMP:#{ical_time(now)}",
+        "DTSTART:#{ical_time(starts_at)}",
+        "DTEND:#{ical_time(calendar_ends_at)}",
+        "SUMMARY:#{ical_escape(title)}"
+      ]
+      lines << "DESCRIPTION:#{ical_escape(calendar_details)}" if calendar_details.present?
+      lines << "LOCATION:#{ical_escape(venue)}" if venue.present?
+      lines << "URL:#{url}" if url.present?
+      lines += %w[END:VEVENT END:VCALENDAR]
+      "#{lines.join("\r\n")}\r\n"
+    end
+
+    # A safe, human-readable filename stem for the downloaded .ics.
+    def calendar_filename
+      title.parameterize.presence || "event"
+    end
+
     private
+
+    # Description body shared by both calendar formats: the event blurb plus a
+    # link back to the source when there is one.
+    def calendar_details
+      [description, url].compact_blank.join("\n\n")
+    end
+
+    # iCalendar UTC timestamp: 20260807T013000Z.
+    def ical_time(time)
+      time.utc.strftime("%Y%m%dT%H%M%SZ")
+    end
+
+    # RFC 5545 TEXT escaping: backslash, comma, and semicolon are escaped, and
+    # newlines become the literal two-character sequence \n.
+    def ical_escape(text)
+      text.to_s
+          .gsub(/[\\,;]/) { |match| "\\#{match}" }
+          .gsub(/\r\n?|\n/) { "\\n" }
+    end
 
     def normalize_category
       self.category = "other" unless CATEGORIES.include?(category)
