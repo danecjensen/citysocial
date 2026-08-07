@@ -4,4 +4,5 @@ Events::Engine.routes.draw do
   root to: "events#index"
   get "all", to: "events#all", as: :all
   get "e/:id", to: "events#show", as: :event
+  get "e/:id/calendar", to: "events#calendar", as: :event_calendar
 end
