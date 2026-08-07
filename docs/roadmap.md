@@ -39,12 +39,13 @@
 - messaging milestone 2: per-resident archive/restore controls, active and archived
   inbox search by public handle or display name, and automatic reactivation when a
   participant replies.
+- messaging milestone 3: Marketplace listings and community posts can start a private
+  conversation carrying a validated public context label and internal backlink;
+  Messaging owns the context without reading or storing sibling records.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
       repo (adapt v2/atx-events/ROUTINE.md) + a post-deploy `events:ingest` step,
       so the loop actually populates the module in production.
-- [ ] messaging milestone 3 — carry safe listing/community context into a new
-      conversation without coupling Messaging to sibling models.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
       filesystem is ephemeral, so photos need a real bucket before launch.

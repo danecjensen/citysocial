@@ -28,7 +28,11 @@ module Messaging
     end
 
     def new
-      @conversation_start = ConversationStart.new(recipient_handle: params[:recipient])
+      @conversation_start = ConversationStart.new(
+        recipient_handle: params[:recipient],
+        context_path: params[:context_path],
+        context_label: params[:context_label]
+      )
     end
 
     def create
@@ -58,7 +62,7 @@ module Messaging
     end
 
     def conversation_start_params
-      params.require(:messaging_conversation_start).permit(:recipient_handle, :body)
+      params.require(:messaging_conversation_start).permit(:recipient_handle, :body, :context_path, :context_label)
     end
   end
 end

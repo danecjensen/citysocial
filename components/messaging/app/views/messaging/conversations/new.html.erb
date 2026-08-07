@@ -6,6 +6,14 @@
 <div class="mx-auto max-w-2xl">
   <%= render PlatformCore::Ui::CardComponent.new do %>
     <%= form_with model: @conversation_start, url: conversations_path, method: :post do |f| %>
+      <%= f.hidden_field :context_path %>
+      <%= f.hidden_field :context_label %>
+      <% if @conversation_start.context_label.present? %>
+        <div class="mb-5 rounded-md border border-line bg-sunken px-4 py-3">
+          <p class="font-mono text-xs font-bold uppercase tracking-wide text-ink-faint">Message context</p>
+          <p class="mt-1 text-sm font-semibold text-ink"><%= @conversation_start.context_label %></p>
+        </div>
+      <% end %>
       <%= render PlatformCore::Ui::FormFieldComponent.new(
             form: f,
             attribute: :recipient_handle,
@@ -24,7 +32,10 @@
             placeholder: "Hi! I wanted to follow up about…"
           ) %>
 
-      <% @conversation_start.errors.full_messages_for(:base).each do |message| %>
+      <% context_errors = %i[context_path context_label base].flat_map do |attribute| %>
+        <% @conversation_start.errors.full_messages_for(attribute) %>
+      <% end %>
+      <% context_errors.uniq.each do |message| %>
         <p class="mb-4 text-sm font-bold text-danger"><%= message %></p>
       <% end %>
 
