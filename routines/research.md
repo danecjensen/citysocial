@@ -234,7 +234,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
   - https://blog.nextdoor.com/2024/07/22/new-communities-feature-opens-lines-of-communication-between-neighbors — nearby activity partners and sports-team coordination (fetched 2026-08-07)
 - Grader score: 8/10 (−2: milestone 1 combines several independently reviewable
   workflows; the deduction is not for module size, engine generation, or migrations)
-- Status: product-fresh
+- Status: consumed (F-023)
 
 ### R-009 — Share a CitySocial event into existing chats
 - Date: 2026-08-07
