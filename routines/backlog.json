@@ -433,23 +433,23 @@
       "problem": "A message started from a listing or community post can lose the public context that prompted the resident to reach out.",
       "evidence": "F-013 establishes a profile/handle conversation entry point but intentionally stores no sibling record references or context links.",
       "acceptance": [
-        "Messaging accepts a validated internal context path and short public label when a conversation starts",
-        "Thread header links back to that context without reading a sibling model",
-        "Marketplace and communities pass context via URL params without adding module dependencies"
+        "Messaging accepts a validated internal context path and short public context label when a conversation starts",
+        "The thread header links back to that context without reading a sibling model",
+        "Marketplace and communities can pass context through URL parameters without adding module dependencies"
       ],
       "impact": 4,
       "effort": 4,
       "confidence": 0.8,
       "score": 0.8,
-      "status": "blocked",
+      "status": "done",
       "origin": "auto",
-      "attempts": 0,
+      "attempts": 1,
       "created": "2026-08-05",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/27",
       "kind": "module_product",
       "product_family": "messaging",
       "milestone": "contextual-entry-points",
-      "notes": "Blocked: effort 4 exceeds the Phase 2 effort<=3 ceiling for scheduling. Needs-human-scoping — split into (a) accept+store a validated internal context path/label on conversation start and (b) render the thread-header link-back + wire marketplace/communities URL params, or a human re-scope."
+      "notes": "Product lane milestone 3: Marketplace listings and community posts now open a context-preserving private compose flow; Messaging stores only a validated internal path and public label, then renders the backlink without reading sibling models."
     },
     {
       "id": "F-014",

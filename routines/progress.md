@@ -331,3 +331,11 @@ share/copy primitive. Deep product comparison stayed with Meetup and Nextdoor. O
 research PR #25 already reserves R-005 through R-007, so this run started at R-008;
 if both PRs land, the regular fresh queue reaches its cap of four while R-008 remains
 separately `product-fresh`. Backlog JSON is still malformed and was not edited.
+
+## 2026-08-07 09:23 — F-016
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/27
+Changed: components/messaging/app/controllers/messaging/conversations_controller.rb, components/messaging/app/models/messaging/conversation.rb, components/messaging/app/models/messaging/conversation_start.rb, components/messaging/app/views/messaging/conversations/new.html.erb, components/messaging/app/views/messaging/conversations/show.html.erb, components/messaging/db/migrate/20260807091300_add_context_to_messaging_conversations.rb, components/marketplace/app/views/marketplace/listings/show.html.erb, components/communities/app/views/communities/posts/show.html.erb, db/schema.rb, spec/models/messaging/conversation_spec.rb, spec/requests/messaging_context_spec.rb, docs/roadmap.md, docs/lessons.md, routines/backlog.json, routines/progress.md
+Notes: Product lane. Shipped Messaging milestone 3: a resident can open a private compose flow from a Marketplace listing or Community post, retain a short public context label, and return from the thread through a validated internal backlink. Messaging stores no sibling IDs and reads no sibling models. The two-open-PR queue was below the six-PR breaker; PR #26 reserved F-021, so next_id advanced to 22. Repaired the pre-existing malformed backlog merge (duplicate next_id keys/items and corrupt F-006/F-020 tails) while preserving the 20 unique items. Dane's Inbox was empty; default-branch research R-001–R-004 was already consumed, while research-only PR #25 remained reserved and untouched. Verification incomplete only because PostgreSQL TCP access was denied before examples (38 load errors, 0 examples); Packwerk, RuboCop, Zeitwerk, routes, Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, sibling-constant scan, and diff checks passed.
+Learnings:
+- Internal-only stored links must reject backslashes and control characters as well as protocol-relative paths; browsers may normalize a backslash into a host-changing URL.
