@@ -54,4 +54,11 @@
       ) do %>⬇️ Download .ics<% end %>
     </div>
   </div>
+
+  <div class="mt-6">
+    <%= render PlatformCore::Ui::ShareComponent.new(
+      title: @event.title,
+      url: event_url(@event)
+    ) %>
+  </div>
 </article>
