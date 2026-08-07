@@ -24,6 +24,18 @@ RSpec.describe PlatformCore::Graph do
     expect(profile.to_h).not_to have_key(:password_digest)
   end
 
+  it "batch-loads users into an id-keyed hash, ignoring blank and unknown ids" do
+    a = create(:user)
+    b = create(:user)
+
+    result = described_class.users([a.id, b.id, a.id, nil, "", 0])
+
+    expect(result.keys).to contain_exactly(a.id, b.id)
+    expect(result[a.id]).to eq(a)
+    expect(result[b.id]).to eq(b)
+    expect(described_class.users([])).to eq({})
+  end
+
   it "finds the same PII-safe snapshot by public handle" do
     user = create(:user, handle: "neighbor", email: "private@example.com")
 

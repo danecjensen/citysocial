@@ -5,6 +5,7 @@ module Notifications
 
     def index
       @notifications = Notification.where(recipient_id: current_user.id).recent.limit(100)
+      @actors = PlatformCore::Graph.users(@notifications.map(&:actor_id))
     end
 
     def read

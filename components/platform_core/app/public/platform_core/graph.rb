@@ -18,6 +18,16 @@ module PlatformCore
       PlatformCore::User.find_by(id: id)
     end
 
+    # Batch counterpart to .user for rendering collections without an N+1.
+    # Returns an id => user hash (avatars preloaded), skipping blank ids;
+    # unknown ids are simply absent from the result.
+    def users(ids)
+      keys = Array(ids).compact_blank.uniq
+      return {} if keys.empty?
+
+      PlatformCore::User.where(id: keys).with_attached_avatar.index_by(&:id)
+    end
+
     # A PII-safe identity snapshot for sibling modules and integrations.
     def public_profile(id)
       user = PlatformCore::User.find_by(id: id)
