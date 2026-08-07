@@ -11,7 +11,7 @@ RSpec.describe "Messaging context", type: :request do
     get "/marketplace/#{listing.to_param}"
 
     entry = Capybara.string(response.body).find_link("Message seller")
-    params = Rack::Utils.parse_nested_query(URI(entry[:href]).query)
+    params = Rack::Utils.parse_nested_query(URI.parse(entry[:href]).query)
     expect(params).to include(
       "recipient" => "neighbor",
       "context_path" => "/marketplace/#{listing.to_param}",
@@ -27,7 +27,7 @@ RSpec.describe "Messaging context", type: :request do
     get "/communities/#{community.to_param}/posts/#{post.id}"
 
     entry = Capybara.string(response.body).find_link("Message author")
-    params = Rack::Utils.parse_nested_query(URI(entry[:href]).query)
+    params = Rack::Utils.parse_nested_query(URI.parse(entry[:href]).query)
     expect(params).to include(
       "recipient" => "neighbor",
       "context_path" => "/communities/#{community.to_param}/posts/#{post.id}",
@@ -86,6 +86,8 @@ RSpec.describe "Messaging context", type: :request do
     invalid_contexts = [
       { context_path: "https://example.com/listing", context_label: "External" },
       { context_path: "//example.com/listing", context_label: "Protocol relative" },
+      { context_path: "/\\example.com/listing", context_label: "Backslash" },
+      { context_path: "/marketplace/\nlisting", context_label: "Control character" },
       { context_path: "/marketplace/vintage-bike", context_label: "" },
       { context_path: "/marketplace/vintage-bike", context_label: "x" * 121 }
     ]
