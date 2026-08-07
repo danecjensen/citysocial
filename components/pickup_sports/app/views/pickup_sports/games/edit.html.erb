@@ -1,0 +1,10 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Edit pickup game",
+      subtitle: "Keep the roster's time and place accurate."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", game: @game %>
+  <% end %>
+</div>

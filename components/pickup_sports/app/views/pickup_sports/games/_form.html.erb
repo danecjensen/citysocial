@@ -1,0 +1,67 @@
+<%= form_with model: game do |f| %>
+  <% if game.errors.any? %>
+    <div class="mb-4">
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: game.errors.full_messages.to_sentence) %>
+    </div>
+  <% end %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :title, label: "Game title", placeholder: "Saturday morning pickup") %>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :sport,
+          type: :select,
+          label: "Sport",
+          collection: PickupSports::Game::SPORTS.map { |sport| [sport.titleize, sport] },
+          include_blank: "Choose a sport"
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :skill_level,
+          type: :select,
+          label: "Skill and welcome level",
+          collection: PickupSports::Game::SKILL_LEVELS.map { |level| [level.humanize, level] },
+          include_blank: "Choose a level"
+        ) %>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :starts_at,
+          label: "Start time",
+          hint: "Use a local time such as 2026-08-09 18:30.",
+          placeholder: "YYYY-MM-DD HH:MM",
+          value: game.starts_at&.strftime("%Y-%m-%d %H:%M")
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :capacity,
+          type: :number_field,
+          label: "Player capacity",
+          hint: "Includes you as host.",
+          min: 2,
+          max: 100
+        ) %>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :neighborhood, label: "Neighborhood", placeholder: "East Austin") %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :venue, label: "Venue or court", placeholder: "Pan Am Park") %>
+  </div>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :details,
+        type: :text_area,
+        label: "Welcome notes",
+        hint: "Share equipment, format, and what newcomers should expect.",
+        rows: 5
+      ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Save game<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: games_path) do %>Cancel<% end %>
+  </div>
+<% end %>
