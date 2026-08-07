@@ -34,7 +34,7 @@ Examples of the right kind of line:
   API; a module references users by id through `PlatformCore::Graph`, never the User model.
 - Check suite is `bin/verify`. Tool wrappers vary by container: `bundle exec rspec/rubocop/packwerk` works once `/opt/rbenv/versions/3.3.6/bin` is on PATH; `bin/rspec` binstubs may not exist (generate with `bundle binstubs`, but never commit them). In request specs use `Capybara.string(response.body)` + have_css to assert several attrs on one element.
 - A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
-- `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
+- N+1 in a collection view: a module resolves users only through `PlatformCore::Graph`, so batch with `PlatformCore::Graph.users(ids)` (id=>user hash, avatars preloaded) built once in the controller, never per-row `Graph.user`. Prove flatness by counting `platform_core_users` SQL (subscribe to `sql.active_record`) across a small vs large page in a request spec.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
 - Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
 - The `app_module` generator currently needs two RuboCop cleanups after generation: alphabetize its injected Gemfile entry and freeze the generated VERSION constant.
@@ -83,6 +83,16 @@ Notes: Empty backlog + empty DanesIdeas inbox, so ran 1b (gate open) and propose
 Learnings:
 - Verified-away slop: the explorer flagged communities community/post forms as "missing error state," but both use FormFieldComponent for every validated attribute, so errors already render inline. Cut, not queued — do not re-propose. Same for login/comment forms (flash.now via layout).
 - Backlog now holds F-002..F-005 (leaderboard/admin empty states, feed compose dead-end, author N+1) as grounded ready items for future runs.
+
+## 2026-08-07 — F-018
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/24
+Changed: components/platform_core/app/public/platform_core/graph.rb, components/notifications/app/controllers/notifications/notifications_controller.rb, components/notifications/app/views/notifications/notifications/index.html.erb, spec/public/platform_core/graph_spec.rb, spec/requests/notifications_spec.rb, routines/backlog.json, routines/progress.md
+Notes: Master was green (168 examples). DanesIdeas Inbox empty (nothing ingested in 1a). Phase 0 reconciliation: five ready items were already covered by open draft PRs — F-009 (#20), F-010 (#21), F-011 (#23), F-015 (#22), F-017 (#19, whose branch/title reuse the codex F-013 id but whose content is exactly F-017's feedback aria-pressed acceptance) — marked all done so they aren't rebuilt. That dropped ready to 3 (<5), opening the 1b gate. Explore sweep of the newer modules confirmed the a11y/empty-state/alt/label veins are drained there; the live vein is N+1 queries. Proposed 3 grounded N+1 items (F-018 notifications actors, F-019 feedback authors, F-020 messaging inbox), all rooted in the fact that modules resolve users only via PlatformCore::Graph which had no batch lookup. Built the top scorer F-018 (1.35): added additive PlatformCore::Graph.users(ids) (id=>user hash, avatars preloaded, blank ids skipped) to the sanctioned public API and consumed it in the notifications inbox controller/view, taking actor resolution from up-to-100 per-row queries to one batch. bin/verify green: 170 examples, 0 failures, packwerk + rubocop clean.
+Learnings:
+- Promoted the Graph.users batch + platform_core_users query-count assertion pattern to Codebase Patterns.
+- Graph.users must `.with_attached_avatar` — AvatarComponent reads user.avatar.attached?/blob, so batching only the user rows would leave an avatar-blob N+1 behind.
+- RuboCop Rails/CompactBlank: use `Array(ids).compact_blank.uniq`, not `.reject(&:blank?)`.
 
 ## 2026-08-05 10:24 — research
 Outcome: produced 4 briefs
