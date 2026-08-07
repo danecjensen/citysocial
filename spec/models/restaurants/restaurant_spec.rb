@@ -20,6 +20,33 @@ RSpec.describe Restaurants::Restaurant, type: :model do
     end
   end
 
+  describe ".by_cuisine" do
+    it "narrows to matching restaurants when a cuisine is given" do
+      bbq = create(:restaurant, cuisine: "BBQ")
+      create(:restaurant, cuisine: "Tacos")
+
+      expect(described_class.by_cuisine("BBQ")).to contain_exactly(bbq)
+    end
+
+    it "is a no-op for a blank cuisine" do
+      create(:restaurant, cuisine: "BBQ")
+      create(:restaurant, cuisine: "Tacos")
+
+      expect(described_class.by_cuisine(nil).count).to eq(2)
+      expect(described_class.by_cuisine("").count).to eq(2)
+    end
+  end
+
+  describe ".cuisines" do
+    it "returns the distinct present cuisines, sorted" do
+      create(:restaurant, cuisine: "Tacos")
+      create(:restaurant, cuisine: "BBQ")
+      create(:restaurant, cuisine: "Tacos")
+
+      expect(described_class.cuisines).to eq(%w[BBQ Tacos])
+    end
+  end
+
   describe ".random_pair" do
     it "eager-loads photos and returns two restaurants" do
       create(:restaurant, :with_photo)
