@@ -492,15 +492,15 @@
       "effort": 3,
       "confidence": 1.0,
       "score": 1.333,
-      "status": "in_progress",
+      "status": "done",
       "origin": "research",
       "attempts": 1,
       "created": "2026-08-07",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/29",
       "kind": "app_wide_capability",
       "product_family": "sharing",
       "milestone": "public-event-sharing",
-      "notes": "R-009 remains on open research-only PR #28, so this run records the implementation without editing that concurrent branch. F-021 is reserved by open PR #26."
+      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
     }
   ]
 }
