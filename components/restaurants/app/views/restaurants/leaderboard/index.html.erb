@@ -6,6 +6,19 @@
   <% end %>
 <% end %>
 
+<% if @cuisines.any? %>
+  <%= form_with url: "/restaurants/leaderboard", method: :get, class: "mb-6 flex items-end gap-3" do |f| %>
+    <div class="w-full max-w-xs">
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :cuisine, type: :select, label: "Cuisine",
+            collection: @cuisines, include_blank: "All cuisines", selected: @cuisine) %>
+    </div>
+    <div class="mb-4">
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :md) do %>Filter<% end %>
+    </div>
+  <% end %>
+<% end %>
+
 <% if @restaurants.any? %>
   <%= render PlatformCore::Ui::TableComponent.new(columns: ["#", "Restaurant", "Cuisine", "Area", { label: "Elo", numeric: true }, { label: "Matchups", numeric: true }]) do |table| %>
     <% @restaurants.each_with_index do |restaurant, i| %>

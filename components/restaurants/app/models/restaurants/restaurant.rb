@@ -9,6 +9,16 @@ module Restaurants
 
     scope :ranked, -> { order(elo: :desc, name: :asc) }
 
+    # Narrow the board to a single cuisine. A blank cuisine is a no-op so the
+    # controller can pass the (optionally nil) filter straight through.
+    scope :by_cuisine, ->(cuisine) { cuisine.present? ? where(cuisine: cuisine) : all }
+
+    # The distinct cuisines actually present in the catalog, sorted for a stable
+    # filter list. Used to populate the leaderboard's cuisine select.
+    def self.cuisines
+      where.not(cuisine: [nil, ""]).distinct.order(:cuisine).pluck(:cuisine)
+    end
+
     # Two distinct restaurants to compare. Returns nil when there aren't enough
     # restaurants to form a matchup yet. Photos are eager-loaded so the matchup
     # view doesn't fire N+1 queries when rendering hero images.
