@@ -5,7 +5,8 @@ module Communities
     before_action :set_post, only: %i[show upvote downvote]
 
     def show
-      @comments = @post.comments.chronological
+      @comment_sort = params[:sort] == "top" ? :top : :new
+      @comments = @comment_sort == :top ? @post.comments.top : @post.comments.chronological
     end
 
     def new

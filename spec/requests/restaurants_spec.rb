@@ -54,6 +54,52 @@ RSpec.describe "Restaurants", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("No restaurants on the board yet")
     end
+
+    it "renders a cuisine filter select populated from the cuisines present" do
+      create(:restaurant, name: "Franklin Barbecue", cuisine: "BBQ")
+      create(:restaurant, name: "Veracruz", cuisine: "Tacos")
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      doc = Capybara.string(response.body)
+      expect(doc).to have_css("select[name='cuisine'] option", text: "BBQ")
+      expect(doc).to have_css("select[name='cuisine'] option", text: "Tacos")
+    end
+
+    it "narrows the leaderboard to the selected cuisine" do
+      create(:restaurant, name: "Franklin Barbecue", cuisine: "BBQ")
+      create(:restaurant, name: "Veracruz Taqueria", cuisine: "Tacos")
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard", params: { cuisine: "BBQ" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Franklin Barbecue")
+      expect(response.body).not_to include("Veracruz Taqueria")
+    end
+
+    it "shows the complete leaderboard when no cuisine is selected" do
+      create(:restaurant, name: "Franklin Barbecue", cuisine: "BBQ")
+      create(:restaurant, name: "Veracruz Taqueria", cuisine: "Tacos")
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      expect(response.body).to include("Franklin Barbecue")
+      expect(response.body).to include("Veracruz Taqueria")
+    end
+
+    it "ignores an unknown cuisine and shows the full board" do
+      create(:restaurant, name: "Franklin Barbecue", cuisine: "BBQ")
+      create(:restaurant, name: "Veracruz Taqueria", cuisine: "Tacos")
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard", params: { cuisine: "Nonexistent" }
+
+      expect(response.body).to include("Franklin Barbecue")
+      expect(response.body).to include("Veracruz Taqueria")
+    end
   end
 
   describe "admin restaurant management" do

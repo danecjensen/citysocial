@@ -1,13 +1,55 @@
 <%= render PlatformCore::Ui::PageHeaderComponent.new(
-      title: "Messages",
-      subtitle: @unread_count.positive? ? "#{@unread_count} unread" : "Private conversations with people in your city."
+      title: @archived ? "Archived messages" : "Messages",
+      subtitle: @archived ? "Conversations you moved out of your inbox." : (@unread_count.positive? ? "#{@unread_count} unread" : "Private conversations with people in your city.")
     ) do |header| %>
   <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: @archived ? :secondary : :primary,
+          href: conversations_path
+        ) do %>
+      Inbox
+    <% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: @archived ? :primary : :secondary,
+          href: conversations_path(view: "archived")
+        ) do %>
+      Archived
+    <% end %>
     <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_conversation_path) do %>
       New conversation
     <% end %>
   <% end %>
 <% end %>
+
+<div class="mx-auto mb-6 max-w-3xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with url: conversations_path, method: :get do |f| %>
+      <% if @archived %>
+        <%= f.hidden_field :view, value: "archived" %>
+      <% end %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f,
+            attribute: :q,
+            label: "Search conversations",
+            value: @query,
+            placeholder: "Handle or display name"
+          ) %>
+      <div class="flex flex-wrap items-center gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>
+          Search
+        <% end %>
+        <% if @query.present? %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: :ghost,
+                href: conversations_path(view: (@archived ? "archived" : nil))
+              ) do %>
+            Clear
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
 
 <% if @conversations.any? %>
   <div class="mx-auto max-w-3xl space-y-3">
@@ -38,25 +80,48 @@
               </p>
             <% end %>
           </div>
-          <%= render PlatformCore::Ui::ButtonComponent.new(
-                variant: unread_count.positive? ? :primary : :secondary,
-                size: :sm,
-                href: conversation_path(conversation)
-              ) do %>
-            Open
-          <% end %>
+          <div class="flex flex-wrap items-center gap-2">
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: unread_count.positive? ? :primary : :secondary,
+                  size: :sm,
+                  href: conversation_path(conversation)
+                ) do %>
+              Open
+            <% end %>
+            <% if @archived %>
+              <%= render PlatformCore::Ui::ButtonComponent.new(
+                    variant: :ghost,
+                    size: :sm,
+                    href: restore_conversation_path(conversation),
+                    method: :patch
+                  ) do %>
+                Restore
+              <% end %>
+            <% else %>
+              <%= render PlatformCore::Ui::ButtonComponent.new(
+                    variant: :ghost,
+                    size: :sm,
+                    href: archive_conversation_path(conversation),
+                    method: :patch
+                  ) do %>
+                Archive
+              <% end %>
+            <% end %>
+          </div>
         </div>
       <% end %>
     <% end %>
   </div>
 <% else %>
   <%= render PlatformCore::Ui::EmptyStateComponent.new(
-        title: "No conversations yet",
-        body: "Start with a resident's handle, or use the Message resident action on their public profile."
+        title: @query.present? ? "No conversations found" : (@archived ? "No archived conversations" : "No conversations yet"),
+        body: @query.present? ? "Try another resident handle or display name." : (@archived ? "Archive a conversation to move it out of your inbox without deleting its history." : "Start with a resident's handle, or use the Message resident action on their public profile.")
       ) do |empty| %>
-    <% empty.with_action do %>
-      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_conversation_path) do %>
-        Start a conversation
+    <% unless @archived || @query.present? %>
+      <% empty.with_action do %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_conversation_path) do %>
+          Start a conversation
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

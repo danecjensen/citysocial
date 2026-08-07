@@ -37,7 +37,7 @@ Examples of the right kind of line:
 - `PlatformCore::Ui::FormFieldComponent` already renders inline per-attribute validation errors; a form using it for every validated attribute is NOT a missing-error-state gap.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
 - Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
-- The `app_module` generator currently needs two RuboCop cleanups after generation: alphabetize its injected Gemfile entry and freeze the generated VERSION constant.
+- Screenshots ARE possible here (past runs wrongly assumed DB denial blocked them): start PG, `RAILS_ENV=development bin/rails db:prepare` (photo-attach seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, drive Playwright from `/opt/node22/lib/node_modules` with chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome --no-sandbox`.
 
 ---
 
@@ -193,6 +193,30 @@ Learnings:
 - In request specs, `Capybara.string(response.body)` + have_css lets you assert several attributes on the SAME element (e.g. button[aria-label='Upvote'][aria-pressed='true'].bg-brand-600) — more robust than multiple `include` checks that don't prove co-location.
 - Ruby -e JSON.parse chokes on the em-dashes in backlog.json under US-ASCII; read with encoding: "UTF-8" when validating.
 
+## 2026-08-06 11:12 — F-009
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/20
+Changed: components/communities/app/models/communities/comment.rb, components/communities/app/controllers/communities/posts_controller.rb, components/communities/app/views/communities/posts/show.html.erb, spec/models/communities/comment_spec.rb, spec/requests/communities_spec.rb, routines/backlog.json, routines/progress.md, docs/lessons.md
+Notes: The preferred Capability lane had no safe unreserved candidate: profiles and
+notifications are shipped, while messaging is already open in PR #15. Used the authorized
+smaller-feature fallback and implemented F-009 from consumed research brief R-001. Residents
+can keep the existing chronological conversation order or switch to Top, ordered by score
+then recency; sorting is read-only and covered by model/request specs. Repaired the malformed
+backlog JSON left by the concurrent F-008/F-012 merges, reconciled open F-005/F-013 work, and
+reserved messaging follow-up IDs F-015/F-016. DanesIdeas Inbox was empty; research status was
+already consumed and unchanged. Verification incomplete: Packwerk, RuboCop, Zeitwerk,
+Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, diff checks, and
+remote-tree equality passed; PostgreSQL TCP denial blocked all RSpec examples and screenshots.
+PR #20 raises the open queue from five to six, so the queue circuit breaker should stop the
+next run until an open PR lands or closes.
+## 2026-08-06 — F-013
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/19
+Changed: components/feedback/app/views/feedback/submissions/_submission.html.erb, components/feedback/app/views/feedback/submissions/show.html.erb, spec/requests/feedback_spec.rb
+Notes: Master green on arrival (137 examples) — the F-004/PR #13 merge landed ButtonComponent#pressed:, lifting F-013's hold, so it was the top ready item (2.55). Wired `pressed: supported` on the list partial and `pressed: @supported` on the show page; the existing variant/label swap and supports_count were left untouched. New request spec asserts aria-pressed='true' on a supported item (list + show) and 'false' on an unsupported one via Capybara.string + have_css. Full suite green: 138 examples, packwerk + rubocop clean. No /design change — `pressed:` was already documented by F-004.
+1a: DanesIdeas Inbox empty — nothing ingested. 1b (gate open, 4 ready<5): added 0 items. The easy grounded veins stay drained (no TODO/FIXME anywhere; collection views guard their zero-case), and the only outward-looking source — research briefs R-001..R-004 — are still `fresh` on master but already in flight on open PRs #12/#14/#16 under the codex-track F-009..F-012 ids the prior run reserved (next_id=15). Re-proposing them would be duplicate churn, so I left the backlog as-is rather than pad.
+Learnings:
+- (none new — the ButtonComponent `pressed:` toggle pattern is already in Codebase Patterns; F-013 was its second, clean application. Feedback Support show-page button has no aria_label because its text content ("Support this"/"Remove support") is its accessible name — only icon-only toggles need both aria_label and pressed.)
 ## 2026-08-06 05:09 — F-005
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/16
@@ -203,3 +227,17 @@ Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/15
 Changed: components/messaging/, components/platform_core/app/public/platform_core/graph.rb, components/platform_core/app/public/platform_core/modules.rb, components/platform_core/app/views/platform_core/profiles/show.html.erb, config/routes.rb, db/schema.rb, spec/, routines/backlog.json, docs/roadmap.md
 Notes: Product fallback lane. The preferred late-night Capability lane had no unreserved evidence-backed candidate: the human-priority profile capability is shipped, notifications F-008 is already represented by open PR #12, and the remaining research queue contains module features. The third consecutive Codex implementation therefore satisfied the product-cadence requirement with the roadmap-backed Messaging MVP: generated engine, canonical one-to-one threads, private replies, unread/read state, profile entry point, owner scoping, a PII-safe handle lookup, and a content-free messaging.message_created event. Draft PR opened with verification incomplete: Packwerk, RuboCop, Zeitwerk, Rails/route smoke checks, ERB/Ruby syntax, Tailwind, backlog integrity, and diff checks passed; PostgreSQL denial blocked the full and focused specs before examples.
+
+## 2026-08-06 17:30 — F-015
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/22
+Changed: components/messaging/app/controllers/messaging/conversations_controller.rb, components/messaging/app/models/messaging/conversation.rb, components/messaging/app/models/messaging/message.rb, components/messaging/app/views/messaging/conversations/index.html.erb, components/messaging/config/routes.rb, components/messaging/db/migrate/20260806180700_add_archiving_to_messaging_conversations.rb, components/platform_core/app/public/platform_core/graph.rb, db/schema.rb, docs/roadmap.md, spec/models/messaging/conversation_spec.rb, spec/public/platform_core/graph_spec.rb, spec/requests/messaging_spec.rb, routines/backlog.json, routines/progress.md
+Notes: Product lane. Shipped Messaging milestone 2: participant-specific archive/restore, active and archived inbox search through a PII-safe public-profile ID lookup, owner-scoped actions, direct access to archived history, and automatic reactivation for both participants when either replies. The explicit profile priority is already shipped; DanesIdeas Inbox and research state had nothing new to ingest. Verification incomplete only because PostgreSQL was denied before examples (37 load errors, 0 examples); Packwerk, RuboCop, Zeitwerk, route and Rails-aware ERB checks, Ruby syntax, Tailwind, backlog integrity, remote-tree equality, and diff checks passed.
+## 2026-08-06 17:20 — F-010
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/21
+Changed: components/restaurants/app/models/restaurants/restaurant.rb, components/restaurants/app/controllers/restaurants/leaderboard_controller.rb, components/restaurants/app/views/restaurants/leaderboard/index.html.erb, spec/models/restaurants/restaurant_spec.rb, spec/requests/restaurants_spec.rb, routines/backlog.json, routines/progress.md
+Notes: Master was fully GREEN this run (bin/verify 168/0, packwerk + rubocop clean) — no Phase 0 fix. DanesIdeas Inbox empty (nothing ingested). Reconciled the fresh clone against open PRs: F-005 already done on master (merged #16); marked F-009 done (open codex #20) and F-017 done (open claude #19) so neither is rebuilt — that left exactly 5 ready, so the 1b gate stayed closed. Phase 2 tie at 1.2 between F-010 and F-011 (both effort 2); picked F-010 as the smaller/lower-risk change (query param + scope + one select, no new route/action). Consumed R-002 (already status consumed): added by_cuisine scope + cuisines class method, a presence_in-sanitized ?cuisine= filter, and a shared FormFieldComponent :select GET form above the leaderboard. Full suite 175/0; packwerk + rubocop clean. Captured before/after screenshots against a real booted server.
+Learnings:
+- Screenshots ARE achievable in this managed env (correcting several prior runs that claimed PostgreSQL denial made them impossible): pg_ctlcluster starts, RAILS_ENV=development bin/rails db:prepare loads the schema (only the photo-attaching seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, then drive Playwright from the global install at /opt/node22/lib/node_modules with chromium at /opt/pw-browsers/chromium-1194/chrome-linux/chrome and --no-sandbox.
+- A GET filter form can reuse FormFieldComponent :select with `form_with url:, method: :get` (no model): f.object is nil, so the component's inline-error branch is a safe no-op. Sanitize the incoming value with `params[:x].presence_in(allowed_values)` so an unknown/hand-crafted param falls back to the unfiltered view instead of a misleading empty state.

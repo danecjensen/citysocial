@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_05_180700) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_06_180700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -185,11 +185,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_05_180700) do
     t.bigint "first_participant_id", null: false
     t.bigint "second_participant_id", null: false
     t.datetime "last_message_at"
+    t.datetime "first_participant_archived_at"
+    t.datetime "second_participant_archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["first_participant_id", "first_participant_archived_at"], name: "index_messaging_conversations_on_first_archive"
     t.index ["first_participant_id", "second_participant_id"], name: "index_messaging_conversations_on_participant_pair", unique: true
     t.index ["first_participant_id"], name: "index_messaging_conversations_on_first_participant_id"
     t.index ["last_message_at"], name: "index_messaging_conversations_on_last_message_at"
+    t.index ["second_participant_id", "second_participant_archived_at"], name: "index_messaging_conversations_on_second_archive"
     t.index ["second_participant_id"], name: "index_messaging_conversations_on_second_participant_id"
   end
 

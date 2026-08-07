@@ -31,7 +31,11 @@ module Messaging
     end
 
     def update_conversation_activity
-      conversation.update!(last_message_at: created_at)
+      conversation.update!(
+        last_message_at: created_at,
+        first_participant_archived_at: nil,
+        second_participant_archived_at: nil
+      )
     end
 
     def publish_created

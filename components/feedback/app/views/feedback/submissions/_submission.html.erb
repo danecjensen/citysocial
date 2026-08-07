@@ -6,7 +6,8 @@
             size: :sm,
             href: toggle_support_submission_path(submission),
             method: :post,
-            aria_label: supported ? "Remove support" : "Support this feedback"
+            aria_label: supported ? "Remove support" : "Support this feedback",
+            pressed: supported
           ) do %>
         <span aria-hidden="true">▲</span>
         <span class="font-mono tabular-nums"><%= submission.supports_count %></span>
