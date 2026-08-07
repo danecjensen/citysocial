@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 23,
+  "next_id": 24,
   "items": [
     {
       "id": "F-017",
@@ -521,6 +521,33 @@
       "product_family": "sharing",
       "milestone": "public-event-sharing",
       "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
+    },
+    {
+      "id": "F-023",
+      "title": "Launch reliable pickup game rosters",
+      "problem": "Austin residents cannot tell whether a casual game has a real spot, enough committed players, or a fair next-in-line process before traveling to play.",
+      "evidence": "research.md#R-008; Events is read-only discovery and Communities owns discussion, while neither owns resident-hosted rosters, capacity, or deterministic waitlist promotion.",
+      "acceptance": [
+        "A generated PickupSports engine owns additive game and roster data, depends only on platform_core, and is mounted as its own product",
+        "A signed-in resident can host and edit a future game with sport, skill, time, neighborhood, venue, details, and capacity while the host takes the first spot",
+        "Anyone can browse and filter upcoming games and view a public roster with open, full, waitlisted, and canceled states",
+        "Residents can join or leave; overflow is waitlisted and the earliest waitlisted resident is promoted transactionally when a player leaves",
+        "The module publishes primitive game, roster, and promotion events and exposes a read-only UpcomingGames public API",
+        "Model, request, public API, route, and boundary checks cover ownership, validation, duplicate joins, capacity, FIFO promotion, cancellation, and filters"
+      ],
+      "impact": 5,
+      "effort": 5,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "in_progress",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-07",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "pickup_sports",
+      "milestone": "roster-first-mvp",
+      "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
     }
   ]
 }

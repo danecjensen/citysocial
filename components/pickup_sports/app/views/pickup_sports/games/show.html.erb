@@ -1,0 +1,134 @@
+<div class="mb-3">
+  <%= link_to "← Pickup Sports", games_path, class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: @game.title,
+      subtitle: "#{@game.starts_at.to_fs(:long)} · #{@game.venue}, #{@game.neighborhood}"
+    ) do |header| %>
+  <% if logged_in? && @game.host_id == current_user.id && @game.open? %>
+    <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: edit_game_path(@game)) do %>Edit<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :danger,
+            href: cancel_game_path(@game),
+            method: :patch,
+            confirm: "Cancel this game? The roster will see the canceled state."
+          ) do %>Cancel game<% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+  <div class="space-y-6">
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <div class="flex flex-wrap gap-2">
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= @game.sport.titleize %><% end %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= @game.skill_level.humanize %><% end %>
+        <% if @game.canceled? %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Canceled<% end %>
+        <% elsif @game.full? %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Waitlist open<% end %>
+        <% else %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Open<% end %>
+        <% end %>
+      </div>
+
+      <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="font-mono text-xs uppercase tracking-wide text-ink-faint">Time</dt>
+          <dd class="mt-1 font-bold text-ink"><%= @game.starts_at.to_fs(:long) %></dd>
+        </div>
+        <div>
+          <dt class="font-mono text-xs uppercase tracking-wide text-ink-faint">Place</dt>
+          <dd class="mt-1 font-bold text-ink"><%= @game.venue %> · <%= @game.neighborhood %></dd>
+        </div>
+      </dl>
+
+      <% if @game.details.present? %>
+        <p class="mt-5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= @game.details %></p>
+      <% end %>
+
+      <% host = @residents[@game.host_id] %>
+      <p class="mt-5 border-t border-line pt-4 text-sm text-ink-muted">
+        Hosted by
+        <% if host %>
+          <%= link_to host.display_name_or_handle, "/people/#{host.handle}", class: "font-bold text-brand-700 hover:underline" %>
+        <% else %>
+          a former resident
+        <% end %>
+      </p>
+    <% end %>
+
+    <% if @game.canceled? %>
+      <%= render PlatformCore::Ui::EmptyStateComponent.new(
+            title: "This game was canceled",
+            body: "The roster remains visible so nobody mistakes it for an active game."
+          ) %>
+    <% elsif logged_in? && @current_entry.nil? %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="font-bold text-ink"><%= @game.full? ? "The roster is full, but the waitlist is fair." : "There is room on the roster." %></p>
+        <p class="mt-1 text-sm text-ink-muted">
+          <%= @game.full? ? "Join the waitlist; the earliest resident is promoted when a player leaves." : "Join now so the host and other players can count on you." %>
+        </p>
+        <div class="mt-4">
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: :primary,
+                href: game_roster_entry_path(@game),
+                method: :post
+              ) do %><%= @game.full? ? "Join waitlist" : "Join game" %><% end %>
+        </div>
+      <% end %>
+    <% elsif logged_in? && @current_entry && current_user.id != @game.host_id %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="font-bold text-ink">
+          <%= @current_entry.joined? ? "You're on the roster." : "You're on the waitlist." %>
+        </p>
+        <p class="mt-1 text-sm text-ink-muted">
+          <%= @current_entry.joined? ? "Leave early if plans change so the next resident can be promoted." : "If a spot opens, the first waitlisted resident is promoted automatically." %>
+        </p>
+        <div class="mt-4">
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: :secondary,
+                href: game_roster_entry_path(@game),
+                method: :delete,
+                confirm: "Leave this game?"
+              ) do %>Leave game<% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <div class="flex items-center justify-between gap-3">
+        <span class="font-display text-lg font-bold text-ink">Roster</span>
+        <span class="font-mono text-xs text-ink-faint"><%= @game.joined_count %>/<%= @game.capacity %></span>
+      </div>
+    <% end %>
+
+    <div class="space-y-3">
+      <% @entries.each_with_index do |entry, index| %>
+        <% resident = @residents[entry.resident_id] %>
+        <div class="flex items-center gap-3">
+          <% if resident %>
+            <%= render PlatformCore::Ui::AvatarComponent.new(user: resident, size: :sm, alt: "") %>
+            <div class="min-w-0 flex-1">
+              <%= link_to resident.display_name_or_handle, "/people/#{resident.handle}", class: "block truncate font-bold text-ink hover:text-brand-700" %>
+              <span class="font-mono text-xs text-ink-faint">@<%= resident.handle %></span>
+            </div>
+          <% else %>
+            <div class="min-w-0 flex-1 text-sm text-ink-muted">Former resident</div>
+          <% end %>
+          <% if entry.resident_id == @game.host_id %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Host<% end %>
+          <% elsif entry.waitlisted? %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Wait <%= index - @game.joined_count + 1 %><% end %>
+          <% else %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Playing<% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

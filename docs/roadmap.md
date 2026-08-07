@@ -45,6 +45,10 @@
 - messaging milestone 3: Marketplace listings and community posts can start a private
   conversation carrying a validated public context label and internal backlink;
   Messaging owns the context without reading or storing sibling records.
+- pickup sports milestone 1: resident-hosted Austin games with sport, skill, time,
+  neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
+  waitlist promotion, cancellation clarity, notification-ready events, and a public
+  upcoming-games read API.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
@@ -52,3 +56,7 @@
       so the loop actually populates the module in production.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
       filesystem is ephemeral, so photos need a real bucket before launch.
+- [ ] pickup sports milestone 2 — host attendance closeout after game time, with
+      attended/absent roster state and explicit correction paths.
+- [ ] pickup sports milestone 3 — recurring game templates plus a Notifications
+      subscriber for promotions and host changes.

@@ -1,0 +1,86 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Pickup Sports",
+      subtitle: "Find an Austin game with a real roster, a clear capacity, and a fair waitlist."
+    ) do |header| %>
+  <% if logged_in? %>
+    <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_game_path) do %>Host a game<% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= form_with url: games_path, method: :get, class: "mb-6 grid items-end gap-3 md:grid-cols-4" do |f| %>
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :sport,
+        type: :select,
+        label: "Sport",
+        collection: PickupSports::Game::SPORTS.map { |sport| [sport.titleize, sport] },
+        include_blank: "All sports",
+        selected: @sport
+      ) %>
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :neighborhood,
+        label: "Neighborhood",
+        value: @neighborhood,
+        placeholder: "East Austin"
+      ) %>
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :on,
+        label: "Date",
+        value: params[:on],
+        placeholder: "YYYY-MM-DD"
+      ) %>
+  <div class="mb-4 flex gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, type: :submit) do %>Find games<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: games_path) do %>Reset<% end %>
+  </div>
+<% end %>
+
+<% if @games.any? %>
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <% @games.each do |game| %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <div class="flex flex-wrap gap-2">
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= game.sport.titleize %><% end %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= game.skill_level.humanize %><% end %>
+          <% if game.full? %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Waitlist<% end %>
+          <% else %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %><%= pluralize(game.seats_remaining, "spot") %> left<% end %>
+          <% end %>
+        </div>
+        <h2 class="mt-3 font-display text-xl font-bold text-ink">
+          <%= link_to game.title, game_path(game), class: "hover:text-brand-700" %>
+        </h2>
+        <dl class="mt-3 space-y-1 text-sm text-ink-muted">
+          <div><dt class="inline font-bold text-ink">When:</dt> <dd class="inline"><%= game.starts_at.to_fs(:long) %></dd></div>
+          <div><dt class="inline font-bold text-ink">Where:</dt> <dd class="inline"><%= game.venue %> · <%= game.neighborhood %></dd></div>
+          <div><dt class="inline font-bold text-ink">Roster:</dt> <dd class="inline"><%= game.joined_count %>/<%= game.capacity %> playing<% if game.waitlisted_count.positive? %> · <%= game.waitlisted_count %> waiting<% end %></dd></div>
+        </dl>
+        <% host = @hosts[game.host_id] %>
+        <p class="mt-4 font-mono text-xs text-ink-faint">
+          Hosted by
+          <% if host %>
+            <%= link_to "@#{host.handle}", "/people/#{host.handle}", class: "text-brand-700 hover:underline" %>
+          <% else %>
+            a former resident
+          <% end %>
+        </p>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No matching games yet",
+        body: "Try a broader date or neighborhood, or host the first reliable game."
+      ) do |empty| %>
+    <% if logged_in? %>
+      <% empty.with_action do %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_game_path) do %>Host a game<% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
