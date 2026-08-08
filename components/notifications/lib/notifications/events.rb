@@ -6,17 +6,27 @@ module Notifications
     module_function
 
     def subscribe!
-      %w[feed.post_created communities.post_created].each do |event_name|
-        subscriptions = PlatformCore::EventBus.registry[event_name]
-        next if subscriptions.any? { |subscription| subscription.handler == Notifications::DeliverActivity }
+      subscriptions.each do |event_name, handler|
+        registered = PlatformCore::EventBus.registry[event_name]
+        next if registered.any? { |subscription| subscription.handler == handler }
 
-        PlatformCore::EventBus.subscribe(event_name, Notifications::DeliverActivity, async: true)
+        PlatformCore::EventBus.subscribe(event_name, handler, async: true)
       end
+    end
+
+    def subscriptions
+      {
+        "feed.post_created" => Notifications::DeliverActivity,
+        "communities.post_created" => Notifications::DeliverActivity,
+        "feedback.submission_status_changed" => Notifications::DeliverDirect
+      }
     end
 
     # Events this module SUBSCRIBES TO:
     #   - "feed.post_created"        { post_id:, author_id: }
     #   - "communities.post_created" { post_id:, community_id:, author_id: }
+    #   - "feedback.submission_status_changed"
+    #       { submission_id:, author_id:, status: }
     #
     # Notifications publishes no events in this milestone.
   end

@@ -1,6 +1,10 @@
 module Notifications
   class Notification < ApplicationRecord
-    SUPPORTED_EVENTS = %w[feed.post_created communities.post_created].freeze
+    SUPPORTED_EVENTS = %w[
+      feed.post_created
+      communities.post_created
+      feedback.submission_status_changed
+    ].freeze
 
     validates :recipient_id, :actor_id, :event_name, :source_id, :message, :target_path, presence: true
     validates :event_name, inclusion: { in: SUPPORTED_EVENTS }

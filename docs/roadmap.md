@@ -35,7 +35,8 @@
   feedback.submission_status_changed for the notification loop.
 - notifications: durable follower activity inbox consuming feed.post_created and
   communities.post_created asynchronously; idempotent fan-out over the public
-  follow graph, unread badge, owner-only read controls, and public unread-count API.
+  follow graph, direct feedback-status updates to submission authors, unread badge,
+  owner-only read controls, and public unread-count API.
 - messaging milestone 1: private one-to-one resident conversations, profile and
   handle entry points, owner-scoped inbox/history, unread/read state, replies,
   and a content-free messaging.message_created event for delivery integrations.

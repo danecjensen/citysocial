@@ -1,6 +1,6 @@
 <%= render PlatformCore::Ui::PageHeaderComponent.new(
       title: "Notifications",
-      subtitle: "New activity from people you follow across CitySocial."
+      subtitle: "Updates and new activity across CitySocial."
     ) do |header| %>
   <% if @notifications.any?(&:unread?) %>
     <% header.with_actions do %>
@@ -51,6 +51,6 @@
 <% else %>
   <%= render PlatformCore::Ui::EmptyStateComponent.new(
         title: "You're all caught up",
-        body: "New posts from people you follow will appear here."
+        body: "New activity and updates will appear here."
       ) %>
 <% end %>
