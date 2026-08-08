@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 24,
+  "next_id": 25,
   "items": [
     {
       "id": "F-017",
@@ -79,6 +79,31 @@
       "kind": "module_feature",
       "product_family": "marketplace",
       "milestone": "listing-renewal"
+    },
+    {
+      "id": "F-024",
+      "title": "Notify feedback authors when status changes",
+      "problem": "Users who submit product feedback must manually re-check the board to learn whether their idea or issue moved to a new status.",
+      "evidence": "research.md#R-007; Feedback::Submission already publishes feedback.submission_status_changed with submission, author, and status primitives, but Notifications has no direct-recipient delivery path and subscribes only to follower activity.",
+      "acceptance": [
+        "Notifications asynchronously subscribes to feedback.submission_status_changed and targets only the submission author",
+        "Each new status updates the existing per-submission notification and resurfaces it unread",
+        "Retried delivery of the same status does not re-alert an already-read notification",
+        "Submission creation creates no status notification",
+        "Service, event-wiring, and request specs cover delivery and inbox rendering"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-08",
+      "pr": "https://github.com/danecjensen/citysocial/pull/31",
+      "kind": "app_wide_capability",
+      "product_family": "notifications",
+      "milestone": "feedback-status-delivery"
     },
     {
       "id": "F-021",

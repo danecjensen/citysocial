@@ -412,4 +412,4 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     same submission each produce a fresh unread notification, and a request
     spec asserting the author sees it in their inbox
 - Grader score: 10/10
-- Status: fresh
+- Status: consumed (F-024)

@@ -44,6 +44,14 @@ Examples of the right kind of line:
 
 ## Runs
 
+## 2026-08-08 17:40 — F-024
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/31
+Changed: components/notifications/app/models/notifications/notification.rb, components/notifications/app/services/notifications/deliver_direct.rb, components/notifications/app/views/notifications/notifications/index.html.erb, components/notifications/lib/notifications/events.rb, docs/roadmap.md, spec/lib/notifications/events_spec.rb, spec/models/notifications/deliver_direct_spec.rb, spec/requests/notifications_spec.rb, routines/backlog.json, routines/progress.md, routines/research.md
+Notes: The preferred Product lane had no safe unreserved candidate: pickup-sports MVP was already open as PR #30 and contextual Messaging as PR #27, while product follow-ups depend on those unmerged trees. Used the authorized evidence-backed fallback and consumed 10/10 brief R-007. Notifications now handles Feedback's existing status-change event through an asynchronous direct-recipient path, updates the author's one existing per-submission notification, resurfaces it only when the status changes, and links back through a primitive internal path without referencing Feedback classes. The full bin/verify attempt reached 0 examples and 39 load errors because the managed environment denied PostgreSQL TCP access; Packwerk and RuboCop passed within that run. Independently passed Zeitwerk, Ruby syntax, Rails-aware ERB compilation, Tailwind, runtime wiring smoke, sibling-constant scan, diff whitespace, and exact remote-tree equality. Draft PR #31 carries the required verification disclosure and codex/codex-automation labels.
+Learnings:
+- Direct-recipient notifications can safely reuse the existing recipient/event/source uniqueness row: update the message and clear read_at only when the primitive event state changes, so job retries do not re-alert already-read residents.
+
 ## 2026-08-07 11:30 — F-021
 Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/26
