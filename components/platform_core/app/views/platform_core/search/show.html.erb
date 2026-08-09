@@ -1,0 +1,85 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Search CitySocial",
+      subtitle: "Find public listings and upcoming events from one place.") %>
+
+<%= form_with url: search_path, method: :get, class: "mb-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem_auto] sm:items-end" do |f| %>
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :q,
+        label: "Search",
+        value: @response.query,
+        placeholder: "Furniture, live music, neighborhood events…",
+        maxlength: PlatformCore::Search::MAX_QUERY_LENGTH) %>
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :type,
+        type: :select,
+        label: "Result type",
+        collection: @type_options,
+        selected: @response.selected_type.to_s) %>
+  <div class="mb-4">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Search<% end %>
+  </div>
+<% end %>
+
+<% if @response.blank? %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "Search across the city",
+        body: "Enter a word or phrase to search public Marketplace listings and future Events.") %>
+<% elsif @response.groups.all?(&:disabled) %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "Search sources are disabled",
+        body: "The selected CitySocial products are temporarily unavailable.") %>
+<% elsif !@response.any_results? && @response.groups.none?(&:unavailable) && @response.groups.none?(&:disabled) %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No public results found",
+        body: "Try a broader phrase or choose all public result types.") %>
+<% else %>
+  <div class="space-y-6">
+    <% @response.groups.each do |group| %>
+      <% if group.disabled || group.unavailable || group.results.any? %>
+        <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+          <% card.with_header do %>
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="font-display text-lg font-bold text-ink"><%= group.label %></h2>
+              <% if group.disabled %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Disabled<% end %>
+              <% elsif group.unavailable %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Unavailable<% end %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if group.disabled %>
+            <p class="text-sm text-ink-muted">This CitySocial product is temporarily disabled.</p>
+          <% elsif group.unavailable %>
+            <p class="text-sm text-ink-muted">This source could not be searched. Other results are still available.</p>
+          <% else %>
+            <ul class="divide-y divide-line" role="list">
+              <% group.results.each do |result| %>
+                <li class="py-4 first:pt-0 last:pb-0">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <%= link_to result.title, result.path, class: "font-bold text-ink hover:text-brand-700" %>
+                      <% if result.subtitle.present? %>
+                        <p class="mt-1 text-sm text-ink-muted"><%= result.subtitle %></p>
+                      <% end %>
+                    </div>
+                    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= result.type.titleize %><% end %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+            <% if group.more_path %>
+              <div class="mt-5">
+                <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: group.more_path) do %>
+                  See all <%= group.label %> results
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

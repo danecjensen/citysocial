@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 29,
   "items": [
     {
       "id": "F-017",
@@ -353,6 +353,34 @@
       "kind": "app_wide_capability",
       "product_family": "notifications",
       "milestone": "follower-activity-inbox"
+    },
+    {
+      "id": "F-028",
+      "title": "Search public CitySocial products from one place",
+      "problem": "CitySocial's global search field searches only Marketplace, forcing residents to visit each product separately to find public city content.",
+      "evidence": "research PR #37, R-011; app/views/layouts/application.html.erb points the global search slot only to /marketplace while Marketplace::Listing.search and Events::Event.search already own safe public query semantics and canonical item routes.",
+      "northstar_fit": "Makes CitySocial feel like one useful citywide product by helping residents quickly find timely public listings and events without creating an attention-maximizing feed.",
+      "acceptance": [
+        "PlatformCore owns a reload-safe public search provider/value contract and a global /search surface without naming sibling constants",
+        "Marketplace contributes only active, unexpired listings and Events contributes only future events, with exact-title, prefix, then text ranking and SQL result caps",
+        "Core clamps queries, validates internal result paths and type filters, skips disabled modules dynamically, and isolates one provider failure from other groups",
+        "Results are grouped and source-labeled with canonical links, type chips, scoped-search links, and accessible blank, no-results, disabled, and unavailable states",
+        "The global navigation search targets /search while existing Marketplace and Events scoped searches remain unchanged",
+        "Registry, provider, request, route, boundary, and view coverage exercises the full capability"
+      ],
+      "impact": 5,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 1.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-09",
+      "pr": "https://github.com/danecjensen/citysocial/pull/38",
+      "kind": "app_wide_capability",
+      "product_family": "discovery",
+      "milestone": "global-public-search",
+      "notes": "Capability lane. R-011 is on open research-only PR #37, so this implementation cites but does not rewrite that concurrent branch's research status. F-025 through F-027 remain reserved by open PRs #33, #34, and #36."
     },
     {
       "id": "F-013",

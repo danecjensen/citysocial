@@ -11,6 +11,10 @@
 - public sharing: reusable progressive-enhancement ShareComponent with a permanent
   canonical copy-link fallback, optional browser-native sharing, and accessible
   outcome status; Events is the first public surface to adopt it.
+- global public search: a platform-owned, reload-safe provider registry and /search
+  surface grouping active Marketplace listings with future Events; product-owned
+  ranking, dynamic module toggles, path validation, type filters, scoped-search
+  handoffs, and provider-failure isolation keep discovery safe and resilient.
 - design retheme: emerald/teal + slate palette (ported from reddcraigs), Inter
   type, atxatx favicon/logo, rebuilt NavBar (search + pills) + Footer, and
   class-based dark mode via `.dark` CSS-variable overrides (no per-view `dark:`).

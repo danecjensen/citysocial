@@ -10,6 +10,8 @@ PlatformCore::Engine.routes.draw do
   get   "/profile/edit", to: "profiles#edit", as: :edit_profile
   patch "/profile", to: "profiles#update"
 
+  get "/search", to: "search#show", as: :search
+
   namespace :admin do
     root to: "users#index"
     resources :users, only: %i[update destroy]

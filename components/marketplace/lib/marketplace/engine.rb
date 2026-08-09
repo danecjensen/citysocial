@@ -7,6 +7,17 @@ module Marketplace
       Marketplace::Events.subscribe!
     end
 
+    config.to_prepare do
+      PlatformCore::Search.register(
+        key: "marketplace",
+        label: "Marketplace",
+        module_key: "marketplace",
+        types: ["listing"],
+        callable: Marketplace::SearchProvider,
+        more_path: Marketplace::SearchProvider.method(:more_path)
+      )
+    end
+
     config.generators do |g|
       g.test_framework :rspec
     end

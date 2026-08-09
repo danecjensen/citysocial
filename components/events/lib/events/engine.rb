@@ -10,6 +10,17 @@ module Events
       Events::Wiring.subscribe!
     end
 
+    config.to_prepare do
+      PlatformCore::Search.register(
+        key: "events",
+        label: "Events",
+        module_key: "events",
+        types: ["event"],
+        callable: Events::SearchProvider,
+        more_path: Events::SearchProvider.method(:more_path)
+      )
+    end
+
     config.generators do |g|
       g.test_framework :rspec
     end
