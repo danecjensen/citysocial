@@ -1,0 +1,10 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Ask a neighbor for one small favor",
+      subtitle: "Keep it unpaid, non-emergency, public-safe, and bounded to a clear time window."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", request: @request %>
+  <% end %>
+</div>

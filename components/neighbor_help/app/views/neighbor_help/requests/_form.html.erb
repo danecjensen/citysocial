@@ -1,0 +1,95 @@
+<%= form_with model: request do |f| %>
+  <% if request.errors.any? %>
+    <div class="mb-4">
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: request.errors.full_messages.to_sentence) %>
+    </div>
+  <% end %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :title,
+        label: "What small favor do you need?",
+        placeholder: "Help set up a phone at the library"
+      ) %>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :category,
+          type: :select,
+          label: "Category",
+          collection: NeighborHelp::Request::CATEGORIES.map { |category| [category.humanize, category] },
+          include_blank: "Choose a bounded favor"
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :neighborhood,
+          label: "Neighborhood",
+          hint: "Neighborhood only—never post an exact address.",
+          placeholder: "North Loop"
+        ) %>
+  </div>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :details,
+        type: :text_area,
+        label: "Public details",
+        hint: "Describe one unpaid, non-emergency, low-risk task. Do not include contact details, care work, rides, regulated trades, or hazardous work.",
+        rows: 6
+      ) %>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :starts_at,
+          label: "Available from",
+          hint: "Local time, for example 2026-08-12 10:00.",
+          placeholder: "YYYY-MM-DD HH:MM",
+          value: request.starts_at&.strftime("%Y-%m-%d %H:%M")
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :ends_at,
+          label: "Needed by",
+          hint: "No more than seven days after the start.",
+          placeholder: "YYYY-MM-DD HH:MM",
+          value: request.ends_at&.strftime("%Y-%m-%d %H:%M")
+        ) %>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :estimated_minutes,
+          type: :number_field,
+          label: "Estimated minutes",
+          hint: "Keep it bounded between 15 minutes and 4 hours.",
+          min: 15,
+          max: 240
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: f,
+          attribute: :no_cash_confirmed,
+          type: :select,
+          label: "No cash or reimbursement",
+          hint: "Neighbor Help is for freely offered favors, not paid services or goods.",
+          collection: [["Yes, this favor involves no money", true], ["No", false]],
+          include_blank: "Confirm before posting"
+        ) %>
+  </div>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: f,
+        attribute: :logistics_notes,
+        type: :text_area,
+        label: "Public-place logistics",
+        hint: "Optional. Name a public landmark or say that details will be coordinated after a claim; never post an address or phone number.",
+        rows: 3
+      ) %>
+
+  <div class="flex flex-wrap gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Post favor<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: requests_path) do %>Cancel<% end %>
+  </div>
+<% end %>

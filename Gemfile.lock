@@ -41,6 +41,13 @@ PATH
       rails (~> 7.2)
 
 PATH
+  remote: components/neighbor_help
+  specs:
+    neighbor_help (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
+PATH
   remote: components/notifications
   specs:
     notifications (0.1.0)
@@ -475,6 +482,7 @@ DEPENDENCIES
   importmap-rails
   marketplace!
   messaging!
+  neighbor_help!
   notifications!
   packwerk (~> 3.0)
   pg (~> 1.5)

@@ -1,0 +1,53 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Admin · Neighbor Help",
+      subtitle: "Review reports and remove favors that exceed the product's bounded safety scope."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: requests_path) do %>View public favors<% end %>
+  <% end %>
+<% end %>
+
+<% if @reports.any? %>
+  <%= render PlatformCore::Ui::TableComponent.new(columns: ["Favor", "Reporter", "Reason", "Review note", "Action"]) do |table| %>
+    <% @reports.each do |report| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <%= link_to report.request.title, request_path(report.request), class: "font-semibold text-brand-700 hover:underline" %>
+          <p class="font-mono text-xs text-ink-faint"><%= report.request.neighborhood %> · <%= report.request.display_status.humanize %></p>
+        <% end %>
+        <% row.with_cell do %>
+          <% reporter = @residents[report.reporter_id] %>
+          <%= reporter ? "@#{reporter.handle}" : "Former resident" %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %><%= report.reason.humanize %><% end %>
+        <% end %>
+        <% row.with_cell do %><span class="text-sm text-ink-muted"><%= report.details.presence || "No note" %></span><% end %>
+        <% row.with_cell do %>
+          <div class="flex flex-wrap gap-2">
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :danger,
+                  size: :sm,
+                  href: admin_request_path(report.request),
+                  method: :patch,
+                  params: { request: { moderation_state: "hidden" } },
+                  confirm: "Hide this favor from public discovery?"
+                ) do %>Hide<% end %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :secondary,
+                  size: :sm,
+                  href: admin_request_path(report.request),
+                  method: :patch,
+                  params: { request: { moderation_state: "visible" } }
+                ) do %>Dismiss<% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No neighbor-help reports to review",
+        body: "Reported favors will appear here without exposing them to sibling modules."
+      ) %>
+<% end %>

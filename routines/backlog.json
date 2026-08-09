@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 32,
   "items": [
     {
       "id": "F-017",
@@ -573,6 +573,85 @@
       "product_family": "pickup_sports",
       "milestone": "roster-first-mvp",
       "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
+    },
+    {
+      "id": "F-029",
+      "title": "Launch bounded neighbor favor commitments",
+      "problem": "Austin residents who need one small, unpaid practical favor have no public-safe way to find one accountable neighbor and keep the commitment state visible through completion.",
+      "evidence": "Research PR #37, R-010; Communities has only unstructured discussion and Marketplace owns goods, prices, negotiation, and paid services, while neither owns exclusive no-cash favor claims, release, completion, or safety moderation.",
+      "northstar_fit": "Creates a utilitarian city connection that helps a resident accomplish one real task quickly, with modern state clarity and no attention-maximizing feed.",
+      "acceptance": [
+        "A generated NeighborHelp engine owns additive request/report data, depends only on platform_core, and is mounted as a distinct product",
+        "Residents post only bounded unpaid non-emergency favors with category, neighborhood, short time window, estimate, and public-safe details that reject contact, exact-address, payment, care, ride, trade, and hazardous scope",
+        "Anyone browses and filters current favors; one non-requester claims atomically, only that helper releases while current, and another neighbor can claim after release",
+        "Only the requester completes or cancels; expired, claimed, completed, canceled, hidden, empty, and validation states stay explicit",
+        "Residents report a favor once and existing admins can hide or dismiss it through an owner-module queue while hidden requests disappear from public access",
+        "Content-free creation/change events plus model, request, event, authorization, moderation, route, view, and boundary coverage exercise the full loop"
+      ],
+      "impact": 5,
+      "effort": 5,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "in_progress",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-09",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "neighbor_help",
+      "milestone": "bounded-favor-mvp",
+      "notes": "Product lane candidate from product-fresh R-010 on open research-only PR #37; that concurrent branch remains untouched. F-025 through F-028 are reserved by open implementation PRs #33, #34, #36, and #38."
+    },
+    {
+      "id": "F-030",
+      "title": "Notify neighbor favor participants of changes",
+      "problem": "Requesters and helpers must revisit a favor page to learn that the other participant claimed, released, completed, canceled, or received a moderation outcome.",
+      "evidence": "Research PR #37 R-010 expansion path; F-029 publishes recipient-aware neighbor_help.request_changed payloads and Notifications already owns direct-recipient durable delivery.",
+      "northstar_fit": "Closes the practical favor loop by bringing each accountable state change back to the resident who needs to react.",
+      "acceptance": [
+        "Notifications asynchronously consumes neighbor_help.request_changed without referencing NeighborHelp classes",
+        "Only the primitive recipient receives one idempotent deep-linked notification for each meaningful state transition",
+        "Self/no-recipient events create no notification and retries do not duplicate alerts",
+        "Service, wiring, and request specs cover claim, release, closeout, and moderation delivery"
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 0.8,
+      "score": 1.067,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-09",
+      "pr": null,
+      "kind": "app_wide_capability",
+      "product_family": "neighbor_help",
+      "milestone": "lifecycle-notifications",
+      "notes": "Sequence after F-029 and the open Notifications/Communities PR #33 to avoid shared event-delivery conflicts."
+    },
+    {
+      "id": "F-031",
+      "title": "Match bounded neighbor help offers",
+      "problem": "Residents willing to help can only react to an existing request and cannot publish a safe, time-bounded offer that a nearby requester can discover.",
+      "evidence": "Research PR #37 R-010 expansion path explicitly calls for helper-authored offers and bounded request/offer matching after the request-first commitment MVP.",
+      "northstar_fit": "Expands utilitarian city connections by making safe local willingness discoverable without turning favors into paid services or an attention feed.",
+      "acceptance": [
+        "A resident publishes a category, neighborhood, time-bounded unpaid offer under the same safety constraints as requests",
+        "Requesters discover relevant current offers and create one explicit commitment without exposing contact or address data",
+        "Offer capacity and lifecycle prevent overlapping commitments and preserve release/completion clarity",
+        "Model, request, event, authorization, safety, and empty-state specs cover the offer loop"
+      ],
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "ready",
+      "origin": "research",
+      "attempts": 0,
+      "created": "2026-08-09",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "neighbor_help",
+      "milestone": "bounded-offer-matching"
     }
   ]
 }

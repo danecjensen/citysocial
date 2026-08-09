@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount NeighborHelp::Engine => "/neighbor_help"
   mount PickupSports::Engine => "/pickup_sports"
   mount Messaging::Engine => "/messaging"
   mount Notifications::Engine => "/notifications"
