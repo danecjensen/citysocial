@@ -26,6 +26,17 @@ RSpec.describe PlatformCore::Ui::ButtonComponent do
     )
   end
 
+  it "passes Stimulus data attributes through to every button mode" do
+    render_inline(described_class.new(type: :button, data: { action: "share#copy" })) { "Copy" }
+    expect(page).to have_css("button[type='button'][data-action='share#copy']", text: "Copy")
+
+    render_inline(described_class.new(href: "/somewhere", data: { action: "share#copy" })) { "Copy" }
+    expect(page).to have_css("a[href='/somewhere'][data-action='share#copy']", text: "Copy")
+
+    render_inline(described_class.new(href: "/vote", method: :post, data: { action: "vote#cast" })) { "Vote" }
+    expect(page).to have_css("form[action='/vote'] button[data-action='vote#cast']", text: "Vote")
+  end
+
   it "renders a button_to form when given href and method" do
     render_inline(described_class.new(variant: :danger, href: "/things/1", method: :delete, confirm: "Sure?")) do
       "Delete"
