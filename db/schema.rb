@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_09_171500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -212,6 +212,42 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
     t.index ["sender_id"], name: "index_messaging_messages_on_sender_id"
   end
 
+  create_table "neighbor_help_reports", force: :cascade do |t|
+    t.bigint "request_id", null: false
+    t.bigint "reporter_id", null: false
+    t.string "reason", null: false
+    t.text "details"
+    t.string "status", default: "pending", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reporter_id"], name: "index_neighbor_help_reports_on_reporter_id"
+    t.index ["request_id", "reporter_id"], name: "index_neighbor_help_report_uniqueness", unique: true
+    t.index ["request_id"], name: "index_neighbor_help_reports_on_request_id"
+    t.index ["status", "created_at"], name: "index_neighbor_help_reports_queue"
+  end
+
+  create_table "neighbor_help_requests", force: :cascade do |t|
+    t.bigint "requester_id", null: false
+    t.bigint "helper_id"
+    t.string "title", null: false
+    t.text "details", null: false
+    t.string "category", null: false
+    t.string "neighborhood", null: false
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at", null: false
+    t.integer "estimated_minutes", null: false
+    t.text "logistics_notes"
+    t.boolean "no_cash_confirmed", default: false, null: false
+    t.string "status", default: "open", null: false
+    t.string "moderation_state", default: "visible", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category", "ends_at"], name: "index_neighbor_help_requests_category"
+    t.index ["helper_id"], name: "index_neighbor_help_requests_on_helper_id"
+    t.index ["moderation_state", "status", "ends_at"], name: "index_neighbor_help_requests_discovery"
+    t.index ["requester_id"], name: "index_neighbor_help_requests_on_requester_id"
+  end
+
   create_table "notifications_notifications", force: :cascade do |t|
     t.bigint "recipient_id", null: false
     t.bigint "actor_id", null: false
@@ -312,5 +348,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "feedback_supports", "feedback_submissions", column: "submission_id"
   add_foreign_key "messaging_messages", "messaging_conversations", column: "conversation_id"
+  add_foreign_key "neighbor_help_reports", "neighbor_help_requests", column: "request_id"
   add_foreign_key "pickup_sports_roster_entries", "pickup_sports_games", column: "game_id"
 end

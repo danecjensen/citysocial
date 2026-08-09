@@ -50,6 +50,10 @@
   neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
   waitlist promotion, cancellation clarity, notification-ready events, and a public
   upcoming-games read API.
+- neighbor help milestone 1: bounded, unpaid, non-emergency favor requests with
+  neighborhood/time discovery, one accountable helper, atomic claim and release,
+  requester closeout, derived expiry, public-safe content rules, reporting/admin
+  moderation, and content-free lifecycle events.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
@@ -61,3 +65,8 @@
       attended/absent roster state and explicit correction paths.
 - [ ] pickup sports milestone 3 — recurring game templates plus a Notifications
       subscriber for promotions and host changes.
+- [ ] neighbor help milestone 2 — Notifications delivery for claims, releases,
+      completion, cancellation, and moderation outcomes using the existing primitive
+      request-change event.
+- [ ] neighbor help milestone 3 — helper-authored bounded offers and request/offer
+      matching without payments, exact addresses, care work, rides, or hazardous scope.
