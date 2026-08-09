@@ -19,6 +19,19 @@ module PickupSports
       redirect_to game_path(@game), alert: e.message
     end
 
+    def attendance
+      unless @game.host_id == current_user.id
+        redirect_to game_path(@game), alert: "Only the host can record attendance."
+        return
+      end
+
+      entry = @game.roster_entries.find(params[:id])
+      entry.record_attendance!(params[:attendance_status])
+      redirect_to game_path(@game), notice: "Attendance saved for the roster."
+    rescue Game::ParticipationError => e
+      redirect_to game_path(@game), alert: e.message
+    end
+
     private
 
     def set_game

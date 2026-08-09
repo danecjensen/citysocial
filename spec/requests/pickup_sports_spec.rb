@@ -104,6 +104,41 @@ RSpec.describe "Pickup Sports", type: :request do
     expect(response.body).not_to include("Join game")
   end
 
+  it "lets only the host close attendance after the game and correct the public record" do
+    game = create(:pickup_sports_game, host: host, capacity: 3)
+    player_entry = game.join!(player.id)
+    host_entry = game.entry_for(host.id)
+    game.update_column(:starts_at, 1.hour.ago)
+
+    sign_in(player)
+    patch "/pickup_sports/games/#{game.id}/roster_entries/#{host_entry.id}/attendance",
+          params: { attendance_status: "attended" }
+    expect(response).to redirect_to("/pickup_sports/games/#{game.id}")
+    expect(host_entry.reload).to be_joined
+
+    sign_in(host)
+    patch "/pickup_sports/games/#{game.id}/roster_entries/#{host_entry.id}/attendance",
+          params: { attendance_status: "attended" }
+    patch "/pickup_sports/games/#{game.id}/roster_entries/#{player_entry.id}/attendance",
+          params: { attendance_status: "absent" }
+    patch "/pickup_sports/games/#{game.id}/close_attendance"
+
+    expect(game.reload).to be_completed
+    get "/pickup_sports/games/#{game.id}"
+    page = Capybara.string(response.body)
+    expect(page).to have_text("Attendance closed")
+    expect(page).to have_text("Ready Player")
+    expect(page).to have_css("button[aria-pressed='true']", text: "Absent")
+    expect(response.body).not_to include("Join game", "Leave game")
+
+    patch "/pickup_sports/games/#{game.id}/roster_entries/#{player_entry.id}/attendance",
+          params: { attendance_status: "attended" }
+    get "/pickup_sports/games/#{game.id}"
+    corrected_page = Capybara.string(response.body)
+    expect(corrected_page).to have_css("button[aria-pressed='true']", text: "Attended")
+    expect(player_entry.reload).to be_attended
+  end
+
   def sign_in(user)
     post "/login", params: { email: user.email, password: "s3cret-password" }
   end

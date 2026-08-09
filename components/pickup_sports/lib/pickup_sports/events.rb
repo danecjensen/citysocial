@@ -19,5 +19,8 @@ module PickupSports
     #       game_id, actor_id, host_id, roster_status, change_kind, target_path
     #   - "pickup_sports.roster_promoted"
     #       game_id, recipient_id, host_id, target_path
+    #   - "pickup_sports.attendance_recorded"
+    #       game_id, roster_entry_id, recipient_id, actor_id, attendance_status,
+    #       change_kind, target_path
   end
 end
