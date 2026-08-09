@@ -57,7 +57,10 @@ RSpec.describe "Notifications", type: :request do
 
     doc = Capybara.string(response.body)
     expect(doc).to have_text("Your feedback moved to Planned.")
-    expect(doc).to have_link("View", href: "/notifications/#{notification.id}/read")
+    expect(doc).to have_css(
+      "form[action='/notifications/#{notification.id}/read'] button[type='submit']",
+      text: "View"
+    )
   end
 
   it "resolves notification actors without an N+1 as the inbox grows" do
