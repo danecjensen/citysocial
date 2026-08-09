@@ -359,3 +359,24 @@ Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/30
 Changed: components/pickup_sports/, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, Gemfile, Gemfile.lock, db/schema.rb, spec/factories/pickup_sports.rb, spec/models/pickup_sports/game_spec.rb, spec/public/pickup_sports/upcoming_games_spec.rb, spec/requests/pickup_sports_spec.rb, routines/backlog.json, routines/research.md, docs/roadmap.md
 Notes: Product lane. Consumed product-fresh R-008 and generated the PickupSports engine for Austin residents who need a reliable spot before traveling to a casual game. Milestone 1 ships host-owned future games, sport/date/neighborhood discovery, public rosters, clear capacity and waitlist states, row-locked duplicate-safe joins, FIFO promotion on leave, cancellation clarity, primitive notification-ready events, and an UpcomingGames public API. Reconciled the malformed backlog from canonical reviewed state, reserved open F-021/PR #26, and recorded follow-up attendance, recurring-game, and Notifications milestones in the roadmap. Verification incomplete only because PostgreSQL TCP was denied before examples (full: 38 load errors/0 examples; focused: 3 load errors/0 examples). Packwerk, RuboCop, Zeitwerk, Ruby/ERB syntax, routes, migration-path wiring, Tailwind, backlog integrity, boundary scan, diff checks, and local/remote tree equality passed. A real screenshot could not be captured without the database; the Playwright CLI wrapper also could not resolve in the network-restricted host.
+
+## 2026-08-09 05:42 — research
+Outcome: produced 2 briefs (1 module-product, 1 app-wide-capability)
+Briefs: R-010, R-011
+Cut: 5 sub-findings — a prepaid errand relay was too narrow for a standalone product;
+an extra-hands/moving variant overlapped paid Marketplace services and raised physical
+safety risk; passenger rides were cut for identity, insurance, medical-discharge, and
+trust scope; unified-search providers for Communities/Pickup Sports were deferred because
+they lack generic keyword scopes; Restaurants/Feed/profiles were deferred for missing
+canonical item routes or unresolved resident-directory consent.
+Notes: Researched the module-product question of one-off unpaid Austin neighbor favors and
+the app-wide capability question of finding public CitySocial content from one search.
+Independent scouts compared only Facebook and Reddit deeply; independent verifiers
+re-opened all 11 retained URLs and narrowed both candidates; a fresh grader passed R-010
+and R-011 at 8/10. R-010 keeps a full Neighbor Help thesis but excludes paid, emergency,
+caregiving, transport, hazardous, and private-address work while requiring release,
+expiry, and owned moderation. R-011 proves the core-owned provider registry with only
+Marketplace and future Events, deferring every provider that needs new domain semantics,
+routes, or visibility policy. Public profiles/avatars are already shipped on master.
+Open PR #33 covers older fresh brief R-005; the existing R-006 capability is already
+shipped as F-021 despite its stale research status. No code or backlog files changed.
