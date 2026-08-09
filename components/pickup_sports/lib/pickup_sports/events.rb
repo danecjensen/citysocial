@@ -13,6 +13,8 @@ module PickupSports
     # Events this module PUBLISHES (documented for discoverability):
     #   - "pickup_sports.game_created"
     #       game_id, host_id, target_path
+    #   - "pickup_sports.series_created"
+    #       series_id, host_id, game_ids, target_path
     #   - "pickup_sports.game_changed"
     #       game_id, actor_id, change_kind, target_path
     #   - "pickup_sports.roster_changed"

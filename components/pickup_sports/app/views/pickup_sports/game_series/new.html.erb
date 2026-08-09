@@ -1,0 +1,10 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Schedule a weekly series",
+      subtitle: "Create a real roster for each week so residents can commit only to the games they can make."
+    ) %>
+
+<div class="mx-auto max-w-3xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", game_series: @game_series %>
+  <% end %>
+</div>

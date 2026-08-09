@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 28,
   "items": [
     {
       "id": "F-017",
@@ -573,6 +573,82 @@
       "product_family": "pickup_sports",
       "milestone": "roster-first-mvp",
       "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
+    },
+    {
+      "id": "F-025",
+      "title": "Notify community post authors when someone comments",
+      "problem": "Community post authors must manually revisit discussions to learn when another resident comments.",
+      "evidence": "research.md#R-005; open draft PR #33 implements the event-driven delivery.",
+      "acceptance": [
+        "Communities publishes a primitive comment-created event",
+        "Notifications delivers one idempotent deep link to the post author",
+        "Self-comments create no notification"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.8,
+      "score": 1.6,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-08",
+      "pr": "https://github.com/danecjensen/citysocial/pull/33",
+      "kind": "app_wide_capability",
+      "product_family": "notifications",
+      "milestone": "community-comment-delivery",
+      "notes": "Reserved by open draft PR #33; reconciled here so concurrent loops do not duplicate it."
+    },
+    {
+      "id": "F-026",
+      "title": "Close out pickup game attendance",
+      "problem": "Pickup Sports rosters show intent but not actual turnout after a game.",
+      "evidence": "research.md#R-008 expansion path and docs/roadmap.md; open draft PR #34 implements host closeout.",
+      "acceptance": [
+        "Hosts mark rostered residents attended or absent after game time",
+        "Every rostered resident is reviewed before closeout",
+        "Public final rosters remain correctable and readable"
+      ],
+      "impact": 5,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 1.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-09",
+      "pr": "https://github.com/danecjensen/citysocial/pull/34",
+      "kind": "module_product",
+      "product_family": "pickup_sports",
+      "milestone": "attendance-closeout",
+      "notes": "Reserved by open draft PR #34; reconciled here so concurrent loops do not duplicate it."
+    },
+    {
+      "id": "F-027",
+      "title": "Schedule recurring pickup game series",
+      "problem": "Regular Austin pickup hosts must recreate the same game every week, while residents lack one public place to compare upcoming occurrences and commit only to dates they can attend.",
+      "evidence": "research.md#R-008 expansion path explicitly calls for recurring game series and host templates; the current PickupSports module only creates one game at a time.",
+      "acceptance": [
+        "A signed-in host can create a bounded two-to-eight-week series from one shared schedule form",
+        "Each weekly occurrence is a normal discoverable game with its own host seat, roster, capacity, waitlist, cancellation state, and game-created event",
+        "Anyone can open a public series page and move into the roster for a specific occurrence",
+        "Invalid starts or occurrence counts create neither a series nor partial games",
+        "A content-free series-created event exposes only primitive IDs and an internal path",
+        "Model and request specs cover scheduling, validation, authentication, public rendering, and independent rosters"
+      ],
+      "impact": 5,
+      "effort": 4,
+      "confidence": 0.8,
+      "score": 1.0,
+      "status": "in_progress",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-09",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "pickup_sports",
+      "milestone": "recurring-series",
+      "northstar_fit": "Turns reliable local play into a repeatable city utility without adding an attention-maximizing content loop.",
+      "notes": "Product lane. Persona: a resident who reliably hosts the same casual game. Loop: host schedules the run -> residents discover every occurrence -> each roster changes visibly and emits existing notification-ready activity -> residents join only the weeks they can make."
     }
   ]
 }

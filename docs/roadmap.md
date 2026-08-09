@@ -50,6 +50,9 @@
   neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
   waitlist promotion, cancellation clarity, notification-ready events, and a public
   upcoming-games read API.
+- pickup sports recurring series: hosts can schedule two to eight weekly games from
+  one durable series template; every occurrence remains independently discoverable
+  and owns its own roster, capacity, waitlist, cancellation state, and game event.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
@@ -59,5 +62,5 @@
       filesystem is ephemeral, so photos need a real bucket before launch.
 - [ ] pickup sports milestone 2 — host attendance closeout after game time, with
       attended/absent roster state and explicit correction paths.
-- [ ] pickup sports milestone 3 — recurring game templates plus a Notifications
-      subscriber for promotions and host changes.
+- [ ] pickup sports delivery milestone — a Notifications subscriber for roster
+      promotions and host changes.

@@ -4,6 +4,7 @@
     ) do |header| %>
   <% if logged_in? %>
     <% header.with_actions do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: new_series_path) do %>Schedule series<% end %>
       <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_game_path) do %>Host a game<% end %>
     <% end %>
   <% end %>
@@ -44,6 +45,9 @@
     <% @games.each do |game| %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
         <div class="flex flex-wrap gap-2">
+          <% if game.game_series %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Weekly series<% end %>
+          <% end %>
           <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= game.sport.titleize %><% end %>
           <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= game.skill_level.humanize %><% end %>
           <% if game.full? %>

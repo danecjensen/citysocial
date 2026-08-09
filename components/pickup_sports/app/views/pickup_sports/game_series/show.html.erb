@@ -1,0 +1,76 @@
+<div class="mb-3">
+  <%= link_to "← Pickup Sports", games_path, class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: @game_series.title,
+      subtitle: "#{@game_series.occurrences_count} weekly games · #{@game_series.venue}, #{@game_series.neighborhood}"
+    ) %>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+  <div>
+    <% if @games.any? %>
+      <div class="space-y-4">
+        <% @games.each do |game| %>
+          <%= render PlatformCore::Ui::CardComponent.new do %>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="flex flex-wrap gap-2">
+                  <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Week <%= game.series_position %><% end %>
+                  <% if game.canceled? %>
+                    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Canceled<% end %>
+                  <% elsif game.full? %>
+                    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Waitlist<% end %>
+                  <% else %>
+                    <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %><%= pluralize(game.seats_remaining, "spot") %> left<% end %>
+                  <% end %>
+                </div>
+                <h2 class="mt-3 font-display text-xl font-bold text-ink">
+                  <%= link_to game.starts_at.to_fs(:long), game_path(game), class: "hover:text-brand-700" %>
+                </h2>
+                <p class="mt-1 text-sm text-ink-muted">
+                  <%= game.joined_count %>/<%= game.capacity %> playing
+                  <% if game.waitlisted_count.positive? %> · <%= game.waitlisted_count %> waiting<% end %>
+                </p>
+              </div>
+              <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: game_path(game)) do %>
+                View roster
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render PlatformCore::Ui::EmptyStateComponent.new(
+            title: "No scheduled games",
+            body: "This series does not have any games available."
+          ) %>
+    <% end %>
+  </div>
+
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <div class="flex flex-wrap gap-2">
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= @game_series.sport.titleize %><% end %>
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= @game_series.skill_level.humanize %><% end %>
+    </div>
+    <dl class="mt-5 space-y-4 text-sm">
+      <div>
+        <dt class="font-mono text-xs uppercase tracking-wide text-ink-faint">Cadence</dt>
+        <dd class="mt-1 font-bold text-ink">Weekly from <%= @game_series.starts_at.to_fs(:long) %></dd>
+      </div>
+      <div>
+        <dt class="font-mono text-xs uppercase tracking-wide text-ink-faint">Host</dt>
+        <dd class="mt-1 font-bold text-ink">
+          <% if @host %>
+            <%= link_to @host.display_name_or_handle, "/people/#{@host.handle}", class: "text-brand-700 hover:underline" %>
+          <% else %>
+            Former resident
+          <% end %>
+        </dd>
+      </div>
+    </dl>
+    <% if @game_series.details.present? %>
+      <p class="mt-5 border-t border-line pt-4 text-sm leading-relaxed text-ink-muted"><%= @game_series.details %></p>
+    <% end %>
+  <% end %>
+</div>
