@@ -6,7 +6,8 @@ The feature-loop routine (`.claude/routines/feature-loop.md`) consumes your brie
 evidence when it replenishes its backlog — you are its eyes on the outside world.
 
 Repo state: fresh clone of the default branch. Nothing carries over between runs except
-what is committed. `research.md` is your only memory.
+what is committed. `research.md` is your only memory. `northstar.md` supplies the durable
+product direction that determines which grounded research questions are worth pursuing.
 
 ## Files
 
@@ -15,6 +16,7 @@ All paths relative to the repository root.
 | Short name | Path | Access |
 |---|---|---|
 | this file | `.claude/routines/feature-research.md` | read |
+| `northstar.md` | `northstar.md` | read-only — direction, never demand evidence |
 | `research.md` | `routines/research.md` | read + append |
 | `backlog.json` | `routines/backlog.json` | **read-only** — feature-loop owns it |
 | `progress.md` | `routines/progress.md` | append a run entry only |
@@ -41,9 +43,11 @@ fetched during this run.
 
 ## Phase 0 — Orient
 
-1. Read `research.md` — the `## Standing Questions` block first, then skim recent briefs.
-2. Read `backlog.json`: `product_context`, `out_of_scope`, and existing item titles.
-3. Run `git log --oneline -30` and skim merged/open `claude/*` PR titles
+1. Read `northstar.md` and form a short working summary of its intended users, outcomes,
+   principles, and non-goals. It guides topic selection but is not evidence of demand.
+2. Read `research.md` — the `## Standing Questions` block first, then skim recent briefs.
+3. Read `backlog.json`: `product_context`, `out_of_scope`, and existing item titles.
+4. Run `git log --oneline -30` and skim merged/open `claude/*` PR titles
    (`gh pr list --state all --limit 30`) so you don't re-research what's shipped.
 
 ### Circuit breakers — check before doing anything else
@@ -61,12 +65,17 @@ Stop and record a skipped run instead of working if any of these is true:
 ## Phase 1 — Draft the research plan
 
 Write (in working memory, not the file) **3–5 research questions**, each with an initial
-keyword set of 4–8 terms. Ground every question in one of:
+keyword set of 4–8 terms. Prefer questions that test or advance an important North Star
+outcome, but ground every question in one of:
 
 - a `## Standing Questions` entry from `research.md`
 - a specific module that exists today (feed, communities, marketplace, restaurants,
   events) and its engagement loop
 - a gap the product context names (loops that don't close, states that are missing)
+
+The North Star decides what is worth investigating; external sources and repo tie-ins
+still decide whether a finding is real and actionable. Never use `northstar.md` as the
+finding's demand signal or citation.
 
 Good question shape: *"What do Austin residents complain is missing when they try to
 sell locally on Facebook Marketplace / Craigslist?"* — a persona, a job, a place where
@@ -108,7 +117,7 @@ reasons. **Maximum one rerun per question. Never a third pass.**
 This is the engineered part of the loop — do it deliberately:
 
 1. **Review the outputs** as a set: do the survivors cluster on one module? Do any
-   contradict each other or the product context?
+   contradict each other, the product context, or the North Star?
 2. **Delete what is useless.** A finding that survived verification can still be useless
    — too similar to a fresh brief, too thin to write acceptance criteria for. Delete it.
 3. **Redraft around what is missing.** If deletion left a hole (a module or loop with no

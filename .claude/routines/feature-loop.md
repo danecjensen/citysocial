@@ -6,6 +6,7 @@ cycle below, then stop. **One backlog item per run. Never more.**
 Repo state: you have a fresh clone of the default branch. Nothing carries over from the
 last run except what is committed to this repo. `backlog.json` and `progress.md` are your
 only memory. `DanesIdeas.md` is Dane's human idea inbox — your highest-signal *input*.
+`northstar.md` is the durable description of what the product should become.
 
 ## Files
 
@@ -18,6 +19,7 @@ All paths are relative to the repository root. Resolve them before Phase 0.
 | `progress.md` | `routines/progress.md` |
 | `research.md` | `routines/research.md` |
 | `DanesIdeas.md` | `DanesIdeas.md` (repo root — Dane's idea inbox) |
+| `northstar.md` | `northstar.md` (repo root — durable product direction) |
 
 **`backlog.json`, `progress.md`, and `research.md` live OUTSIDE `.claude/` on purpose.**
 The routine rewrites them every run, and any write inside `.claude/` forces an approval
@@ -27,11 +29,36 @@ them back under `.claude/`.
 
 If `progress.md` does not exist, create it with an empty `## Codebase Patterns` block.
 
+### How to use the North Star
+
+`northstar.md` is a **compass, not a backlog or evidence source**. It describes the
+desired product end state at a more abstract and durable level than individual features.
+
+- Use it to decide which user outcomes and engagement loops matter most, to frame
+  acceptance criteria, and to compare the impact of otherwise grounded candidates.
+- Do not turn its prose directly into speculative features. Auto-proposals still require
+  one of the concrete evidence sources in Phase 1b.
+- Do not treat it as an implementation spec. The module contract, hard walls, repo state,
+  tests, and explicit acceptance criteria still control implementation.
+- Treat a clear new item in `DanesIdeas.md` as newer, more concrete human intent. If it
+  appears to conflict with the North Star, preserve the idea and call out the tension in
+  its `northstar_fit` instead of silently rejecting or rewriting it.
+- Reliability, safety, and accessibility are baseline product quality; they can be
+  enabling work even when the North Star does not name them explicitly.
+
+For each candidate, keep a one-sentence `northstar_fit` in `backlog.json` explaining the
+specific outcome, loop, or principle it advances. Use `"weak: ..."` when the connection
+is indirect and `"conflict: ..."` when it pulls against the stated direction. If the file
+contains only its placeholder or has no meaningful direction yet, use `product_context`
+as the fallback and do not invent a fit.
+
 ---
 
 ## Phase 0 — Orient (always)
 
-1. Read `backlog.json` and `progress.md` (read the `## Codebase Patterns` block first).
+1. Read `northstar.md` first and form a short working summary of its intended users,
+   outcomes, principles, and non-goals. Then read `backlog.json` and `progress.md` (read
+   the `## Codebase Patterns` block first).
 2. Run `git log --oneline -30` and `gh pr list --state open --author @me`.
 3. Run the project's check command. If the default branch is **failing**, skip Phases 1–2
    entirely: fix the failure, open a PR, record it, and stop.
@@ -73,8 +100,9 @@ already-tagged line, are never ingested.) For each unprocessed idea, in file ord
    the first item's id and note the fan-out in `progress.md`.
 3. **Accept.** Otherwise create a `backlog.json` item using the schema below with
    `origin: "danes-ideas"`, `status: "ready"`, `evidence` set to the **verbatim idea text**,
-   and `confidence` starting at 0.8–0.9. Then tag the source line `` `[F-0NN queued]` `` and
-   **leave the box unchecked** — an idea is only checked at a terminal state (see standard).
+   `confidence` starting at 0.8–0.9, and a concise `northstar_fit`. Then tag the source line
+   `` `[F-0NN queued]` `` and **leave the box unchecked** — an idea is only checked at a
+   terminal state (see standard).
 
 Commit `DanesIdeas.md` alongside `backlog.json`. **Never delete or reword Dane's text** —
 only flip the checkbox and append/replace the one trailing `` `[...]` `` tag.
@@ -101,6 +129,9 @@ thrash — the queue stops being stable enough to drain. **If 5+ items are alrea
 
 When the gate opens, propose **3–5** new items. Every proposal must be grounded in
 something that exists in the repo or in connected data. Cite it in the `evidence` field.
+Use the North Star to choose which grounded gaps are most directionally valuable, and
+record that reasoning in `northstar_fit`; never cite the North Star itself as demand or
+proof that a concrete feature is needed.
 
 **Valid evidence sources** (in rough priority order):
 
@@ -143,6 +174,7 @@ an existing item, strengthen that item's `evidence` instead of adding a new one.
   "title": "Short imperative title",
   "problem": "One sentence: what is wrong or missing today.",
   "evidence": "app/views/sessions/new.html.erb:24 — form has no error branch",
+  "northstar_fit": "Strengthens the trusted-neighbor response loop by ...",
   "acceptance": [
     "Concrete, checkable statement",
     "Another one"
@@ -171,14 +203,19 @@ standard (Phase 4, step 2).
 
 Score every `ready` item: **`score = (impact × confidence) / effort`**
 
-- `impact` 1–5: how much this improves the product for a real user.
+- Before scoring, add or refresh the one-sentence `northstar_fit` for every ready item.
+  Judge the fit from the actual North Star, not from generic social-product conventions.
+- `impact` 1–5: how much this advances a North Star user outcome or removes a concrete
+  barrier to it. A central outcome or engagement loop may score 5; a meaningful step
+  toward one 4; enabling quality work 3; weakly related polish at most 2; work that
+  conflicts with the direction 1 unless a newer explicit human idea supersedes it.
 - `effort` 1–5: 1 = under 50 lines, 5 = multi-day. **Anything above 3 gets split, not
   scheduled.** If it cannot be split, mark it `blocked` with reason `needs-human-scoping`.
 - `confidence` 0.5–1.0: how sure you are the change is correct and wanted.
 
 Rewrite the `score` field for every item, then pick the single highest scorer with
-`score >= 1.0`. Ties break toward smaller `effort`. Set it to `in_progress` and increment
-`attempts`.
+`score >= 1.0`. Ties break toward the more direct North Star fit, then smaller `effort`.
+Set it to `in_progress` and increment `attempts`.
 
 If nothing clears 1.0, do not force it. Record that and stop.
 
@@ -195,6 +232,7 @@ If nothing clears 1.0, do not force it. Record that and stop.
 5. Commit: `feat(F-041): short imperative title`
 6. Open a **draft** PR. Body must contain:
    - the `problem` and `evidence` verbatim
+   - the `northstar_fit` and a brief explanation of why this item won priority
    - the acceptance list as checkboxes
    - what you did *not* do and why
    - screenshots for any UI change
@@ -231,6 +269,7 @@ Treat these as hard walls. If an item requires one, mark it `blocked` with reaso
 Outcome: shipped | failed | blocked | skipped
 PR: <url or none>
 Changed: path/one.rb, path/two.tsx
+North Star: <the selected item's northstar_fit, or why no item aligned>
 Notes: one or two lines on what actually happened
 Learnings:
 - <only if genuinely reusable>

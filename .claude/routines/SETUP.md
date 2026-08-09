@@ -22,7 +22,15 @@ folder, since browsers hide dot-prefixed directories. Instead use **Add file →
 file** and type the full path `.claude/routines/feature-loop.md` into the filename box —
 GitHub creates the directories from the path. Repeat for each file.
 
-## 2. Fill in the three required fields in `backlog.json`
+## 2. Write the product direction in `northstar.md`
+
+Replace the placeholder with the long-form description of the ideal product: who it is
+for, what it should make possible, what it should feel like, the outcomes that matter,
+and any durable principles or non-goals. Free-form prose is fine. The feature and research
+loops read it every run to guide topic selection and relative impact, while still
+requiring concrete evidence before proposing a feature.
+
+## 3. Fill in the three required fields in `backlog.json`
 
 The routine is only as good as these. Nothing else needs editing.
 
@@ -35,7 +43,7 @@ The routine is only as good as these. Nothing else needs editing.
 
 Delete the `F-001` example item once you've read it.
 
-## 3. Create the routine
+## 4. Create the routine
 
 At `claude.ai/code/routines` → **New routine** → **Remote**.
 
@@ -67,7 +75,7 @@ evidence, keep those and drop the rest.
 **Model:** worth being deliberate. The implementation phase benefits from a stronger
 model; if cost becomes the issue, the lever is cadence before model.
 
-## 4. Run it once manually before trusting the schedule
+## 5. Run it once manually before trusting the schedule
 
 Trigger a manual run and read the resulting PR closely. The first run tells you more than
 any amount of prompt tuning. Specifically check:
@@ -79,7 +87,7 @@ any amount of prompt tuning. Specifically check:
 If evidence quality is poor, the fix is almost always a thinner `product_context`, not a
 longer routine file.
 
-## 5. (Optional but recommended) The feature-research routine
+## 6. (Optional but recommended) The feature-research routine
 
 `feature-loop` only sees what is already in the repo. The companion
 `feature-research.md` routine looks outward — user complaints, competitor changelogs,
