@@ -37,12 +37,76 @@ Examples of the right kind of line:
 - A fresh clone lags in-flight PR branches: in Phase 0, reconcile each `ready` item against the open PR list and never rebuild an item that already has an open PR (mark it `done`). Pick items in modules with zero file overlap with open PRs to avoid merge conflicts.
 - N+1 in a collection view: a module resolves users only through `PlatformCore::Graph`, so batch with `PlatformCore::Graph.users(ids)` (id=>user hash, avatars preloaded) built once in the controller, never per-row `Graph.user`. Prove flatness by counting `platform_core_users` SQL (subscribe to `sql.active_record`) across a small vs large page in a request spec.
 - Icon-only controls need `aria_label:` on `ButtonComponent`; wrap the decorative glyph in `<span aria-hidden="true">`.
-- Shared UI lives in `components/platform_core/app/public/platform_core/ui/`; when you change a component's signature, update its example + doc line in `app/views/design/show.html.erb`.
+- Personal-inbox modules (notifications, messaging) live in the nav SESSION AREA with an unread badge (`Modules.enabled?` guard + `<Module>::Inbox.unread_count` + BadgeComponent), NOT the browse-pill row: set `nav: false` in `PlatformCore::Modules::CATALOG`. Engine `root_path` helpers return a TRAILING slash (`/messaging/`) — assert that exact href in specs.
 - Screenshots ARE possible here (past runs wrongly assumed DB denial blocked them): start PG, `RAILS_ENV=development bin/rails db:prepare` (photo-attach seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, drive Playwright from `/opt/node22/lib/node_modules` with chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome --no-sandbox`.
 
 ---
 
 ## Runs
+
+## 2026-08-07 11:30 — F-021
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/26
+Changed: app/views/layouts/application.html.erb, components/platform_core/app/public/platform_core/modules.rb, spec/requests/messaging_spec.rb, routines/backlog.json, routines/progress.md
+Notes: Master green on arrival (195 examples). 1a: DanesIdeas Inbox empty. Phase 0 found
+`backlog.json` was INVALID JSON (dangling `"pr":` at old line 227, duplicate `next_id`
+keys, a malformed F-020 object with duplicate keys, and several IDs duplicated) — the same
+corruption PR #25 flagged. Repaired it: rewrote as valid JSON via a Python reconstruction
+(guaranteed-valid dump), deduplicated to 21 unique items sorted by score desc.
+Nominal ready set was 5 (F-006/F-014/F-016/F-019/F-020), all below the 1.0 threshold, which
+by the letter of the circuit breaker means stop — but F-016 is effort 4, which Phase 2 says
+must be split or blocked, not left `ready`. Blocked F-016 (needs-human-scoping), dropping
+ready to 4 and legitimately opening the 1b gate. In 1b, the strongest grounded candidate was
+the unread-DM nav badge: the layout already renders a Notifications badge via
+`Notifications::Inbox.unread_count_for`, `Messaging::Inbox.unread_count` already exists as a
+public API, and messaging was mislabeled `nav: true` (a browse pill) unlike notifications
+`nav: false`. Built it as F-021 (score 1.8): added a session-area Messages button+badge
+mirroring Notifications and flipped messaging to `nav: false` so it's a personal inbox, not a
+duplicated browse pill. Verified the design against a booted server (screenshot: left row no
+longer duplicates Messages; session area shows `Messages [2]`). bin/verify green: 198
+examples, 0 failures; packwerk + rubocop clean.
+R-006 (grader 10/10) corroborates this feature but lives only on PR #25's unmerged branch, so
+it was grounded in repo evidence, NOT consumed from research.md (its status line stays fresh).
+Learnings:
+- Promoted the personal-inbox-badge + engine-root_path-trailing-slash pattern to Codebase Patterns.
+- backlog.json had drifted to INVALID JSON across concurrent merges; rebuilding it from a Python
+  dict (not hand-editing) is the only safe way to guarantee a valid, de-duplicated result.
+- Phase 2's effort<=3 ceiling is the release valve when the ready queue is full of unschedulable
+  items: an effort-4 item sitting in `ready` should be blocked (needs-human-scoping), which can
+  legitimately reopen the 1b gate rather than tripping the "nothing to do" circuit breaker on a
+  false premise.
+## 2026-08-07 10:27 — research
+Outcome: produced 3 briefs
+Briefs: R-005, R-006, R-007
+Cut: 5 sub-findings dropped as second-order extensions rather than this run's core
+claim — Discourse watch/track granular notification levels and per-item notification
+filtering (Canny), a stale-PM reminder/nudge mechanism (low confidence, single niche
+admin thread), a UserVoice contributor-notification claim (403'd on fetch, never
+verified), and notifying feedback *supporters* in addition to the author (bigger lift,
+not covered by the existing event payload — narrowed to author-only). 0 findings failed
+verification outright; all 3 survivors passed the grader (R-006 10/10, R-007 10/10,
+R-005 8/10 — grader caught that R-005's original acceptance sketch promised a
+target_path deep link Notifications can't build under its Packwerk boundary (may depend
+only on platform_core); fixed by having Communities carry `community_slug` as primitive
+data in the event payload, then recorded — no regrade needed since the fix only
+tightened a passing brief's acceptance criteria, it didn't change the score-relevant
+claim).
+Notes: Circuit breakers were both open (0 fresh briefs in research.md — R-001..R-004 all
+show `consumed`; last skipped run was queue-full, not a zero-brief research run). Skipped
+Phase 4's optional redraft cycle — all 3 seeded questions produced a surviving finding, no
+coverage hole to fill. All 3 questions targeted the "notification loops that retain"
+Standing Question directly, on 3 different modules (communities, messaging, feedback), after
+grepping the repo and confirming Notifications' DeliverActivity only fans events out to a
+publisher's *followers* (via `PlatformCore::Graph.follower_ids`) — it has no delivery path for
+a single direct recipient, which is exactly what a reply notification, a status-change
+notification, or (implicitly) a DM alert all need. R-005 and R-007 both require building that
+new direct-recipient delivery path in Notifications; flagged this shared dependency in both
+briefs so a coding agent doesn't try to bolt onto the existing follower-fanout `ACTIVITY` hash.
+Process note (not this routine's fix — flagged for feature-loop, which owns the file):
+`routines/backlog.json` is malformed (duplicate `next_id` keys, duplicate keys inside the
+F-020 object, and F-004/F-009/F-012/F-013+F-017 each appear twice) — the research-grader agent
+caught this incidentally while verifying repo tie-ins and it's worth a human or feature-loop
+repair pass, since any run that JSON-parses the file will silently drop keys.
 
 ## 2026-08-06 23:22 — F-011
 Outcome: shipped
@@ -253,10 +317,17 @@ Learnings:
 - Screenshots ARE achievable in this managed env (correcting several prior runs that claimed PostgreSQL denial made them impossible): pg_ctlcluster starts, RAILS_ENV=development bin/rails db:prepare loads the schema (only the photo-attaching seed fails on Redis — seed minimal no-photo data via `bin/rails runner`), boot `bin/rails s`, then drive Playwright from the global install at /opt/node22/lib/node_modules with chromium at /opt/pw-browsers/chromium-1194/chrome-linux/chrome and --no-sandbox.
 - A GET filter form can reuse FormFieldComponent :select with `form_with url:, method: :get` (no model): f.object is nil, so the component's inline-error branch is a safe no-op. Sanitize the incoming value with `params[:x].presence_in(allowed_values)` so an unknown/hand-crafted param falls back to the unfiltered view instead of a misleading empty state.
 
-## 2026-08-07 09:23 — F-016
-Outcome: shipped
-PR: https://github.com/danecjensen/citysocial/pull/27
-Changed: components/messaging/app/controllers/messaging/conversations_controller.rb, components/messaging/app/models/messaging/conversation.rb, components/messaging/app/models/messaging/conversation_start.rb, components/messaging/app/views/messaging/conversations/new.html.erb, components/messaging/app/views/messaging/conversations/show.html.erb, components/messaging/db/migrate/20260807091300_add_context_to_messaging_conversations.rb, components/marketplace/app/views/marketplace/listings/show.html.erb, components/communities/app/views/communities/posts/show.html.erb, db/schema.rb, spec/models/messaging/conversation_spec.rb, spec/requests/messaging_context_spec.rb, docs/roadmap.md, docs/lessons.md, routines/backlog.json, routines/progress.md
-Notes: Product lane. Shipped Messaging milestone 3: a resident can open a private compose flow from a Marketplace listing or Community post, retain a short public context label, and return from the thread through a validated internal backlink. Messaging stores no sibling IDs and reads no sibling models. The two-open-PR queue was below the six-PR breaker; PR #26 reserved F-021, so next_id advanced to 22. Repaired the pre-existing malformed backlog merge (duplicate next_id keys/items and corrupt F-006/F-020 tails) while preserving the 20 unique items. Dane's Inbox was empty; default-branch research R-001–R-004 was already consumed, while research-only PR #25 remained reserved and untouched. Verification incomplete only because PostgreSQL TCP access was denied before examples (38 load errors, 0 examples); Packwerk, RuboCop, Zeitwerk, routes, Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, sibling-constant scan, and diff checks passed.
-Learnings:
-- Internal-only stored links must reject backslashes and control characters as well as protocol-relative paths; browsers may normalize a backslash into a host-changing URL.
+## 2026-08-07 09:32 — research
+Outcome: produced 2 briefs (1 module-product, 1 app-wide-capability)
+Briefs: R-008, R-009
+Cut: 1 capability finding — a public resident directory had contextual discovery
+demand but no evidence supporting citywide enumeration without an explicit search
+visibility control; that control requires an out-of-scope migration.
+Notes: Researched pickup-sports coordination, public resident discovery, and reusable
+sharing with independent scouts, verifiers, and grader. R-008 preserves the full
+pickup-sports product thesis while limiting milestone 1 to its roster workflow and
+notification-ready events; R-009 makes Events the first consumer of a platform-owned
+share/copy primitive. Deep product comparison stayed with Meetup and Nextdoor. Open
+research PR #25 already reserves R-005 through R-007, so this run started at R-008;
+if both PRs land, the regular fresh queue reaches its cap of four while R-008 remains
+separately `product-fresh`. Backlog JSON is still malformed and was not edited.
