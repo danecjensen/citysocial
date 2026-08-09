@@ -80,4 +80,50 @@ RSpec.describe PickupSports::Game, type: :model do
     expect(changed).to include(game_id: game.id, actor_id: game.host_id, change_kind: "canceled")
     expect(published.to_s).not_to include("Private door code")
   end
+
+  it "closes attendance after every rostered player is marked and permits corrections" do
+    game = create(:pickup_sports_game, capacity: 2)
+    player = create(:user)
+    waiting = create(:user)
+    player_entry = game.join!(player.id)
+    waiting_entry = game.join!(waiting.id)
+    host_entry = game.entry_for(game.host_id)
+
+    expect { host_entry.record_attendance!("attended") }
+      .to raise_error(PickupSports::Game::ParticipationError, /after the game starts/)
+
+    game.update_column(:starts_at, 1.hour.ago)
+    expect { game.close_attendance! }
+      .to raise_error(PickupSports::Game::ParticipationError, /Mark every player/)
+    expect { waiting_entry.record_attendance!("absent") }
+      .to raise_error(PickupSports::Game::ParticipationError, /Waitlisted residents/)
+
+    published = []
+    PlatformCore::EventBus.subscribe(
+      "pickup_sports.attendance_recorded",
+      ->(name, payload) { published << [name, payload] }
+    )
+    PlatformCore::EventBus.subscribe(
+      "pickup_sports.game_changed",
+      ->(name, payload) { published << [name, payload] }
+    )
+
+    host_entry.record_attendance!("attended")
+    player_entry.record_attendance!("absent")
+    game.close_attendance!
+    player_entry.record_attendance!("attended")
+
+    expect(game.reload).to be_completed
+    expect(game.joined_count).to eq(2)
+    expect(player_entry.reload).to be_attended
+    expect(published.filter_map { |_name, payload| payload[:change_kind] })
+      .to eq(%w[recorded recorded attendance_closed corrected])
+    expect(published.last.last).to include(
+      game_id: game.id,
+      recipient_id: player.id,
+      actor_id: game.host_id,
+      attendance_status: "attended",
+      change_kind: "corrected"
+    )
+  end
 end

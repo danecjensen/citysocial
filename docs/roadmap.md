@@ -50,6 +50,9 @@
   neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
   waitlist promotion, cancellation clarity, notification-ready events, and a public
   upcoming-games read API.
+- pickup sports milestone 2: host-owned post-game attendance closeout with public
+  attended/absent roster states, required review before completion, explicit correction
+  controls, and content-free attendance events for future notification delivery.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
@@ -57,7 +60,5 @@
       so the loop actually populates the module in production.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
       filesystem is ephemeral, so photos need a real bucket before launch.
-- [ ] pickup sports milestone 2 — host attendance closeout after game time, with
-      attended/absent roster state and explicit correction paths.
 - [ ] pickup sports milestone 3 — recurring game templates plus a Notifications
       subscriber for promotions and host changes.

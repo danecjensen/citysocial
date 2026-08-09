@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 27,
   "items": [
     {
       "id": "F-017",
@@ -379,6 +379,33 @@
       "kind": "module_product",
       "product_family": "messaging",
       "milestone": "one-to-one-conversations-mvp"
+    },
+    {
+      "id": "F-026",
+      "title": "Close out pickup game attendance",
+      "problem": "Pickup Sports rosters capture who intended to play but not who actually attended, so hosts and residents cannot turn a completed game into a trustworthy shared record.",
+      "evidence": "docs/roadmap.md Next promised pickup sports milestone 2; research.md#R-008 cites Meetup attendance tracking and names host attendance closeout as the next reliability milestone.",
+      "acceptance": [
+        "Only the host can mark rostered residents attended or absent, and only after the game starts",
+        "Waitlisted residents cannot receive attendance and every rostered player must be reviewed before closeout",
+        "Closing attendance marks the game completed and keeps the public final roster readable",
+        "The host can correct attended/absent records after closeout",
+        "Content-free attendance and closeout events expose primitive IDs, status, change kind, and an internal path",
+        "Model and request specs cover timing, ownership, waitlist exclusion, completion, correction, and public rendering"
+      ],
+      "impact": 4,
+      "effort": 4,
+      "confidence": 0.9,
+      "score": 0.9,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-09",
+      "pr": "https://github.com/danecjensen/citysocial/pull/34",
+      "kind": "module_product",
+      "product_family": "pickup_sports",
+      "milestone": "attendance-closeout",
+      "notes": "Product lane milestone 2. Persona: the host responsible for a reliable casual game. Job: turn intended attendance into an accurate public turnout record. Loop: host records turnout -> residents see the final roster -> content-free events support later delivery and corrections keep trust recoverable. Scheduled under the product-lane override despite the legacy score formula. F-025 is reserved by open PR #33."
     },
     {
       "id": "F-019",

@@ -27,6 +27,10 @@
         <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= @game.skill_level.humanize %><% end %>
         <% if @game.canceled? %>
           <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Canceled<% end %>
+        <% elsif @game.completed? %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Attendance closed<% end %>
+        <% elsif @game.started? %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Attendance pending<% end %>
         <% elsif @game.full? %>
           <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Waitlist open<% end %>
         <% else %>
@@ -65,7 +69,35 @@
             title: "This game was canceled",
             body: "The roster remains visible so nobody mistakes it for an active game."
           ) %>
-    <% elsif logged_in? && @current_entry.nil? %>
+    <% elsif @game.completed? %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="font-display text-lg font-bold text-ink">Attendance closed</p>
+        <p class="mt-1 text-sm text-ink-muted">
+          The host recorded who played. Corrections stay visible on the roster below.
+        </p>
+      <% end %>
+    <% elsif logged_in? && @game.host_id == current_user.id && @game.started? %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="font-display text-lg font-bold text-ink">Close out attendance</p>
+        <% if @game.attendance_ready_to_close? %>
+          <p class="mt-1 text-sm text-ink-muted">
+            Every rostered player is marked. Close attendance to publish the final turnout.
+          </p>
+          <div class="mt-4">
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :primary,
+                  href: close_attendance_game_path(@game),
+                  method: :patch,
+                  confirm: "Close attendance? You can still correct individual records afterward."
+                ) do %>Close attendance<% end %>
+          </div>
+        <% else %>
+          <p class="mt-1 text-sm text-ink-muted">
+            Mark <%= pluralize(@game.pending_attendance_count, "player") %> attended or absent before closing.
+          </p>
+        <% end %>
+      <% end %>
+    <% elsif logged_in? && @game.joinable? && @current_entry.nil? %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
         <p class="font-bold text-ink"><%= @game.full? ? "The roster is full, but the waitlist is fair." : "There is room on the roster." %></p>
         <p class="mt-1 text-sm text-ink-muted">
@@ -79,7 +111,7 @@
               ) do %><%= @game.full? ? "Join waitlist" : "Join game" %><% end %>
         </div>
       <% end %>
-    <% elsif logged_in? && @current_entry && current_user.id != @game.host_id %>
+    <% elsif logged_in? && @game.joinable? && @current_entry && current_user.id != @game.host_id %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
         <p class="font-bold text-ink">
           <%= @current_entry.joined? ? "You're on the roster." : "You're on the waitlist." %>
@@ -120,13 +152,39 @@
           <% else %>
             <div class="min-w-0 flex-1 text-sm text-ink-muted">Former resident</div>
           <% end %>
-          <% if entry.resident_id == @game.host_id %>
-            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Host<% end %>
-          <% elsif entry.waitlisted? %>
-            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Wait <%= index - @game.joined_count + 1 %><% end %>
-          <% else %>
-            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Playing<% end %>
-          <% end %>
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <% if entry.resident_id == @game.host_id %>
+              <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Host<% end %>
+            <% end %>
+            <% if entry.waitlisted? %>
+              <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Wait <%= index - @game.joined_count + 1 %><% end %>
+            <% elsif entry.attended? %>
+              <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Attended<% end %>
+            <% elsif entry.absent? %>
+              <%= render PlatformCore::Ui::BadgeComponent.new(variant: :danger) do %>Didn't play<% end %>
+            <% else %>
+              <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Playing<% end %>
+            <% end %>
+
+            <% if logged_in? && @game.host_id == current_user.id && @game.attendance_recordable? && entry.committed? %>
+              <%= render PlatformCore::Ui::ButtonComponent.new(
+                    variant: entry.attended? ? :primary : :ghost,
+                    size: :sm,
+                    href: attendance_game_roster_entry_path(@game, entry),
+                    method: :patch,
+                    params: { attendance_status: "attended" },
+                    pressed: entry.attended?
+                  ) do %>Attended<% end %>
+              <%= render PlatformCore::Ui::ButtonComponent.new(
+                    variant: entry.absent? ? :danger : :ghost,
+                    size: :sm,
+                    href: attendance_game_roster_entry_path(@game, entry),
+                    method: :patch,
+                    params: { attendance_status: "absent" },
+                    pressed: entry.absent?
+                  ) do %>Absent<% end %>
+            <% end %>
+          </div>
         </div>
       <% end %>
     </div>

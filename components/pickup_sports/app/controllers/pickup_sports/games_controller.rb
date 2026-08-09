@@ -1,8 +1,8 @@
 module PickupSports
   class GamesController < PlatformCore::BaseController
     before_action :require_login, except: %i[index show]
-    before_action :set_game, only: %i[show edit update cancel]
-    before_action :require_owner, only: %i[edit update cancel]
+    before_action :set_game, only: %i[show edit update cancel close_attendance]
+    before_action :require_owner, only: %i[edit update cancel close_attendance]
 
     def index
       @sport = params[:sport].presence_in(Game::SPORTS)
@@ -17,7 +17,11 @@ module PickupSports
     end
 
     def show
-      @entries = @game.roster_entries.order(Arel.sql("CASE status WHEN 'joined' THEN 0 ELSE 1 END"), :created_at, :id)
+      @entries = @game.roster_entries.order(
+        Arel.sql("CASE status WHEN 'joined' THEN 0 WHEN 'attended' THEN 1 WHEN 'absent' THEN 2 ELSE 3 END"),
+        :created_at,
+        :id
+      )
       @residents = PlatformCore::Graph.users(@entries.map(&:resident_id))
       @current_entry = @game.entry_for(current_user.id) if logged_in?
     end
@@ -48,6 +52,15 @@ module PickupSports
     def cancel
       @game.cancel!
       redirect_to game_path(@game), notice: "Game canceled. The roster is preserved for clarity."
+    rescue Game::ParticipationError => e
+      redirect_to game_path(@game), alert: e.message
+    end
+
+    def close_attendance
+      @game.close_attendance!
+      redirect_to game_path(@game), notice: "Attendance closed. The final roster is now visible."
+    rescue Game::ParticipationError => e
+      redirect_to game_path(@game), alert: e.message
     end
 
     private

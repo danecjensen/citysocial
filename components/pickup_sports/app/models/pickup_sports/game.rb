@@ -4,7 +4,7 @@ module PickupSports
 
     SPORTS = %w[basketball pickleball soccer tennis ultimate volleyball].freeze
     SKILL_LEVELS = %w[all_levels beginner intermediate advanced].freeze
-    STATUSES = %w[open canceled].freeze
+    STATUSES = %w[open completed canceled].freeze
 
     has_many :roster_entries, class_name: "PickupSports::RosterEntry", dependent: :destroy, inverse_of: :game
 
@@ -29,6 +29,7 @@ module PickupSports
     after_create :seat_host
     after_create_commit :announce_creation
     after_update_commit :announce_cancellation, if: :canceled_now?
+    after_update_commit :announce_attendance_closeout, if: :completed_now?
 
     def host
       PlatformCore::Graph.user(host_id)
@@ -42,10 +43,18 @@ module PickupSports
       status == "canceled"
     end
 
-    def joined_count
-      return roster_entries.count(&:joined?) if roster_entries.loaded?
+    def completed?
+      status == "completed"
+    end
 
-      roster_entries.joined.count
+    def started?
+      starts_at <= Time.current
+    end
+
+    def joined_count
+      return roster_entries.count(&:committed?) if roster_entries.loaded?
+
+      roster_entries.committed.count
     end
 
     def waitlisted_count
@@ -64,6 +73,18 @@ module PickupSports
 
     def joinable?
       open? && starts_at.future?
+    end
+
+    def attendance_recordable?
+      started? && (open? || completed?)
+    end
+
+    def pending_attendance_count
+      roster_entries.joined.count
+    end
+
+    def attendance_ready_to_close?
+      attendance_recordable? && open? && pending_attendance_count.zero?
     end
 
     def entry_for(resident_id)
@@ -105,7 +126,21 @@ module PickupSports
     end
 
     def cancel!
+      raise ParticipationError, "Completed games keep their attendance record." if completed?
+
       update!(status: "canceled")
+    end
+
+    def close_attendance!
+      raise ParticipationError, "Attendance can be recorded after the game starts." unless started?
+      raise ParticipationError, "Canceled games cannot be closed out." if canceled?
+      return self if completed?
+      unless pending_attendance_count.zero?
+        raise ParticipationError, "Mark every player attended or absent before closing attendance."
+      end
+
+      update!(status: "completed")
+      self
     end
 
     private
@@ -120,6 +155,10 @@ module PickupSports
 
     def canceled_now?
       saved_change_to_status? && canceled?
+    end
+
+    def completed_now?
+      saved_change_to_status? && completed?
     end
 
     def announce_creation
@@ -137,6 +176,16 @@ module PickupSports
         game_id: id,
         actor_id: host_id,
         change_kind: "canceled",
+        target_path: "/pickup_sports/games/#{id}"
+      )
+    end
+
+    def announce_attendance_closeout
+      PlatformCore::EventBus.publish(
+        "pickup_sports.game_changed",
+        game_id: id,
+        actor_id: host_id,
+        change_kind: "attendance_closed",
         target_path: "/pickup_sports/games/#{id}"
       )
     end
