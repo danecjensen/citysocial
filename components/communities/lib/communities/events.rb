@@ -12,5 +12,7 @@ module Communities
     # Events this module PUBLISHES (documented for discoverability):
     #   - "communities.community_created" (community_id:, creator_id:)
     #   - "communities.post_created"      (post_id:, community_id:, author_id:)
+    #   - "communities.comment_created"
+    #       (comment_id:, post_id:, community_slug:, author_id:, post_author_id:)
   end
 end

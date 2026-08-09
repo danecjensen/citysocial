@@ -63,6 +63,30 @@ RSpec.describe "Notifications", type: :request do
     )
   end
 
+  it "shows community comments only to the post author with a deep link" do
+    post_author = create(:user)
+    commenter = create(:user, handle: "helpful_neighbor")
+    Notifications::DeliverDirect.call(
+      "communities.comment_created",
+      { comment_id: 42, post_id: 7, community_slug: "eastside", author_id: commenter.id,
+        post_author_id: post_author.id }
+    )
+    notification = Notifications::Notification.find_by!(recipient_id: post_author.id)
+    login_as(post_author)
+
+    get "/notifications"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_text("@helpful_neighbor commented on your community post.")
+    expect(doc).to have_css(
+      "form[action='/notifications/#{notification.id}/read'] button[type='submit']",
+      text: "View"
+    )
+
+    patch "/notifications/#{notification.id}/read"
+    expect(response).to redirect_to("/communities/eastside/posts/7")
+  end
+
   it "resolves notification actors without an N+1 as the inbox grows" do
     small_resident = create(:user)
     3.times { create(:notification, recipient: small_resident, actor: create(:user)) }
