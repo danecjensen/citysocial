@@ -1,5 +1,9 @@
 <div class="mb-3">
   <%= link_to "← Pickup Sports", games_path, class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+  <% if @game.game_series %>
+    <span class="px-2 text-ink-faint">·</span>
+    <%= link_to "View weekly series", series_path(@game.game_series), class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+  <% end %>
 </div>
 
 <%= render PlatformCore::Ui::PageHeaderComponent.new(
@@ -23,6 +27,9 @@
   <div class="space-y-6">
     <%= render PlatformCore::Ui::CardComponent.new do %>
       <div class="flex flex-wrap gap-2">
+        <% if @game.game_series %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Week <%= @game.series_position %><% end %>
+        <% end %>
         <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %><%= @game.sport.titleize %><% end %>
         <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= @game.skill_level.humanize %><% end %>
         <% if @game.canceled? %>

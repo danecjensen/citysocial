@@ -6,6 +6,7 @@ module PickupSports
     SKILL_LEVELS = %w[all_levels beginner intermediate advanced].freeze
     STATUSES = %w[open canceled].freeze
 
+    belongs_to :game_series, class_name: "PickupSports::GameSeries", optional: true, inverse_of: :games
     has_many :roster_entries, class_name: "PickupSports::RosterEntry", dependent: :destroy, inverse_of: :game
 
     validates :host_id, :title, :sport, :skill_level, :neighborhood, :venue, :starts_at, :capacity, presence: true
@@ -16,6 +17,9 @@ module PickupSports
     validates :skill_level, inclusion: { in: SKILL_LEVELS }
     validates :status, inclusion: { in: STATUSES }
     validates :capacity, numericality: { only_integer: true, in: 2..100 }
+    validates :series_position, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+    validates :series_position, uniqueness: { scope: :game_series_id }, if: :game_series_id?
+    validates :series_position, presence: true, if: :game_series_id?
     validate :starts_in_the_future, if: -> { new_record? || will_save_change_to_starts_at? }
 
     scope :upcoming, -> { where(status: "open").where(starts_at: Time.current..).order(:starts_at, :id) }

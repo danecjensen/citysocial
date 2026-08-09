@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_09_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -226,6 +226,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
     t.index ["recipient_id", "read_at", "created_at"], name: "index_notifications_inbox"
   end
 
+  create_table "pickup_sports_game_series", force: :cascade do |t|
+    t.bigint "host_id", null: false
+    t.string "title", null: false
+    t.string "sport", null: false
+    t.string "skill_level", default: "all_levels", null: false
+    t.string "neighborhood", null: false
+    t.string "venue", null: false
+    t.text "details"
+    t.datetime "starts_at", null: false
+    t.integer "capacity", null: false
+    t.integer "occurrences_count", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["host_id"], name: "index_pickup_sports_game_series_on_host_id"
+  end
+
   create_table "pickup_sports_games", force: :cascade do |t|
     t.bigint "host_id", null: false
     t.string "title", null: false
@@ -239,6 +255,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
     t.string "status", default: "open", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "game_series_id"
+    t.integer "series_position"
+    t.index ["game_series_id", "series_position"], name: "index_pickup_sports_games_on_series_position", unique: true
+    t.index ["game_series_id"], name: "index_pickup_sports_games_on_game_series_id"
     t.index ["host_id"], name: "index_pickup_sports_games_on_host_id"
     t.index ["sport", "starts_at"], name: "index_pickup_sports_games_on_sport_and_start"
     t.index ["status", "starts_at"], name: "index_pickup_sports_games_on_status_and_start"
@@ -312,5 +332,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "feedback_supports", "feedback_submissions", column: "submission_id"
   add_foreign_key "messaging_messages", "messaging_conversations", column: "conversation_id"
+  add_foreign_key "pickup_sports_games", "pickup_sports_game_series", column: "game_series_id"
   add_foreign_key "pickup_sports_roster_entries", "pickup_sports_games", column: "game_id"
 end

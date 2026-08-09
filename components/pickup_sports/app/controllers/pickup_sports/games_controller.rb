@@ -9,7 +9,7 @@ module PickupSports
       @neighborhood = params[:neighborhood].to_s.strip.presence
       @date = parsed_date
 
-      @games = Game.upcoming.includes(:roster_entries)
+      @games = Game.upcoming.includes(:game_series, :roster_entries)
       @games = @games.by_sport(@sport) if @sport
       @games = @games.in_neighborhood(@neighborhood) if @neighborhood
       @games = @games.on_date(@date) if @date

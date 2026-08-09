@@ -359,3 +359,32 @@ Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/30
 Changed: components/pickup_sports/, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, Gemfile, Gemfile.lock, db/schema.rb, spec/factories/pickup_sports.rb, spec/models/pickup_sports/game_spec.rb, spec/public/pickup_sports/upcoming_games_spec.rb, spec/requests/pickup_sports_spec.rb, routines/backlog.json, routines/research.md, docs/roadmap.md
 Notes: Product lane. Consumed product-fresh R-008 and generated the PickupSports engine for Austin residents who need a reliable spot before traveling to a casual game. Milestone 1 ships host-owned future games, sport/date/neighborhood discovery, public rosters, clear capacity and waitlist states, row-locked duplicate-safe joins, FIFO promotion on leave, cancellation clarity, primitive notification-ready events, and an UpcomingGames public API. Reconciled the malformed backlog from canonical reviewed state, reserved open F-021/PR #26, and recorded follow-up attendance, recurring-game, and Notifications milestones in the roadmap. Verification incomplete only because PostgreSQL TCP was denied before examples (full: 38 load errors/0 examples; focused: 3 load errors/0 examples). Packwerk, RuboCop, Zeitwerk, Ruby/ERB syntax, routes, migration-path wiring, Tailwind, backlog integrity, boundary scan, diff checks, and local/remote tree equality passed. A real screenshot could not be captured without the database; the Playwright CLI wrapper also could not resolve in the network-restricted host.
+## 2026-08-09 05:53 — F-027
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/36
+Changed: components/pickup_sports/app/models/pickup_sports/game_series.rb,
+components/pickup_sports/app/controllers/pickup_sports/game_series_controller.rb,
+components/pickup_sports/app/views/pickup_sports/game_series/,
+components/pickup_sports/db/migrate/20260809110000_create_pickup_sports_game_series.rb,
+components/pickup_sports/app/models/pickup_sports/game.rb,
+components/pickup_sports/app/controllers/pickup_sports/games_controller.rb,
+components/pickup_sports/app/views/pickup_sports/games/, components/pickup_sports/config/routes.rb,
+components/pickup_sports/lib/pickup_sports/events.rb, components/pickup_sports/README.md,
+db/schema.rb, spec/models/pickup_sports/game_series_spec.rb,
+spec/requests/pickup_sports_spec.rb, spec/factories/pickup_sports.rb,
+docs/roadmap.md, routines/backlog.json, routines/research.md, routines/progress.md
+North Star: Turns reliable local play into a repeatable city utility without adding an
+attention-maximizing content loop.
+Notes: Product lane. Shipped a bounded two-to-eight-week host scheduling flow backed by
+an additive series template; every occurrence remains a normal discoverable game with
+its own host seat, roster, capacity, waitlist, cancellation state, and existing event.
+The public series page lets residents compare dates and commit only to games they can
+attend. Added a primitive content-free series-created event, model/request coverage,
+roadmap/research state, and reconciled open F-025/F-026 reservations. Verification
+incomplete only because the managed sandbox denied PostgreSQL TCP access before all
+RSpec examples (focused: 3 load errors/0 examples; full: 45 load errors/0 examples) and
+denied Puma's localhost bind for screenshots. Packwerk, full RuboCop, Zeitwerk, Rails
+wiring, Rails-aware ERB compilation, Ruby syntax, Tailwind, backlog integrity, boundary
+and migration scans, and diff whitespace passed.
+Learnings:
+- (none new)
