@@ -37,4 +37,40 @@ RSpec.describe Notifications::DeliverDirect do
 
     expect(notification.reload).not_to be_unread
   end
+
+  it "notifies a community post author once when another resident comments" do
+    post_author = create(:user)
+    commenter = create(:user, handle: "helpful_neighbor")
+    payload = {
+      comment_id: 42,
+      post_id: 7,
+      community_slug: "eastside",
+      author_id: commenter.id,
+      post_author_id: post_author.id
+    }
+
+    2.times { described_class.call("communities.comment_created", payload) }
+
+    expect(Notifications::Notification.where(recipient_id: post_author.id)).to contain_exactly(
+      have_attributes(
+        actor_id: commenter.id,
+        event_name: "communities.comment_created",
+        source_id: 42,
+        message: "@helpful_neighbor commented on your community post.",
+        target_path: "/communities/eastside/posts/7"
+      )
+    )
+  end
+
+  it "does not notify an author about their own community comment" do
+    author = create(:user)
+
+    expect do
+      described_class.call(
+        "communities.comment_created",
+        { comment_id: 42, post_id: 7, community_slug: "eastside", author_id: author.id,
+          post_author_id: author.id }
+      )
+    end.not_to change(Notifications::Notification, :count)
+  end
 end

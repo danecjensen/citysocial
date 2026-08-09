@@ -18,6 +18,7 @@ module Notifications
       {
         "feed.post_created" => Notifications::DeliverActivity,
         "communities.post_created" => Notifications::DeliverActivity,
+        "communities.comment_created" => Notifications::DeliverDirect,
         "feedback.submission_status_changed" => Notifications::DeliverDirect
       }
     end
@@ -25,6 +26,8 @@ module Notifications
     # Events this module SUBSCRIBES TO:
     #   - "feed.post_created"        { post_id:, author_id: }
     #   - "communities.post_created" { post_id:, community_id:, author_id: }
+    #   - "communities.comment_created"
+    #       { comment_id:, post_id:, community_slug:, author_id:, post_author_id: }
     #   - "feedback.submission_status_changed"
     #       { submission_id:, author_id:, status: }
     #
