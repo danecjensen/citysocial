@@ -40,14 +40,14 @@
         <% nav.with_link "Modules", "/admin/modules", active: request.path.start_with?("/admin/modules") %>
       <% end %>
 
-      <% if PlatformCore::Modules.enabled?("marketplace") %>
+      <% if PlatformCore::Search.types.any? %>
         <% nav.with_search do %>
-          <%= form_with url: "/marketplace", method: :get do |f| %>
+          <%= form_with url: "/search", method: :get do |f| %>
             <div class="relative">
               <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-faint">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               </span>
-              <%= f.text_field :q, value: params[:q], placeholder: "Search the marketplace…", class: "w-full rounded-full border border-line bg-sunken py-2 pl-10 pr-3 text-sm text-ink placeholder-ink-faint transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" %>
+              <%= f.text_field :q, value: params[:q], placeholder: "Search CitySocial…", aria: { label: "Search CitySocial" }, maxlength: PlatformCore::Search::MAX_QUERY_LENGTH, class: "w-full rounded-full border border-line bg-sunken py-2 pl-10 pr-3 text-sm text-ink placeholder-ink-faint transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" %>
             </div>
           <% end %>
         <% end %>
