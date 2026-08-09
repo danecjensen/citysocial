@@ -63,6 +63,11 @@ There is no built-in time-based `/loop` in Claude Code — `bin/loop` is the rea
 inspectable mechanism (a shell loop over headless runs gated on `bin/verify`).
 For scheduled runs, drive `bin/loop` from cron or CI.
 
+The autonomous product routines read `northstar.md` on every run. That file is
+the long-form, durable description of the product's intended destination: it
+guides research and relative feature impact, while concrete work still requires
+Dane's idea inbox, verified research, or repository evidence.
+
 ### A note on commands vs. skills
 
 `.claude/commands/*.md` is the well-supported custom-command format used here.

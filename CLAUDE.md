@@ -49,6 +49,11 @@ It creates the engine, wires it into the Gemfile + routes, and writes a nested
 
 ## Feature scoping rules
 
+Read `northstar.md` whenever choosing or scoping product work. It describes the durable
+product destination and should guide relative impact and tradeoffs. It is not a backlog,
+an implementation spec, or evidence for a concrete feature; work still needs a grounded
+user need, bounded acceptance criteria, and compliance with the module contract.
+
 Every feature must:
 - Map to a user persona and an engagement loop (do → others see → notified).
 - Live inside exactly one module (or be a new module if it's a full app).
