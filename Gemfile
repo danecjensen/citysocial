@@ -41,6 +41,7 @@ gem "feedback", path: "components/feedback"
 gem "marketplace", path: "components/marketplace"
 gem "messaging", path: "components/messaging"
 gem "notifications", path: "components/notifications"
+gem "pickup_sports", path: "components/pickup_sports"
 gem "platform_core", path: "components/platform_core"
 gem "restaurants",   path: "components/restaurants"
 

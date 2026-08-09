@@ -9,7 +9,11 @@ RSpec.describe PlatformCore::Ui::ShareComponent do
       "[data-share-url-value='https://example.test/events/e/42?from=city']"
     )
     expect(page).to have_css("button[type='button'][data-action='share#copy']", text: "Copy link")
-    expect(page).to have_css("[data-share-target='native'][hidden] button[data-action='share#native']", text: "Share")
+    expect(page).to have_css(
+      "[data-share-target='native'][hidden] button[data-action='share#native']",
+      text: "Share",
+      visible: :all
+    )
     expect(page).to have_css("[data-share-target='status'][role='status'][aria-live='polite']")
   end
 end

@@ -38,3 +38,6 @@ into CLAUDE.md.
 - When concurrent module PRs conflict in shared registries, keep every module entry,
   regenerate Gemfile.lock and db/schema.rb, and parse-check routines/backlog.json;
   choosing one side can silently drop a module or commit invalid generated state.
+- Before merging a stacked PR chain, rebuild each branch from only its own commits,
+  scan the assembled tree for conflict markers, parse shared state files, and run
+  `bin/verify`; a GitHub-mergeable stack can still contain committed conflict debris.

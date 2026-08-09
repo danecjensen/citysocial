@@ -1,0 +1,10 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Host a pickup game",
+      subtitle: "Set clear expectations; you'll automatically take the first roster spot."
+    ) %>
+
+<div class="mx-auto max-w-2xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", game: @game %>
+  <% end %>
+</div>

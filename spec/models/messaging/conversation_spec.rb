@@ -104,6 +104,8 @@ RSpec.describe Messaging::Conversation, type: :model do
   it "accepts only paired, internal public context" do
     conversation = build(
       :messaging_conversation,
+      first_participant_id: create(:user).id,
+      second_participant_id: create(:user).id,
       context_path: " /marketplace/vintage-bike ",
       context_label: " Vintage bike "
     )

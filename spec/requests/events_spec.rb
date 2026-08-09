@@ -85,7 +85,7 @@ RSpec.describe "Events", type: :request do
       share = "[data-controller='share'][data-share-title-value='Austin Night Market']" \
               "[data-share-url-value='http://www.example.com/events/e/#{event.id}']"
       expect(page).to have_css("#{share} button[data-action='share#copy']", text: "Copy link")
-      expect(page).to have_css("#{share} [data-share-target='native'][hidden]", text: "Share")
+      expect(page).to have_css("#{share} [data-share-target='native'][hidden]", text: "Share", visible: :all)
       expect(page).to have_no_css("[data-share-url-value='https://tickets.example/night-market']")
       expect(page).to have_css("a[href='https://tickets.example/night-market']", text: "Tickets & details")
       expect(page).to have_css("a[href='/events/e/#{event.id}/calendar']", text: "Download .ics")

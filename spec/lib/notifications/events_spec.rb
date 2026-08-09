@@ -11,10 +11,18 @@ RSpec.describe Notifications::Events do
 
     2.times { described_class.subscribe! }
 
-    %w[feed.post_created communities.post_created].each do |event_name|
+    expected = {
+      "feed.post_created" => Notifications::DeliverActivity,
+      "communities.post_created" => Notifications::DeliverActivity,
+      "feedback.submission_status_changed" => Notifications::DeliverDirect
+    }
+
+    expected.each do |event_name, handler|
       subscriptions = PlatformCore::EventBus.registry.fetch(event_name)
       expect(subscriptions.length).to eq(1)
-      expect(subscriptions.first).to have_attributes(handler: Notifications::DeliverActivity, async: true)
+      expect(subscriptions.first).to have_attributes(handler: handler, async: true)
     end
+
+    expect(PlatformCore::EventBus.registry["feedback.submission_created"]).to be_empty
   end
 end

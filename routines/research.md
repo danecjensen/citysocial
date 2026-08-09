@@ -277,6 +277,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
 - Engagement loop: A resident shares a public CitySocial event; friends see it in
   the chat they already use and receive that chat's notification; they open the
   canonical CitySocial event and react by coordinating or attending.
+
 ### R-005 — Notify community post authors when someone comments on their post
 - Date: 2026-08-07
 - Module: notifications (crosses via event published by communities)
@@ -411,4 +412,4 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     same submission each produce a fresh unread notification, and a request
     spec asserting the author sees it in their inbox
 - Grader score: 10/10
-- Status: fresh
+- Status: consumed (F-024)

@@ -44,6 +44,25 @@ RSpec.describe "Notifications", type: :request do
     expect(response.body).not_to include("Private notification")
   end
 
+  it "shows feedback status changes to the submission author" do
+    author = create(:user)
+    Notifications::DeliverDirect.call(
+      "feedback.submission_status_changed",
+      { submission_id: 42, author_id: author.id, status: "planned" }
+    )
+    notification = Notifications::Notification.find_by!(recipient_id: author.id)
+    login_as(author)
+
+    get "/notifications"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_text("Your feedback moved to Planned.")
+    expect(doc).to have_css(
+      "form[action='/notifications/#{notification.id}/read'] button[type='submit']",
+      text: "View"
+    )
+  end
+
   it "resolves notification actors without an N+1 as the inbox grows" do
     small_resident = create(:user)
     3.times { create(:notification, recipient: small_resident, actor: create(:user)) }
