@@ -329,7 +329,7 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
 - Grader score: 8/10 (−2: original acceptance sketch promised a target_path deep
   link to the specific post that couldn't be built under the Packwerk boundary —
   fixed above by carrying `community_slug` in the event payload before recording)
-- Status: fresh
+- Status: consumed (F-025)
 
 ### R-006 — Show an unread direct-message badge in the global nav
 - Date: 2026-08-07

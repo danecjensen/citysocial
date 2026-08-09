@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 26,
   "items": [
     {
       "id": "F-017",
@@ -104,6 +104,30 @@
       "kind": "app_wide_capability",
       "product_family": "notifications",
       "milestone": "feedback-status-delivery"
+    },
+    {
+      "id": "F-025",
+      "title": "Notify community post authors about comments",
+      "problem": "Community post authors must manually revisit their posts to learn when another resident adds a comment.",
+      "evidence": "research.md#R-005; Communities::Comment had no creation event, while Notifications already owns asynchronous direct-recipient delivery and the durable unread inbox.",
+      "acceptance": [
+        "Communities publishes communities.comment_created with primitive routing data and no comment body",
+        "Notifications asynchronously delivers one deep-linked notification to the post author only",
+        "Self-comments create no notification and retried delivery stays idempotent",
+        "Model, service, event-wiring, and request specs cover publication, delivery, inbox rendering, and ownership"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 1.0,
+      "score": 2.0,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-08",
+      "pr": "https://github.com/danecjensen/citysocial/pull/33",
+      "kind": "app_wide_capability",
+      "product_family": "notifications",
+      "milestone": "community-comment-delivery"
     },
     {
       "id": "F-021",
