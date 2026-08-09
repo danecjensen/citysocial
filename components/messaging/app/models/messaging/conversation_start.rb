@@ -5,11 +5,17 @@ module Messaging
 
     attribute :recipient_handle, :string
     attribute :body, :string
+    attribute :context_path, :string
+    attribute :context_label, :string
 
     validates :recipient_handle, :body, presence: true
     validates :body, length: { maximum: 2000 }
+    validates :context_path, length: { maximum: 500 }, allow_blank: true
+    validates :context_label, length: { maximum: 120 }, allow_blank: true
     validate :recipient_exists
     validate :recipient_is_not_sender
+    validate :context_fields_are_paired
+    validate :context_path_is_internal
 
     attr_reader :conversation
 
@@ -24,6 +30,7 @@ module Messaging
           first_participant_id: first_participant_id,
           second_participant_id: second_participant_id
         )
+        @conversation.update!(context_path: context_path, context_label: context_label) if context?
         @conversation.messages.create!(sender_id: sender_id, body: body)
       end
 
@@ -35,9 +42,15 @@ module Messaging
 
     private
 
+    def context?
+      context_path.present? && context_label.present?
+    end
+
     def normalize_fields
       self.recipient_handle = recipient_handle.to_s.strip.delete_prefix("@")
       self.body = body.to_s.strip
+      self.context_path = context_path.to_s.strip.presence
+      self.context_label = context_label.to_s.strip.presence
     end
 
     def recipient_profile
@@ -53,6 +66,18 @@ module Messaging
       return unless recipient_profile.id == @sender_id
 
       errors.add(:recipient_handle, "must be another resident")
+    end
+
+    def context_fields_are_paired
+      return if context_path.present? == context_label.present?
+
+      errors.add(:base, "Conversation context needs both a path and label")
+    end
+
+    def context_path_is_internal
+      return if context_path.blank? || context_path.match?(Conversation::CONTEXT_PATH_PATTERN)
+
+      errors.add(:context_path, "must be an internal CitySocial path")
     end
   end
 end

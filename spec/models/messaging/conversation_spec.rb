@@ -100,4 +100,26 @@ RSpec.describe Messaging::Conversation, type: :model do
     expect(described_class.with_other_participant_ids(resident.id, [matching_neighbor.id])).to contain_exactly(matching)
     expect(described_class.with_other_participant_ids(resident.id, [])).to be_empty
   end
+
+  it "accepts only paired, internal public context" do
+    conversation = build(
+      :messaging_conversation,
+      context_path: " /marketplace/vintage-bike ",
+      context_label: " Vintage bike "
+    )
+
+    expect(conversation).to be_valid
+    expect(conversation.context_path).to eq("/marketplace/vintage-bike")
+    expect(conversation.context_label).to eq("Vintage bike")
+    expect(conversation).to be_context
+
+    conversation.context_path = "https://example.com/phishing"
+    expect(conversation).not_to be_valid
+    expect(conversation.errors[:context_path]).to include("must be an internal CitySocial path")
+
+    conversation.context_path = "/marketplace/vintage-bike"
+    conversation.context_label = nil
+    expect(conversation).not_to be_valid
+    expect(conversation.errors[:base]).to include("Conversation context needs both a path and label")
+  end
 end

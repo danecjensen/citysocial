@@ -1,5 +1,7 @@
 module Messaging
   class Conversation < ApplicationRecord
+    CONTEXT_PATH_PATTERN = %r{\A/(?!/)[^\\\x00-\x1F\x7F]*\z}
+
     has_many :messages,
              -> { order(created_at: :asc, id: :asc) },
              class_name: "Messaging::Message",
@@ -8,9 +10,14 @@ module Messaging
 
     validates :first_participant_id, :second_participant_id, presence: true
     validates :first_participant_id, uniqueness: { scope: :second_participant_id }
+    validates :context_path, length: { maximum: 500 }, allow_blank: true
+    validates :context_label, length: { maximum: 120 }, allow_blank: true
     validate :participants_are_different
+    validate :context_fields_are_paired
+    validate :context_path_is_internal
 
     before_validation :canonicalize_participants
+    before_validation :normalize_context
 
     scope :for_participant, lambda { |user_id|
       where(first_participant_id: user_id).or(where(second_participant_id: user_id))
@@ -79,6 +86,10 @@ module Messaging
       attribute ? public_send(attribute).present? : false
     end
 
+    def context?
+      context_path.present? && context_label.present?
+    end
+
     def archive_for!(user_id)
       attribute = archive_attribute_for(user_id)
       return false unless attribute
@@ -105,6 +116,23 @@ module Messaging
       return if first_participant_id.blank? || second_participant_id.blank?
 
       self.first_participant_id, self.second_participant_id = participant_ids.map(&:to_i).sort
+    end
+
+    def normalize_context
+      self.context_path = context_path.to_s.strip.presence
+      self.context_label = context_label.to_s.strip.presence
+    end
+
+    def context_fields_are_paired
+      return if context_path.present? == context_label.present?
+
+      errors.add(:base, "Conversation context needs both a path and label")
+    end
+
+    def context_path_is_internal
+      return if context_path.blank? || context_path.match?(CONTEXT_PATH_PATTERN)
+
+      errors.add(:context_path, "must be an internal CitySocial path")
     end
 
     def participants_are_different
