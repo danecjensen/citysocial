@@ -639,16 +639,16 @@
       "effort": 4,
       "confidence": 0.8,
       "score": 1.0,
-      "status": "in_progress",
+      "status": "done",
       "origin": "research",
       "attempts": 1,
       "created": "2026-08-09",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/36",
       "kind": "module_product",
       "product_family": "pickup_sports",
       "milestone": "recurring-series",
       "northstar_fit": "Turns reliable local play into a repeatable city utility without adding an attention-maximizing content loop.",
-      "notes": "Product lane. Persona: a resident who reliably hosts the same casual game. Loop: host schedules the run -> residents discover every occurrence -> each roster changes visibly and emits existing notification-ready activity -> residents join only the weeks they can make."
+      "notes": "Product lane. Persona: a resident who reliably hosts the same casual game. Loop: host schedules the run -> residents discover every occurrence -> each roster changes visibly and emits existing notification-ready activity -> residents join only the weeks they can make. Draft PR #36; verification incomplete only because managed PostgreSQL and localhost binding were denied."
     }
   ]
 }
