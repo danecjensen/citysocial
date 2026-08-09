@@ -12,21 +12,13 @@ across runs, with a persona and a place real users talk. Prune answered or
 slop-producing questions when adding.
 -->
 
-- What do Austin residents say is missing or broken in the neighborhood apps they
-  already use (Nextdoor, local subreddits, Facebook groups)?
-- What makes people come back daily to community/classifieds/restaurant-ranking apps —
-  which notification or "others see it" loops actually retain?
-- Prefer direct product docs and specific local forums; generic searches produce slop.
-- Notification-loop question is now well covered (R-005/006/007: comment replies, DM
-  badge, feedback status change) — Notifications' DeliverActivity only fans out to
-  followers, so each needed a new direct-single-recipient delivery path.
-- Competitor feedback boards (Canny, UserVoice) and dev-forum meta boards (Discourse
-  meta, Apple DTS) cite cleanly; brand-specific "nextdoor"/"craigslist" searches
-  produce slop or fetch failures — avoid those, prefer the former.
-- Which columns/data does the app already store per module but never surface in the UI
-  (sort by, filter by, export/act on)? Cheap, no-migration wins tend to live there.
-- Resident discovery needs explicit search consent; public profile URLs alone do not
-  justify a citywide directory, so revisit only when a visibility migration is allowed.
+- What do Austin residents say is missing or broken in the neighborhood apps they already use (local subreddits, Facebook groups, Nextdoor)?
+- Which repeated city-resident job is coherent enough for a standalone product without duplicating Communities, Marketplace, Events, Messaging, or Pickup Sports?
+- Which owned trust/safety primitive would let residents flag public module content without sibling references or a vague platform-wide permission rewrite?
+- What makes residents return to community, classifieds, restaurant, event, and roster products, and which do -> see -> notified/react loops are still open?
+- Which stored columns or public routes are not yet surfaced as useful filters, discovery, or actions?
+- Prefer official product docs plus specific local forums; broad brand searches and generic mutual-aid/search terms produce slop.
+- Resident discovery needs explicit search consent; public profile URLs alone do not justify citywide enumeration.
 
 ## Briefs
 
@@ -413,3 +405,154 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     spec asserting the author sees it in their inbox
 - Grader score: 10/10
 - Status: consumed (F-024)
+
+### R-010 — Coordinate bounded neighbor favors
+- Date: 2026-08-09
+- Type: module-product
+- Module: new `neighbor_help` engine
+- Product thesis and city-specific differentiation: Give Austin residents a visible
+  commitment ledger for one discrete, unpaid, non-emergency, low-risk practical favor:
+  neighborhood and time-window discovery, one accountable claimant, release and reopen,
+  visible completion, and owned moderation. This is not a generic mutual-aid feed, a
+  paid-services marketplace, ongoing caregiving, or a crisis-response tool.
+- Primary persona and job-to-be-done: An Austin resident who temporarily needs a small
+  curbside pickup, public-place errand, basic device setup, or similarly bounded favor
+  needs to find one willing neighbor without publishing private contact or address data;
+  a helper wants a clear, short commitment that cannot silently become recurring care.
+- Engagement loop: A requester posts a public-safe favor; nearby residents find it by
+  category, neighborhood, and time; one helper claims it atomically; both see the state;
+  the helper can release it for someone else; the requester completes or cancels it.
+  Creation and transition events make the requester/helper notification-ready, while
+  the owned page remains the canonical status other residents can see and react to.
+- Competitor inspiration and what not to copy: Borrow Facebook Community Help's
+  category/location request discovery and move-to-message coordination, plus the Austin
+  weekly help thread's repeated free-help job. Do not copy Facebook's crisis framing or
+  broad emergency scope, and do not copy Reddit's ambiguous post/reply/DM fulfillment.
+- Proposed module name and boundary: Generate `neighbor_help` with
+  `bin/rails g app_module neighbor_help`. It owns favor requests, claims, lifecycle, and
+  reports; depends only on `platform_core`; resolves residents through
+  `PlatformCore::Graph`; publishes primitive events; stores no contact or exact address;
+  and references no Marketplace, Communities, Messaging, Notifications, or other sibling
+  class. Post-claim private coordination may use the existing contextual compose URL only
+  when Messaging is enabled, as current Marketplace and Communities views already do.
+- Existing-module overlap analysis: Communities owns membership, posts, comments, and
+  votes but no structured favor fields, exclusive claim, or completion lifecycle.
+  Marketplace overlaps through `wanted`, `free_stuff`, and `services`, but owns goods,
+  prices, negotiation, sales, and hired-service listings; Neighbor Help prohibits money,
+  reimbursement, goods exchange, and services for hire. Events and Pickup Sports own
+  discovery and rosters, not one-requester/one-helper task fulfillment. Messaging owns
+  private conversation, never favor state.
+- MVP vertical slice:
+  - Models/data: `NeighborHelp::Request` stores requester id, nullable helper id, title,
+    public details, a small category enum, neighborhood, start/end window, estimated
+    minutes, public-safe logistics notes, no-cash confirmation, lifecycle status, and
+    moderation state. `NeighborHelp::Report` stores reporter, request, reason, and review
+    state. Exclude public contact/address text, in-home entry, cash/reimbursement,
+    emergencies, medical or personal care, childcare, recurring caregiving, passenger
+    rides, regulated trades, hazardous work/tools/materials, and heavy lifting.
+  - Routes and primary flow: public current/open browse and show; authenticated new/create;
+    row-locked claim; helper-only release while the window remains current; requester-only
+    complete/cancel; derived expiry after the time window; report; and an owner-module admin
+    queue that hides/removes unsafe requests. A released request reopens rather than
+    deadlocking on an unreliable claimant.
+  - Events/public APIs: publish content-free `neighbor_help.request_created` and
+    `neighbor_help.request_changed` payloads with request, actor, requester, helper or
+    recipient ids, status/change kind, and internal target path. Notifications delivery is
+    a later subscriber milestone. Milestone 1 exposes no public API without a proven
+    consumer.
+  - UI states: compose shared components/tokens for open, claimed by viewer, claimed by
+    someone else, released, completed, canceled, expired, hidden, reported, validation
+    errors, prohibited-scope guidance, empty browse, and owner/helper/admin controls.
+  - Tests: model, request, event, authorization, moderation, route/view, and boundary
+    coverage for validation, public-safe fields, claim contention, release/reopen, expiry,
+    every transition, reporting/removal, primitive payloads, and absence of sibling
+    constants.
+- Additive/reversible migration needs: Create `neighbor_help_requests` and
+  `neighbor_help_reports` with reversible migrations, foreign-key/index constraints inside
+  the module schema, and no destructive auth, session, payment, dependency, infrastructure,
+  or design-token change.
+- Expansion path:
+  - A Notifications subscriber for claims, releases, completion, and moderation outcomes
+  - Helper-authored offers and bounded request/offer matching
+  - Vetted nonprofit and community-organization participation
+  - Reliability signals only after correction, appeal, and reporting policies exist
+- Repo tie-in: `components/communities/app/models/communities/post.rb` and Communities
+  routes/views show only discussion state; `components/marketplace/app/models/marketplace/listing.rb`
+  and its form/show expose transaction-oriented categories and lifecycle;
+  `components/pickup_sports/app/models/pickup_sports/game.rb` and `roster_entry.rb` provide
+  the row-locked neighborhood/time/state-change precedent; current Marketplace and
+  Communities show views prove contextual Messaging entry can carry a primitive label and
+  backlink without reading sibling models. Repo search found no existing favor/claim flow.
+- Sources:
+  - https://www.reddit.com/r/Austin/comments/lvna27/weekly_help_needed_post/ — Austin's recurring thread explicitly solicits free local goods/services and warns participants to use discretion (fetched and independently re-fetched 2026-08-09)
+  - https://www.reddit.com/r/Austin/comments/142cvz1/resources_for_elderly_neighbor/ — concrete phone-setup and store-pickup favors plus explicit boundaries around money and daily responsibility (fetched and independently re-fetched 2026-08-09)
+  - https://www.reddit.com/r/Austin/comments/14h24xr/how_can_we_help_improve_austin_in_small_ways_as/ — Austin residents ask how to help with small local acts such as groceries and yardwork; broad willingness signal only (fetched and independently re-fetched 2026-08-09)
+  - https://about.fb.com/news/2017/02/empowering-people-to-help-one-another-within-safety-check/ — official category/location request and offer discovery plus messaging precedent; product inspiration, not CitySocial demand (fetched and independently re-fetched 2026-08-09)
+- Grader score: 8/10 (−2: milestone 1 includes the favor state machine, expiry,
+  contextual coordination, scope enforcement, and a full reporting/admin moderation path;
+  the deduction is not for engine generation, additive migrations, or overall product size)
+- Status: product-fresh
+
+### R-011 — Find public CitySocial content from one search
+- Date: 2026-08-09
+- Type: app-wide-capability
+- Module: platform_core
+- Ownership: `platform_core` owns the public `PlatformCore::Search` provider/value
+  contract, `/search`, shared results UI, and global navigation action. Marketplace and
+  Events own only their public provider adapters and domain queries; core stores and
+  invokes opaque callables without naming sibling constants.
+- Demand signal: Austin residents and organizers describe city-event discovery scattered
+  across Reddit, Instagram, newsletters, Do512, Facebook, Meetup, venue pages, and weekly
+  aggregator threads. Facebook Marketplace users separately report that fresh active local
+  listings disappear even under exact-title search. CitySocial already contains these two
+  public domains but its global search field searches only Marketplace.
+- Sources:
+  - https://www.reddit.com/r/Austin/comments/1s0o2xw/event_hubs_for_austin/ — an Austin parent still seeks consolidated discovery after checking Reddit, Do512, Facebook, and Meetup (fetched and independently re-fetched 2026-08-09)
+  - https://www.reddit.com/r/Austin/comments/1iwhcni/how_do_you_find_out_about_austin_events/ — organizer and resident discovery is fragmented across Instagram, newsletters, the Chronicle, Do512, Reddit, and venue sources (fetched and independently re-fetched 2026-08-09)
+  - https://fr.reddit.com/r/Austin/comments/1uv1y3a/weekly_stuff_to_do_in_austin_thread_week_of_0713/?sort=top — a recurring city thread aggregates many sources and structured time, cost, location, and link details (fetched and independently re-fetched 2026-08-09)
+  - https://support.reddithelp.com/hc/en-us/articles/19695647891988-How-does-Reddit-search-work — official grouped content-type and scoped-search inspiration (fetched and independently re-fetched 2026-08-09)
+  - https://support.reddithelp.com/hc/en-us/articles/19696541895316-Available-search-features — official visible-scope and manual-filter precedent, not a demand source (fetched and independently re-fetched 2026-08-09)
+  - https://www.reddit.com/r/FacebookMarketplace/comments/1sjdt4o/what_has_happened_to_marketplace_and_why_are/ — users report active local inventory disappearing while irrelevant nonlocal inventory remains (fetched and independently re-fetched 2026-08-09)
+  - https://www.reddit.com/r/FacebookMarketplace/comments/1thfapr/new_listings_not_showing_up_in_search/ — users report fresh active listings missing even when searched by exact title (fetched and independently re-fetched 2026-08-09)
+- Repo tie-in: `app/views/layouts/application.html.erb` points the global search slot only
+  to `/marketplace`; `Marketplace::Listing.active_listings.search` already limits searchable
+  inventory and Marketplace exposes canonical `/marketplace/:slug` pages;
+  `Events::Event.search` plus `upcoming_within` can form a future-only provider and Events
+  exposes canonical `/events/e/:id` pages and a searchable `/events/all` archive;
+  `PlatformCore::Modules.enabled?` changes at runtime. Communities and Pickup Sports lack
+  generic keyword scopes, Restaurants and Feed lack public item routes, and resident search
+  risks directory semantics, so all are deliberately deferred.
+- Engagement loop: A seller publishes a public active listing or the Events routine ingests
+  a future event; a resident searches once, sees a source-labeled canonical result, opens it,
+  then enters the existing seller-message or event-share coordination loop. Search creates
+  no synthetic activity or notification event.
+- Acceptance sketch:
+  - `PlatformCore::Search.register(key:, label:, module_key:, types:, callable:)` replaces
+    providers by key for reload-safe idempotence. Marketplace and Events each register an
+    `app/public/<module>/search_provider.rb` callable through `config.to_prepare`.
+  - Query-time core logic clamps query length, result caps, and type allowlists; dynamically
+    skips disabled modules; invokes each provider independently; validates canonical internal
+    paths; and returns immutable plain result/group values. One provider failure renders a
+    generic unavailable group without hiding successful results or exception text.
+  - Milestone 1 searches only active, unexpired Marketplace listings and future Events.
+    Providers rank exact normalized title, then prefix, then text, followed by deterministic
+    domain lifecycle tie-breakers, and cap work in SQL before materialization.
+  - Results are grouped and source-labeled with type chips. The Events group links to
+    `/events/all?q=...` for archive search rather than mixing past events into city-now
+    results. Existing scoped Marketplace and Events searches remain available.
+  - Replace only the global Marketplace-only form with `/search`. Render accessible blank,
+    no-results, disabled-module, and per-provider-unavailable states from shared components.
+  - Registry/provider/request tests cover keyed replacement, dynamic toggles, clamps/types,
+    exact-prefix-text order, lifecycle filters, stable paths, failure isolation, future-only
+    Events plus archive link, navigation, and every empty/error state; boundary checks prove
+    core names no sibling constant.
+  - No model, central copied index, migration, external search service, dependency, resident
+    enumeration, private/admin module result, or new notification event is added.
+- Expansion path: add Communities/posts after their owner defines query semantics; Pickup
+  Sports future games; Restaurants after it has a canonical item route; authenticated resident
+  discovery only after an explicit visibility policy; DB-native full text only if measured
+  `ILIKE` scale requires it.
+- Grader score: 8/10 (grader originally deducted 2 for overstating the Events repo surface;
+  corrected before recording: Events has `upcoming_within`, not generic `upcoming`, and the
+  existing reaction path is event sharing, not attendance coordination)
+- Status: fresh
