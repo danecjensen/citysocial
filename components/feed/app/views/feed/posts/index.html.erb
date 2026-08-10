@@ -1,7 +1,25 @@
 <%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Feed", subtitle: "What your city is up to.") %>
 
-<% if @posts.any? %>
-  <div class="mx-auto max-w-2xl space-y-4">
+<div class="mx-auto max-w-2xl space-y-4">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= form_with model: @new_post, url: posts_path, method: :post do |f| %>
+      <% if @new_post.errors.any? %>
+        <div class="mb-4">
+          <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: @new_post.errors.full_messages.to_sentence) %>
+        </div>
+      <% end %>
+      <%= render PlatformCore::Ui::FormFieldComponent.new(
+            form: f, attribute: :body, type: :text_area, label: "Share with your city",
+            hint: "Post an update, a question, or something you spotted around town.",
+            rows: 3, placeholder: "What's your city up to?"
+          ) %>
+      <div class="flex justify-end">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Post<% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @posts.any? %>
     <% @posts.each do |post| %>
       <% author = post.author %>
       <%= render PlatformCore::Ui::CardComponent.new do %>
@@ -17,10 +35,10 @@
         <p class="text-[15px] leading-relaxed text-ink"><%= post.body %></p>
       <% end %>
     <% end %>
-  </div>
-<% else %>
-  <%= render PlatformCore::Ui::EmptyStateComponent.new(
-        title: "Nothing here yet",
-        body: "Follow people in your city and their posts will show up here."
-      ) %>
-<% end %>
+  <% else %>
+    <%= render PlatformCore::Ui::EmptyStateComponent.new(
+          title: "Nothing here yet",
+          body: "Share the first post above, or follow people in your city and their posts will show up here."
+        ) %>
+  <% end %>
+</div>
