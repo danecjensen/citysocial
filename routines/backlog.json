@@ -151,7 +151,7 @@
       "origin": "auto",
       "attempts": 1,
       "created": "2026-08-10",
-      "pr": null,
+      "pr": "https://github.com/danecjensen/citysocial/pull/41",
       "kind": "app_wide_capability",
       "product_family": "design_system",
       "milestone": "form-select-correctness",
