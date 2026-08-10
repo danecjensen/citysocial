@@ -18,7 +18,7 @@ Examples of the right kind of line:
 - Tests must NOT require Redis: `config/environments/test.rb` sets `config.active_job.queue_adapter = :test` (app uses `:sidekiq` elsewhere, set in config/application.rb). Any job enqueued in a spec (e.g. Active Storage `AnalyzeJob` on photo attach) otherwise raises `RedisClient::CannotConnectError`. Redis IS installed here but the suite must stay self-contained.
 - PG needs trust auth: set 127.0.0.1/::1/local to `trust` in /etc/postgresql/16/main/pg_hba.conf, then reload; config/database.yml uses user postgres, no password.
 - Pushing: `git push` over Bash WORKS here now (probe with `git push --dry-run` first). Prefer it — hand-copying large files (backlog.json ~480 lines) into MCP `push_files` risks JSON-breaking transcription errors. Flow: create the branch via MCP `create_branch` (from master) or `git checkout -B`, commit locally, `git push -u origin <branch>` (retry with backoff on network errors), then MCP `create_pull_request` (draft). Fall back to MCP `push_files` only if a push is denied. Default branch is `master`.
-- `git push` over Bash WORKS now (was blocked in earlier runs — env changed): commit locally, `git push -u origin <branch>`, then `create_pull_request` (draft) via GitHub MCP. GitHub MCP `create_branch`/`push_files` remain a fallback if Bash push ever fails. Default branch is `master`.
+- DEV seeding/screenshots DO need Redis running (unlike the test suite, which must not): Notifications subscribes `async: true` to `feed.post_created`, so `Feed::Post.create!` in `RAILS_ENV=development` enqueues via Sidekiq→Redis. Start it first: `redis-server --daemonize yes`. Screenshot recipe still: seed a user+data via `bin/rails runner`, boot `bin/rails s -b 127.0.0.1`, log in through the FORM (scope the submit to `form[action='/login']` — the nav search button is the first submit on the page), then Playwright-capture.
 - Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent supports type: :select. ButtonComponent takes variant/size/href/method/params/confirm/type/aria_label/pressed (no arbitrary classes); toggle buttons (vote, feedback Support) pass pressed: true/false to emit aria-pressed and pair it with an emphasized variant.
 - Never hand-roll button/table/form/select/flash markup — compose the Ui components. Update /design (app/views/design/show.html.erb) when adding a component option.
 - Env setup a fresh clone needs before `bin/verify` works: `bundle install`, then put
@@ -43,6 +43,16 @@ Examples of the right kind of line:
 ---
 
 ## Runs
+
+## 2026-08-10 23:30 — F-034
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/42
+Changed: components/feed/app/controllers/feed/posts_controller.rb, components/feed/app/views/feed/posts/index.html.erb, spec/requests/feed_spec.rb, routines/backlog.json, routines/progress.md
+North Star: Directly builds the core do->others-see->notified loop — posting is the primary "do" action; Feed::Post already emits feed.post_created (fanned to followers by Notifications), so the loop was broken only because the shipped UI had no composer.
+Notes: Master green on arrival (220 examples). Dane's Inbox empty (1a ingested nothing). 4 ready items, none >=1.0, so the 1b gate opened (not the "nothing to do" breaker — 1b was NOT gated off). Only 1 open claude/* PR (#41), so the queue breaker (>=6) did not trip. An Explore sweep surfaced a grounded shipped dead-end: feed had `create` + `POST /feed/posts` but no composer view and nothing linking to it — residents could not post at all. Proposed 4 grounded 1b items (F-034 composer 2.25; F-035 nav-search a11y label 1.8; F-036 restaurants admin empty-state 1.7; F-037 marketplace gallery alt 1.7) and built the top scorer F-034. Added a design-system composer (FormFieldComponent text_area + ButtonComponent in a Card) and made `create` resilient (Feed::Post.new + save; blank body -> inline error + :unprocessable_content instead of a 500 from create!). Full bin/verify GREEN on real Postgres: 225 examples/0 failures, packwerk + rubocop clean. Captured a real logged-in screenshot of the composer above the timeline. IDs started at F-034 because codex/claude tracks already reserve F-025..F-033 via open PRs (the feed author N+1 is F-033 on another track — left untouched).
+Learnings:
+- Grounded 1b vein: an engine route/action (create/update) that NO view links to is a shipped dead-end — grep `config/routes.rb` actions against the module's views. The feed's own empty-state copy ("...their posts will show up here") was the tell that authoring was never wired up.
+- Promoted the dev-Redis-for-seeding/screenshots note to Codebase Patterns (it blocked dev seeding until redis-server was started).
 
 ## 2026-08-08 17:40 — F-024
 Outcome: shipped
