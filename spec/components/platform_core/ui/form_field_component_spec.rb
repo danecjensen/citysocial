@@ -45,6 +45,25 @@ RSpec.describe PlatformCore::Ui::FormFieldComponent do
     expect(page).to have_css("select option", text: "Choose one")
   end
 
+  it "preselects the record's current value when no explicit selection is given" do
+    user.handle = "gmail"
+    render_inline(described_class.new(form: form, attribute: :handle, type: :select,
+                                      collection: [%w[Gmail gmail], %w[Proton proton]]))
+
+    expect(page).to have_css("select option[selected][value='gmail']", text: "Gmail")
+    expect(page).not_to have_css("select option[selected][value='proton']")
+  end
+
+  it "lets an explicit selection override the record's current value" do
+    user.handle = "gmail"
+    render_inline(described_class.new(form: form, attribute: :handle, type: :select,
+                                      selected: "proton",
+                                      collection: [%w[Gmail gmail], %w[Proton proton]]))
+
+    expect(page).to have_css("select option[selected][value='proton']", text: "Proton")
+    expect(page).not_to have_css("select option[selected][value='gmail']")
+  end
+
   it "shows inline errors and danger border on a select" do
     user.errors.add(:email, "must be chosen")
     render_inline(described_class.new(form: form, attribute: :email, type: :select,

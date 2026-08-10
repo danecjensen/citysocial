@@ -36,7 +36,7 @@ module PlatformCore
         <div class="mb-4">
           <%= @form.label @attribute, @label, class: "mb-1 block text-sm font-bold text-ink" %>
           <% if @type == :select %>
-            <%= @form.select @attribute, @collection, { include_blank: @include_blank, selected: @selected }, class: input_classes %>
+            <%= @form.select @attribute, @collection, select_html_options, class: input_classes %>
           <% else %>
             <%= @form.public_send(@type, @attribute, **@input_options, class: input_classes) %>
           <% end %>
@@ -50,6 +50,17 @@ module PlatformCore
       ERB
 
       private
+
+      # Options passed to `form.select`. We only pin `:selected` when a caller
+      # explicitly provides one; otherwise we omit the key so Rails preselects the
+      # bound record's current value. Passing `selected: nil` would instead override
+      # that default and leave edit forms (e.g. the feedback admin status dropdown,
+      # marketplace listing edit) showing the first option regardless of the record.
+      def select_html_options
+        options = { include_blank: @include_blank }
+        options[:selected] = @selected unless @selected.nil?
+        options
+      end
 
       def errors
         return [] unless @form.object.respond_to?(:errors)

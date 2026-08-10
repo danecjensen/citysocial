@@ -18,8 +18,8 @@ Examples of the right kind of line:
 - Tests must NOT require Redis: `config/environments/test.rb` sets `config.active_job.queue_adapter = :test` (app uses `:sidekiq` elsewhere, set in config/application.rb). Any job enqueued in a spec (e.g. Active Storage `AnalyzeJob` on photo attach) otherwise raises `RedisClient::CannotConnectError`. Redis IS installed here but the suite must stay self-contained.
 - PG needs trust auth: set 127.0.0.1/::1/local to `trust` in /etc/postgresql/16/main/pg_hba.conf, then reload; config/database.yml uses user postgres, no password.
 - Pushing: `git push` over Bash WORKS here now (probe with `git push --dry-run` first). Prefer it — hand-copying large files (backlog.json ~480 lines) into MCP `push_files` risks JSON-breaking transcription errors. Flow: create the branch via MCP `create_branch` (from master) or `git checkout -B`, commit locally, `git push -u origin <branch>` (retry with backoff on network errors), then MCP `create_pull_request` (draft). Fall back to MCP `push_files` only if a push is denied. Default branch is `master`.
-- `git push` over Bash WORKS now (was blocked in earlier runs — env changed): commit locally, `git push -u origin <branch>`, then `create_pull_request` (draft) via GitHub MCP. GitHub MCP `create_branch`/`push_files` remain a fallback if Bash push ever fails. Default branch is `master`.
 - Shared UI: PlatformCore::Ui::* in components/platform_core/app/public/. FormFieldComponent supports type: :select. ButtonComponent takes variant/size/href/method/params/confirm/type/aria_label/pressed (no arbitrary classes); toggle buttons (vote, feedback Support) pass pressed: true/false to emit aria-pressed and pair it with an emphasized variant.
+- FormFieldComponent :select preselects the BOUND RECORD's current value by default (F-032); pass `selected:` only to override (e.g. GET filter forms). The old F-003 belief that `selected: nil` preselects the model value is FALSE — passing the :selected key with nil overrode Rails' object default and blanked every edit-form dropdown (verify select preselection with a rendered `option[selected]` assertion, not by reasoning about Rails internals).
 - Never hand-roll button/table/form/select/flash markup — compose the Ui components. Update /design (app/views/design/show.html.erb) when adding a component option.
 - Env setup a fresh clone needs before `bin/verify` works: `bundle install`, then put
   gem exe wrappers on PATH — `export PATH="/opt/rbenv/versions/3.3.6/bin:$PATH"` (else
@@ -43,6 +43,16 @@ Examples of the right kind of line:
 ---
 
 ## Runs
+
+## 2026-08-10 — F-032
+Outcome: shipped
+PR: https://github.com/danecjensen/citysocial/pull/41
+Changed: components/platform_core/app/public/platform_core/ui/form_field_component.rb, spec/components/platform_core/ui/form_field_component_spec.rb, spec/requests/feedback_spec.rb, routines/backlog.json, routines/progress.md
+North Star: Protects the feedback-triage roadmap loop and the marketplace listing-edit action from silently clobbering a chosen value, keeping the do->others-see loops trustworthy.
+Notes: Master was fully GREEN on arrival (rspec 220/0, packwerk + rubocop clean) — no Phase 0 fix. DanesIdeas Inbox empty (1a ingested nothing). 0 open `claude/*` PRs (the 6 open PRs are all codex/*/agent/* from a separate track), so the queue breaker did not trip; codex has reserved F-025..F-031 on open branches, so new IDs start at F-032. 4 ready items were all below the 1.0 threshold, opening the 1b gate. An Explore sweep of the four low-overlap modules (restaurants/feed/feedback/messaging) plus direct verification surfaced a real, empirically-confirmed correctness bug in the SHARED design-system component: FormFieldComponent :select always passed `selected: nil`, which overrides Rails' object-value default, so every edit-form dropdown (feedback admin roadmap status, marketplace listing edit category/condition, pickup game edit) showed its first option regardless of the record — an admin/seller saving without re-picking silently clobbered the value. Fixed at the root cause: the component now omits the :selected key unless a caller explicitly provides one, so Rails preselects the bound record's value. No view changes needed (the per-row admin form is bound to the submission). Proposed F-032 (score 1.8, top pick), F-033 (feed author N+1, 1.35), F-034 (feed compose dead-end, 0.93) in 1b. Full bin/verify GREEN: rspec 223/0 (+3 new), packwerk clean, rubocop clean. Skipped a screenshot: the change is a preselected <select> value, and the request spec verifies the exact rendered `option[selected][value=...]` markup — stronger evidence than a collapsed-dropdown capture for this change.
+Learnings:
+- Corrected the false F-003 `selected: nil` belief in Codebase Patterns; empirically, passing the :selected key with a nil value overrides Rails' bound-object default and leaves edit-form selects on their first option.
+- When a "one-view" bug traces to a shared PlatformCore::Ui component, fixing the component root-cause (and proving safety with the full cross-module suite) beats N per-view patches — it also repairs latent same-bug callers (here: marketplace + pickup edit forms).
 
 ## 2026-08-08 17:40 — F-024
 Outcome: shipped
