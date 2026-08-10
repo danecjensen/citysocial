@@ -51,7 +51,14 @@ group :development, :test do
   gem "rubocop-rails", require: false
 end
 
+group :development do
+  # Request-level SQL, timing, memory, and flamegraph diagnostics for failures
+  # discovered by the local bug miner.
+  gem "rack-mini-profiler"
+end
+
 group :test do
   gem "capybara"
+  gem "prop_check", "~> 1.0"
   gem "selenium-webdriver"
 end
