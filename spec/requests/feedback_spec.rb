@@ -129,6 +129,19 @@ RSpec.describe "Feedback", type: :request do
     expect(submission.reload.status).to eq("in_progress")
   end
 
+  it "preselects each submission's current status in the admin update dropdown" do
+    create(:feedback_submission, status: "in_progress")
+    login_as(create(:user, :admin))
+
+    get "/feedback/admin"
+
+    expect(response).to have_http_status(:ok)
+    # The per-row update form is bound to the submission, so its status select must
+    # reflect the real status rather than defaulting to the first option ("Open").
+    expect(Capybara.string(response.body))
+      .to have_css("form select[name='submission[status]'] option[selected][value='in_progress']")
+  end
+
   it "blocks the module when disabled, then restores it" do
     create(:feedback_submission)
     PlatformCore::Modules.disable!("feedback")
