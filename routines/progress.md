@@ -359,3 +359,47 @@ Outcome: shipped
 PR: https://github.com/danecjensen/citysocial/pull/30
 Changed: components/pickup_sports/, components/platform_core/app/public/platform_core/modules.rb, config/routes.rb, Gemfile, Gemfile.lock, db/schema.rb, spec/factories/pickup_sports.rb, spec/models/pickup_sports/game_spec.rb, spec/public/pickup_sports/upcoming_games_spec.rb, spec/requests/pickup_sports_spec.rb, routines/backlog.json, routines/research.md, docs/roadmap.md
 Notes: Product lane. Consumed product-fresh R-008 and generated the PickupSports engine for Austin residents who need a reliable spot before traveling to a casual game. Milestone 1 ships host-owned future games, sport/date/neighborhood discovery, public rosters, clear capacity and waitlist states, row-locked duplicate-safe joins, FIFO promotion on leave, cancellation clarity, primitive notification-ready events, and an UpcomingGames public API. Reconciled the malformed backlog from canonical reviewed state, reserved open F-021/PR #26, and recorded follow-up attendance, recurring-game, and Notifications milestones in the roadmap. Verification incomplete only because PostgreSQL TCP was denied before examples (full: 38 load errors/0 examples; focused: 3 load errors/0 examples). Packwerk, RuboCop, Zeitwerk, Ruby/ERB syntax, routes, migration-path wiring, Tailwind, backlog integrity, boundary scan, diff checks, and local/remote tree equality passed. A real screenshot could not be captured without the database; the Playwright CLI wrapper also could not resolve in the network-restricted host.
+
+## 2026-08-11 10:20 — research
+Outcome: produced 3 briefs
+Briefs: R-012, R-013 (cut), R-014, R-015
+Cut: 1 finding (moderator pin/lock post controls in communities) — verified and
+demand-grounded (Discourse/Mighty Networks/Microsoft docs all confirm pin+lock are
+standard moderator primitives), but the fresh-context grader auto-failed it at 1/10
+for touching the auth/authorization out-of-scope wall: gating a new action by role,
+even reusing the module's existing dormant `moderator` enum with no new auth system,
+still counts. The grader also caught a factual error in the draft's acceptance sketch
+(`role_for` is defined on `Communities::Community`, not `Membership`). Per the
+routine, a 1-3 score is cut immediately, no rework attempted.
+Notes: Circuit breakers were both clear on arrival (research.md showed only 2 fresh
+briefs — R-005/R-006 — well under the 4-brief cap; the prior 2 research runs both
+produced multiple briefs, not zero). Checked open PRs first (list_pull_requests) and
+found an unmerged research PR #37 already reserving R-010/R-011 for neighbor-favor
+and unified-search questions, so this run's new briefs start at R-012 to avoid a
+future ID collision, and all 4 questions were drafted to avoid overlapping #37's
+topics. Rather than re-running the well-covered "notification loop" standing
+question, did a targeted repo audit first (grep for stored columns/associations with
+no write path) across feed, marketplace, restaurants, communities, and platform_core
+before drafting questions, which surfaced the run's biggest find directly from the
+repo: PlatformCore::Follow has a fully migrated table and public Graph API, the feed
+empty-state and profile page both already promise/display follow-driven behavior,
+but there is NO follow/unfollow action anywhere in the app — meaning the existing
+Notifications follower fan-out (feed.post_created/communities.post_created) can
+currently never have a single recipient. All 4 scouts and 4 verifiers ran once each
+with no reruns needed; R-015's scout could not evidence the literal "never visited"
+framing it was asked to check, so the verifier correctly narrowed it to the
+evidenced "unfair/incomparable pairing" claim during verification rather than
+carrying an unsupported claim to the grader.
+Learnings:
+- Promoted to Standing Questions: any brief whose acceptance sketch gates a NEW
+  action by role/permission auto-fails the grader as an auth-wall hit, even when it
+  reuses an already-existing in-module enum and adds no new auth system. Do not
+  research or draft moderator/permission-gated action ideas under current scope
+  rules — the "columns/roles that exist but have no write path" vein is still
+  strong, but only when the write path itself needs no new authorization tier
+  beyond ownership (e.g. renew-your-own-listing, follow/unfollow) rather than a
+  role check (e.g. moderator-only pin/lock).
+- A skip/decline action that writes no state and produces nothing another resident
+  sees is real polish but scores structurally lower (~8) than one that closes a
+  full do→see→react loop (~9-10) — the grader distinguishes "protects an existing
+  shared artifact from noise" from "creates a new do→see→react loop."

@@ -14,19 +14,15 @@ slop-producing questions when adding.
 
 - What do Austin residents say is missing or broken in the neighborhood apps they
   already use (Nextdoor, local subreddits, Facebook groups)?
-- What makes people come back daily to community/classifieds/restaurant-ranking apps —
-  which notification or "others see it" loops actually retain?
-- Prefer direct product docs and specific local forums; generic searches produce slop.
-- Notification-loop question is now well covered (R-005/006/007: comment replies, DM
-  badge, feedback status change) — Notifications' DeliverActivity only fans out to
-  followers, so each needed a new direct-single-recipient delivery path.
-- Competitor feedback boards (Canny, UserVoice) and dev-forum meta boards (Discourse
-  meta, Apple DTS) cite cleanly; brand-specific "nextdoor"/"craigslist" searches
-  produce slop or fetch failures — avoid those, prefer the former.
-- Which columns/data does the app already store per module but never surface in the UI
-  (sort by, filter by, export/act on)? Cheap, no-migration wins tend to live there.
-- Resident discovery needs explicit search consent; public profile URLs alone do not
-  justify a citywide directory, so revisit only when a visibility migration is allowed.
+- Strongest vein: a model/column exists with no write path anywhere in the app
+  (R-012 dead Follow model; R-014 renew! reachable from only one of two owner views).
+- Never gate a NEW action by role/permission, even an existing in-module enum
+  (dormant `moderator` role) — auto-fails the grader as an auth wall hit (R-013, 1/10).
+- A no-state-written skip/decline action scores lower (~8) than one closing a full
+  do->see->react loop (~9-10).
+- Prefer official product docs/competitor help pages over generic brand-name
+  searches ("nextdoor", "craigslist"), which often 403 or produce slop.
+- Resident discovery needs explicit search consent — revisit only after a migration.
 
 ## Briefs
 
@@ -413,3 +409,133 @@ Phase 6. Status: fresh | consumed (F-xxx) | rejected (<reason>).
     spec asserting the author sees it in their inbox
 - Grader score: 10/10
 - Status: consumed (F-024)
+
+### R-012 — Let residents follow and unfollow each other
+- Date: 2026-08-11
+- Module: platform_core
+- Demand signal: Facebook's own help docs define "following" as the mechanism that
+  populates a user's Feed with the followed party's updates, and confirm the followed
+  party can see they're being followed. Nextdoor (CitySocial's closest direct
+  competitor in positioning) redesigned its feed and profile system around a
+  "Connect" (follow-equivalent) primitive specifically so the feed could prioritize
+  people you follow. A Bluesky GitHub issue shows users get vocal fast when follow
+  and personalized-feed are decoupled (there, a bug; in CitySocial, permanent, since
+  no one can ever follow anyone today).
+- Sources:
+  - https://www.facebook.com/help/279614732052951 — following a profile/Page populates your Feed with their updates; the followed party can see they're being followed (fetched and re-fetched 2026-08-11)
+  - https://techcrunch.com/2022/02/15/nextdoor-revamps-with-new-profiles-feed-and-more-community-building-features/ — Nextdoor's "Connect" feature ("essentially friending for Nextdoor") surfaces connected members' posts in the main feed (fetched and re-fetched 2026-08-11)
+  - https://github.com/bluesky-social/social-app/issues/1768 — users get vocal and treat a following-feed/follow-graph disconnect as a core bug (fetched and re-fetched 2026-08-11)
+- Repo tie-in: components/platform_core/app/models/platform_core/follow.rb defines
+  the Follow model and the platform_core_follows table is already migrated
+  (db/schema.rb:259-265) — no schema change needed; components/platform_core/app/controllers/platform_core/profiles_controller.rb
+  has only show/edit/update, no follow/unfollow action anywhere in the repo;
+  components/platform_core/app/views/platform_core/profiles/show.html.erb already
+  renders @user.followers.count/@user.following.count live but has no follow button,
+  and its header-actions block already branches on current_user == @user vs. a
+  sibling-module case — a natural slot for a third branch; components/platform_core/app/public/platform_core/graph.rb
+  already exposes follower_ids/following_ids as public API; Feed::Timeline reads
+  Graph.following_ids and components/notifications/app/services/notifications/deliver_activity.rb's
+  existing follower fan-out for feed.post_created/communities.post_created can
+  currently never have any recipients, since no one can ever become a follower;
+  components/feed/app/views/feed/posts/index.html.erb's empty state already promises
+  "Follow people in your city and their posts will show up here"; ButtonComponent
+  already supports the href:+method: pattern needed for follow/unfollow buttons
+  (same pattern as marketplace renew).
+- Acceptance sketch:
+  - PlatformCore adds a Follows create/destroy action, require_login-gated, with
+    self-follow rejected
+  - Profile page's header-actions block shows a Follow button for a signed-in
+    visitor not already following, and an Unfollow button when already following,
+    alongside the existing Edit/Message branches
+  - Follower/following counts on the profile page reflect the action immediately
+  - Once at least one Follow can exist, the existing Notifications follower fan-out
+    for feed.post_created/communities.post_created has real recipients for the
+    first time — no changes needed to Notifications itself
+  - Model/request specs cover create, destroy, self-follow rejection, duplicate-
+    follow idempotence, and button-state/count rendering for follower/non-
+    follower/self views
+- Grader score: 10/10
+- Status: fresh
+
+### R-014 — Surface renewable status on the seller's own listings
+- Date: 2026-08-11
+- Module: marketplace
+- Demand signal: Revealed preference from two independent third-party tools built
+  specifically because Craigslist's own account page doesn't show which of a
+  seller's listings are expired/renewable without opening each one individually.
+- Sources:
+  - https://addons.mozilla.org/en-US/firefox/addon/craigslist-helper-relister/ — browser extension built because "renewing posts on Craigslist can be tedious... especially with many listings"; lets users see expired listings and batch-renew from one place (fetched and re-fetched 2026-08-11)
+  - https://github.com/jsetton/craigslist-renew — open-source tool to "auto-renew all your active Craigslist posts" and "notify you when a post expires," built because the native UI doesn't surface this (fetched and re-fetched 2026-08-11)
+- Repo tie-in: components/marketplace/app/models/marketplace/listing.rb already has
+  renewable? and renew! plus RENEW_COOLDOWN — no migration needed;
+  components/marketplace/app/controllers/marketplace/listings_controller.rb already
+  has an owner-scoped #mine action and a #renew member action wired to a route
+  (components/marketplace/config/routes.rb: `post :renew` under member, `get :mine`
+  under collection); components/marketplace/app/views/marketplace/listings/show.html.erb
+  is currently the ONLY place the Renew button renders; components/marketplace/app/views/marketplace/listings/mine.html.erb
+  and the shared _card.html.erb partial it renders show only price/title/category/
+  location/sold-badge, no renewable/expiring signal or Renew action; the same
+  _card.html.erb partial is also rendered by the public browse index.html.erb, so
+  any renewable badge/Renew button must be gated to the owner ("mine") context only
+  — and since the card's current markup is a single wrapping `<a>` tag, a nested
+  Renew button/form cannot simply be dropped inside it and needs a small structural
+  adjustment (e.g. an owner-only footer appended outside or alongside the link).
+- Acceptance sketch:
+  - The "My listings" page shows a renewable-now / not-yet-eligible / sold
+    indicator per listing, computed from the existing renewable? predicate, with no
+    new column
+  - A renewable listing on "My listings" offers an inline Renew action (reusing the
+    existing #renew route/action) without navigating to the show page
+  - The public browse index, which shares the same _card partial, renders
+    unchanged — no renewable/expiring UI leaks to non-owners
+  - Renewing from "My listings" behaves identically to renewing from the show page
+    (resets created_at, extends expires_at, respects the 48h cooldown and sold-block)
+  - Request specs cover: indicator present/absent per renewable state on the
+    owner's own page, indicator/button absent on the public index, and a request
+    spec asserting renew-from-mine updates timestamps identically to renew-from-show
+- Grader score: 9/10 (−1: material overlap with merged F-012's own acceptance
+  criterion "Owner actions show Renew only when eligible" — this brief finishes
+  that promise on a second surface rather than being fully net-new work)
+- Status: fresh
+
+### R-015 — Add a skip action to the restaurant matchup screen
+- Date: 2026-08-11
+- Module: restaurants
+- Demand signal: Beli, the head-to-head restaurant-ranking app CitySocial's
+  Restaurants module is directly modeled on, already ships a skip button in its own
+  comparison flow specifically because forcing a pick between incomparable
+  restaurants (different cuisine/price/occasion) frustrates users. Multiple
+  independent Beli users explicitly complain about being forced to pick a "winner"
+  between restaurants that aren't fairly comparable, and a design critique calls
+  out that the forced-comparison mechanic flattens real preference and erodes trust
+  in the resulting rank.
+- Sources:
+  - https://spoonuniversity.com/school/emory/rate-save-and-recommend-restaurants-on-app-beli/ — Beli lets users "decide that the comparison is too tough, skip it, or go back to the previous comparison" (fetched and re-fetched 2026-08-11)
+  - https://www.complaintsboard.com/beli-b148404/reviews — direct user quotes calling forced comparisons "apples and oranges" (e.g. Korean BBQ vs. brunch), with no skip option offered (fetched and re-fetched 2026-08-11)
+  - https://emmacarolyncho.substack.com/p/too-full-for-beli — critiques Beli's Elo-style flow for not solving "the problem of comparing different cuisines" (fetched and re-fetched 2026-08-11)
+  - https://www.readsnapshots.com/p/beli-food-for-thought — critiques the forced-comparison mechanic for "flattening the experience" and ignoring context (fetched and re-fetched 2026-08-11)
+- Repo tie-in: components/restaurants/app/controllers/restaurants/matchups_controller.rb
+  currently has only new/create — the only available action always calls
+  Restaurants::RecordMatchup.call, which mutates both restaurants' Elo and
+  matches_count; components/restaurants/config/routes.rb currently declares
+  `resources :matchups, only: %i[create]`, no skip route; components/restaurants/app/views/restaurants/matchups/new.html.erb
+  offers only two "Pick X" buttons, no skip control; components/restaurants/app/models/restaurants/restaurant.rb#random_pair
+  is reusable as-is to re-roll a fresh pair on skip, with no migration needed since
+  skip never writes anything. Note: `root to: "matchups#new"` already re-rolls a
+  fresh random_pair on every page load, so a plain link back to the matchups root
+  may be sufficient — a dedicated #skip action/route is a defensible but not
+  strictly required implementation choice.
+- Acceptance sketch:
+  - A skip path re-rolls a fresh random_pair without ever calling
+    Restaurants::RecordMatchup — no Elo, matches_count, or Vote record changes
+  - The existing "Pick X" flow and its Elo/vote-recording behavior are completely
+    unchanged
+  - The matchup screen renders a clearly-labeled Skip action alongside the two
+    existing Pick buttons
+  - Request/model specs cover: skipping leaves both restaurants' elo/matches_count
+    unchanged, skipping presents a new pair, and the existing create/vote path is
+    unaffected
+- Grader score: 8/10 (−2: skip writes no state and produces nothing another
+  resident sees or reacts to — it protects the integrity of the shared leaderboard
+  loop rather than closing a new do→see→react loop itself)
+- Status: fresh
