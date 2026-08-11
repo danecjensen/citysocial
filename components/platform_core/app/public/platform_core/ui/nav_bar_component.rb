@@ -13,6 +13,17 @@ module PlatformCore
         base = "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
         link_to label, href, class: "#{base} #{classes}"
       }
+      # Overflow nav destinations. Rendered as stacked rows inside the hamburger
+      # "More" dropdown instead of as top-level pills.
+      renders_many :menu_links, lambda { |label, href, active: false|
+        classes = if active
+                    "text-brand-700 bg-brand-50"
+                  else
+                    "text-ink-muted hover:text-ink hover:bg-sunken"
+                  end
+        base = "block rounded-xl px-3 py-2 text-sm font-semibold transition-colors"
+        link_to label, href, class: "#{base} #{classes}"
+      }
       renders_one :search
       renders_one :session_area
 
@@ -41,6 +52,21 @@ module PlatformCore
             <% end %>
 
             <div class="ml-auto flex items-center gap-2">
+              <% if menu_links.any? %>
+                <details class="relative"
+                         data-controller="menu"
+                         data-action="keydown.esc@window->menu#close click@window->menu#closeOnOutside">
+                  <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-sunken hover:text-ink [&::-webkit-details-marker]:hidden" aria-label="More menu">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <span class="hidden sm:inline">More</span>
+                  </summary>
+                  <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-line bg-surface p-2 shadow-card">
+                    <% menu_links.each do |menu_link| %>
+                      <%= menu_link %>
+                    <% end %>
+                  </div>
+                </details>
+              <% end %>
               <button type="button"
                       data-controller="theme"
                       data-action="theme#toggle"
