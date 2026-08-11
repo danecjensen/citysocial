@@ -17,6 +17,20 @@ bin/rails server                # feed lives at /feed
 
 (There is no `node`/JS build here — add Hotwire or a JSON API per your mobile plan.)
 
+## Mine for robustness and performance bugs
+
+Run the deterministic local fuzz suite against the test database:
+
+```bash
+bin/bug-mine
+DEEP=1 bin/bug-mine             # longer campaign
+FUZZ_SEED=71945213 bin/bug-mine # reproduce a failure
+```
+
+It combines property checks, malformed public requests with latency/SQL budgets,
+and a stateful user-journey fuzzer. See `docs/bug-miner.md` for controls and
+failure triage.
+
 ## Architecture in one breath
 
 - `components/platform_core` — the shared kernel: `User`, the `Follow` social

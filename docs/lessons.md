@@ -41,3 +41,5 @@ into CLAUDE.md.
 - Before merging a stacked PR chain, rebuild each branch from only its own commits,
   scan the assembled tree for conflict markers, parse shared state files, and run
   `bin/verify`; a GitHub-mergeable stack can still contain committed conflict debris.
+- Tests that replace global registries or subscribers must snapshot and restore
+  them exactly; resetting shared process state makes the suite order-dependent.

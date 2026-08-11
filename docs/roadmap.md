@@ -50,6 +50,9 @@
   neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
   waitlist promotion, cancellation clarity, notification-ready events, and a public
   upcoming-games read API.
+- local bug miner: PropCheck model properties, malformed public-request fuzzing
+  with p95/SQL budgets, deterministic pickup-sports state-machine journeys,
+  reproducible seeds, deep campaigns, and rack-mini-profiler diagnostics.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# exe.dev installs the repository's pinned Ruby here. Other environments simply
+# keep their existing Ruby manager's PATH.
+if [[ -d "$HOME/.local/ruby-3.3.3/bin" ]]; then
+  export PATH="$HOME/.local/ruby-3.3.3/bin:$PATH"
+fi
+
+export RAILS_ENV=test
+export FUZZ_SEED="${FUZZ_SEED:-${SEED:-1337}}"
+
+if [[ "${DEEP:-0}" == "1" ]]; then
+  export PROP_CHECK_RUNS="${PROP_CHECK_RUNS:-1000}"
+  export FUZZ_REQUESTS="${FUZZ_REQUESTS:-500}"
+  export FUZZ_STEPS="${FUZZ_STEPS:-500}"
+else
+  export PROP_CHECK_RUNS="${PROP_CHECK_RUNS:-100}"
+  export FUZZ_REQUESTS="${FUZZ_REQUESTS:-60}"
+  export FUZZ_STEPS="${FUZZ_STEPS:-60}"
+fi
+
+export FUZZ_MAX_REQUEST_MS="${FUZZ_MAX_REQUEST_MS:-500}"
+export FUZZ_MAX_SINGLE_REQUEST_MS="${FUZZ_MAX_SINGLE_REQUEST_MS:-2000}"
+export FUZZ_MAX_SQL_QUERIES="${FUZZ_MAX_SQL_QUERIES:-50}"
+
+echo "BUG MINE seed=$FUZZ_SEED properties=$PROP_CHECK_RUNS requests=$FUZZ_REQUESTS journey_steps=$FUZZ_STEPS"
+echo "Budgets: request_p95<=${FUZZ_MAX_REQUEST_MS}ms single_request<=${FUZZ_MAX_SINGLE_REQUEST_MS}ms sql<=${FUZZ_MAX_SQL_QUERIES} queries"
+
+bin/rails db:test:prepare >/dev/null
+bundle exec rspec spec/fuzz --format documentation --seed "$FUZZ_SEED"
