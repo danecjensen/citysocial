@@ -114,19 +114,32 @@ RSpec.describe "Feedback", type: :request do
     expect(Capybara.string(response.body)).to have_css("button[aria-pressed='false']")
   end
 
-  it "lets admins triage feedback and blocks non-admins" do
-    submission = create(:feedback_submission)
+  it "lets admins triage feedback from the admin page and blocks non-admins" do
+    submission = create(:feedback_submission, title: "A useful product idea for triage")
 
     login_as(create(:user))
     get "/feedback/admin"
     expect(response).to redirect_to("/")
 
     login_as(create(:user, :admin))
-    get "/feedback/admin"
-    expect(response).to have_http_status(:ok)
+    get "/admin"
+    expect(response.body).to include("A useful product idea for triage")
 
-    patch "/feedback/admin/submissions/#{submission.id}", params: { submission: { status: "in_progress" } }
+    patch "/feedback/admin/submissions/#{submission.id}",
+          params: { submission: { status: "in_progress" }, feedback_status: "open" }
     expect(submission.reload.status).to eq("in_progress")
+    expect(response).to redirect_to("/admin?feedback_status=open#section-feedback")
+  end
+
+  it "filters the admin feedback section by status" do
+    create(:feedback_submission, title: "An open idea worth building")
+    create(:feedback_submission, title: "A finished idea worth shipping", status: "completed")
+    login_as(create(:user, :admin))
+
+    get "/admin", params: { feedback_status: "completed" }
+
+    expect(response.body).to include("A finished idea worth shipping")
+    expect(response.body).not_to include("An open idea worth building")
   end
 
   it "blocks the module when disabled, then restores it" do

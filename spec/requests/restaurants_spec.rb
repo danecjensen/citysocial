@@ -171,6 +171,10 @@ RSpec.describe "Restaurants", type: :request do
   end
 
   describe "admin restaurant management" do
+    def photo_upload(filename: "hero.png")
+      Rack::Test::UploadedFile.new(StringIO.new(TestImages.png_1x1), "image/png", original_filename: filename)
+    end
+
     it "blocks non-admins" do
       login_as(create(:user))
       get "/restaurants/admin/restaurants"
@@ -184,6 +188,90 @@ RSpec.describe "Restaurants", type: :request do
         post "/restaurants/admin/restaurants",
              params: { restaurant: { name: "Suerte", cuisine: "Mexican", area: "East Austin" } }
       end.to change(Restaurants::Restaurant, :count).by(1)
+
+      expect(response).to redirect_to("/admin#section-restaurants")
+    end
+
+    it "adds a restaurant with photos and ignores the blank file placeholder" do
+      login_as(create(:user, :admin))
+
+      post "/restaurants/admin/restaurants",
+           params: { restaurant: { name: "Nixta Taqueria", photos: ["", photo_upload] } }
+
+      restaurant = Restaurants::Restaurant.find_by(name: "Nixta Taqueria")
+      expect(restaurant.photos.attachments.size).to eq(1)
+    end
+
+    it "reports validation errors instead of silently dropping the restaurant" do
+      login_as(create(:user, :admin))
+
+      expect do
+        post "/restaurants/admin/restaurants", params: { restaurant: { name: "" } }
+      end.not_to change(Restaurants::Restaurant, :count)
+
+      expect(flash[:alert]).to include("Name can't be blank")
+    end
+
+    it "edits details and appends photos rather than replacing them" do
+      restaurant = create(:restaurant, :with_photo, name: "Uchi", cuisine: "Sushi")
+      login_as(create(:user, :admin))
+
+      patch "/restaurants/admin/restaurants/#{restaurant.id}",
+            params: { restaurant: { name: "Uchi", cuisine: "Japanese", area: "South Lamar", photos: [photo_upload] } }
+
+      restaurant.reload
+      expect(restaurant.cuisine).to eq("Japanese")
+      expect(restaurant.photos.attachments.size).to eq(2)
+    end
+
+    it "pins a hero photo and keeps the search term on the way back" do
+      restaurant = create(:restaurant, :with_photo, name: "Loro")
+      restaurant.photos.attach(io: StringIO.new(TestImages.png_1x1), filename: "second.png", content_type: "image/png")
+      second = restaurant.photos.attachments.max_by(&:id)
+      login_as(create(:user, :admin))
+
+      patch "/restaurants/admin/restaurants/#{restaurant.id}",
+            params: { restaurant: { hero_photo_id: second.id }, restaurant_q: "loro" }
+
+      expect(restaurant.reload.hero_photo.id).to eq(second.id)
+      expect(response).to redirect_to("/admin?restaurant_q=loro#section-restaurants")
+    end
+
+    it "refuses to pin a photo attached to another restaurant" do
+      restaurant = create(:restaurant, :with_photo)
+      other = create(:restaurant, :with_photo)
+      login_as(create(:user, :admin))
+
+      patch "/restaurants/admin/restaurants/#{restaurant.id}",
+            params: { restaurant: { hero_photo_id: other.photos.attachments.first.id } }
+
+      expect(restaurant.reload.hero_photo_id).to be_nil
+    end
+
+    it "removes a photo and falls back to the remaining one as hero" do
+      restaurant = create(:restaurant, :with_photo, name: "Suerte")
+      restaurant.photos.attach(io: StringIO.new(TestImages.png_1x1), filename: "second.png", content_type: "image/png")
+      hero = restaurant.photos.attachments.max_by(&:id)
+      restaurant.update!(hero_photo_id: hero.id)
+      login_as(create(:user, :admin))
+
+      delete "/restaurants/admin/restaurants/#{restaurant.id}/photos/#{hero.id}"
+
+      restaurant.reload
+      expect(restaurant.photos.attachments.size).to eq(1)
+      expect(restaurant.hero_photo_id).to be_nil
+      expect(restaurant.hero_photo).to be_present
+    end
+
+    it "searches the catalog from the admin page" do
+      create(:restaurant, name: "Franklin Barbecue", cuisine: "Barbecue")
+      create(:restaurant, name: "Uchi", cuisine: "Sushi")
+      login_as(create(:user, :admin))
+
+      get "/admin", params: { restaurant_q: "barbecue" }
+
+      expect(response.body).to include("Franklin Barbecue")
+      expect(response.body).not_to include(">Uchi<")
     end
   end
 end

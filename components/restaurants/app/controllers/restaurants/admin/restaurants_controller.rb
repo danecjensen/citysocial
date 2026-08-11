@@ -70,7 +70,7 @@ module Restaurants
       # `file_field multiple: true` always posts a blank placeholder value, which
       # ActiveStorage refuses to attach -- drop it.
       def submitted_photos
-        Array(restaurant_params[:photos]).reject(&:blank?)
+        Array(restaurant_params[:photos]).compact_blank
       end
 
       # Only a photo actually attached to THIS restaurant may become its hero.

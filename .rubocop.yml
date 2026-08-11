@@ -31,10 +31,12 @@ Layout/LineLength:
   Max: 120
 
 # ViewComponent's documented idiom is initializers without super; the parent
-# initializer takes no state.
+# initializer takes no state. Components live in the kernel's ui/ directory, in
+# app/components, and in a module's app/public (admin sections).
 Lint/MissingSuper:
   Exclude:
-    - "components/platform_core/app/public/platform_core/ui/**/*"
+    - "components/*/app/public/**/*_component.rb"
+    - "components/*/app/components/**/*_component.rb"
 
 # --- Cops disabled to match this app's deliberate architecture ---
 
