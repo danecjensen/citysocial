@@ -369,3 +369,12 @@ Notes: Master GREEN on arrival (220 examples). 1a: DanesIdeas Inbox empty. No fr
 Learnings:
 - CRITICAL git gotcha: this fresh clone booted on a DETACHED HEAD that was AHEAD of the local `master` ref (b575592 vs stale 7423bdb — several merged PRs, incl. F-010, missing from local master). `git checkout -B <branch> master` silently based the branch on the stale ref and reverted files. Always `git fetch origin master` and branch off `origin/master`, never the local `master` ref. Verified via reflog + `git merge-base --is-ancestor`.
 - ActiveSupport::Notifications query-count helper must take an explicit `&block` and pass it to `.subscribed(callback, "sql.active_record", &block)` — the `{ yield }` form trips RuboCop Style/ExplicitBlockArgument.
+
+## 2026-08-11 23:18 — skipped (circuit breaker: queue backed up)
+Outcome: skipped
+PR: none
+Changed: routines/progress.md
+North Star: n/a — no item selected; run halted at the Phase 0 circuit breaker before Phases 1–2.
+Notes: Tripped the "6 or more open `claude/*` PRs" circuit breaker. Open `claude/*` PRs at run start: #41 (F-032 select preselection), #42 (F-034 feed composer), #43 (F-035 marketplace listing notifications), #44 (research 2026-08-11), #46 (F-037 message read receipts), #47 (F-038 inbox context label) = exactly 6. Per the routine, stopped and posted a summary instead of working; opened NO new PR so the backlog does not get worse. Confirmed the master-red exception does NOT apply: `git fetch origin master` (HEAD == origin/master == aa899cd, no detached-head drift this run) and `bin/verify` PASSED — 251 examples, 0 failures; packwerk clean; rubocop clean. 1a: DanesIdeas Inbox empty — nothing to ingest. `backlog.json` left unchanged (no Phase 2 rescore, since the breaker halts before scoring). Broader queue context: also open are codex/agent-track PRs #33, #34, #36, #37, #38, #39, #40 — the overall review queue is heavily backed up. Action needed from a human: review/merge/close some of the open `claude/*` PRs to unblock the next feature-loop run.
+Learnings:
+- (none new — this was a clean circuit-breaker stop, not a code run.)
