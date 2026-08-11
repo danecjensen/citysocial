@@ -49,6 +49,30 @@
       <% end %>
     <% end %>
   <% end %>
+
+  <section class="mt-10">
+    <h2 class="mb-4 font-display text-xl font-black text-ink">Recent picks</h2>
+    <% if @recent_picks.any? %>
+      <div class="space-y-3">
+        <% @recent_picks.each do |pick| %>
+          <%= render PlatformCore::Ui::CardComponent.new do %>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span class="font-bold text-ink"><%= pick[:winner].name %></span>
+              <span class="font-mono text-xs uppercase tracking-wide text-ink-faint">beat</span>
+              <span class="text-ink-muted"><%= pick[:loser].name %></span>
+              <time datetime="<%= pick[:decided_at].iso8601 %>" title="<%= pick[:decided_at].strftime('%b %-d, %Y at %-l:%M %p') %>" class="ml-auto font-mono text-xs text-ink-faint">
+                <%= time_ago_in_words(pick[:decided_at]) %> ago
+              </time>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render PlatformCore::Ui::EmptyStateComponent.new(
+            title: "No picks yet",
+            body: "Head to the matchups and settle a score — recent decisions show up here.") %>
+    <% end %>
+  </section>
 <% else %>
   <%= render PlatformCore::Ui::EmptyStateComponent.new(
         title: "No restaurants on the board yet",

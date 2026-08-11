@@ -4,6 +4,10 @@ module Restaurants
   class Vote < ApplicationRecord
     validates :voter_id, :winner_id, :loser_id, presence: true
 
+    # Most recent decisions first, for the leaderboard's "Recent picks" feed.
+    # Backed by index_restaurants_votes_on_created_at.
+    scope :recent, -> { order(created_at: :desc, id: :desc) }
+
     def winner
       Restaurants::Restaurant.find_by(id: winner_id)
     end
