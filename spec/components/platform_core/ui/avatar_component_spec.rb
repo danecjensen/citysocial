@@ -17,6 +17,16 @@ RSpec.describe PlatformCore::Ui::AvatarComponent do
     expect(page).not_to have_css("[role=img]")
   end
 
+  it "routes attached avatars through the host application's Active Storage mount" do
+    user = create(:user, handle: "dane")
+    user.avatar.attach(io: StringIO.new("image"), filename: "avatar.png", content_type: "image/png")
+
+    render_inline(described_class.new(user: user))
+
+    expect(page).to have_css('img[src^="/rails/active_storage/blobs/redirect/"]')
+    expect(page).not_to have_css('img[src^="/platform_core/rails/active_storage/"]')
+  end
+
   it "falls back safely when a rejected upload has an unpersisted blob" do
     user = build(:user, handle: "dane")
     user.avatar.attach(io: StringIO.new("not an image"), filename: "avatar.gif", content_type: "image/gif")
