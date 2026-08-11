@@ -102,6 +102,74 @@ RSpec.describe "Restaurants", type: :request do
     end
   end
 
+  describe "recent picks feed on the leaderboard" do
+    def select_restaurant_queries(&block)
+      count = 0
+      counter = lambda do |*args|
+        payload = args.last
+        count += 1 if payload[:sql] =~ /SELECT.+restaurants_restaurants/i
+      end
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record", &block)
+      count
+    end
+
+    it "lists the latest decisions as 'winner beat loser', newest first" do
+      franklin = create(:restaurant, name: "Franklin Barbecue")
+      uchi = create(:restaurant, name: "Uchi")
+      Restaurants::Vote.create!(voter_id: 1, winner_id: uchi.id, loser_id: franklin.id, created_at: 1.hour.ago)
+      Restaurants::Vote.create!(voter_id: 1, winner_id: franklin.id, loser_id: uchi.id)
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Recent picks")
+      expect(response.body).to include("beat")
+      # Newest pick (Franklin beat Uchi) is rendered above the older one.
+      body = response.body
+      feed = body[body.index("Recent picks")..]
+      expect(feed.index("Franklin Barbecue")).to be < feed.index("Uchi")
+    end
+
+    it "skips a pick whose winner or loser no longer exists without erroring" do
+      franklin = create(:restaurant, name: "Franklin Barbecue")
+      uchi = create(:restaurant, name: "Uchi")
+      Restaurants::Vote.create!(voter_id: 1, winner_id: franklin.id, loser_id: uchi.id)
+      uchi.destroy
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      expect(response).to have_http_status(:ok)
+      # The orphaned decision is dropped from the feed, leaving no picks to show.
+      expect(response.body).to include("No picks yet")
+    end
+
+    it "shows an empty feed state when restaurants exist but nobody has voted" do
+      create(:restaurant, name: "Franklin Barbecue")
+      login_as(create(:user))
+
+      get "/restaurants/leaderboard"
+
+      expect(response.body).to include("Recent picks")
+      expect(response.body).to include("No picks yet")
+    end
+
+    it "resolves recent-pick restaurants in a flat number of queries as votes grow" do
+      franklin = create(:restaurant, name: "Franklin Barbecue")
+      uchi = create(:restaurant, name: "Uchi")
+      login_as(create(:user))
+
+      Restaurants::Vote.create!(voter_id: 1, winner_id: franklin.id, loser_id: uchi.id)
+      few = select_restaurant_queries { get "/restaurants/leaderboard" }
+
+      6.times { Restaurants::Vote.create!(voter_id: 1, winner_id: franklin.id, loser_id: uchi.id) }
+      many = select_restaurant_queries { get "/restaurants/leaderboard" }
+
+      expect(many).to eq(few)
+    end
+  end
+
   describe "admin restaurant management" do
     it "blocks non-admins" do
       login_as(create(:user))
