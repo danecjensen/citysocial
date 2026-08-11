@@ -10,7 +10,7 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 37,
   "items": [
     {
       "id": "F-017",
@@ -129,6 +129,34 @@
       "product_family": "messaging",
       "milestone": "inbox-visibility",
       "notes": "Grounded in master repo state (existing Notifications badge pattern + existing Messaging::Inbox.unread_count public API + messaging being a personal inbox mislabeled as a browse pill). Independently corroborated by research brief R-006 (10/10), which is fresh only on PR #25's branch, not master, so it was NOT consumed from research.md; grounded directly in repo evidence via the 1b dead-end/unsurfaced-API veins."
+    },
+    {
+      "id": "F-036",
+      "title": "Show a recent picks activity feed on the restaurants leaderboard",
+      "problem": "Restaurant matchup votes are persisted and even published as restaurants.matchup_decided events, but no view ever renders them, so the do -> others-see loop dead-ends and casting a pick is invisible to the community.",
+      "evidence": "components/restaurants/app/models/restaurants/vote.rb:4-22 persists voter_id/winner_id/loser_id and publishes restaurants.matchup_decided, yet Vote is rendered in no view; leaderboard_controller.rb loaded only ranked restaurants. restaurants_votes already carries an indexed created_at (index_restaurants_votes_on_created_at), so surfacing recent decisions needs no schema change.",
+      "northstar_fit": "Strengthens the 'do -> others see it' engagement loop by making community restaurant picks visible as social proof that invites more head-to-head voting.",
+      "acceptance": [
+        "Restaurants::Vote.recent scope orders decisions newest-first, backed by the created_at index",
+        "Leaderboard shows a Recent picks section listing the last 8 decisions as 'winner beat loser', newest first",
+        "Restaurant names resolve in one batched query (no N+1), proven flat as vote volume grows",
+        "A decision whose winner or loser no longer exists is skipped, not rendered blank",
+        "With restaurants present but no votes, the section renders an EmptyState rather than a bare heading",
+        "Model + request specs cover scope order, rendered pairing/order, batched-query flatness, orphaned decision, and the empty case"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.7,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-11",
+      "pr": "https://github.com/danecjensen/citysocial/pull/45",
+      "kind": "module_feature",
+      "product_family": "restaurants",
+      "milestone": "matchup-activity-feed",
+      "notes": "1b-grounded in repo evidence (dead-end UX vein: Vote persisted+published but never rendered). Isolated to the restaurants module; no overlap with the open F-025..F-035 PR queue. Note: F-025..F-035 ids are already reserved by concurrent open PRs (codex + claude tracks), so this run allocated F-036 and set next_id=37 to avoid collision; those items are not in this backlog because they live on unmerged branches."
     },
     {
       "id": "F-004",
