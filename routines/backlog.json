@@ -10,8 +10,33 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 25,
+  "next_id": 40,
   "items": [
+    {
+      "id": "F-035",
+      "title": "Notify followers of new marketplace listings",
+      "problem": "marketplace.listing_created was published but had no subscriber, so a resident who follows a neighbor never learned when that neighbor posted a marketplace listing, unlike feed and community posts.",
+      "evidence": "components/marketplace/app/models/marketplace/listing.rb:117 publishes marketplace.listing_created {listing_id:, author_id:}; components/notifications/lib/notifications/events.rb:17-23 subscribed to feed/communities/feedback only; DeliverActivity already fans activity to PlatformCore::Graph.follower_ids.",
+      "northstar_fit": "Completes the do->others-see->notified loop for the Craigslist-core marketplace by broadcasting a neighbor's new listing to their followers, reusing the proven follower-activity path.",
+      "acceptance": [
+        "marketplace.listing_created is delivered by DeliverActivity to the author's followers only, never the author",
+        "Delivery is idempotent (retried event does not double-notify)",
+        "The notification links to /marketplace and reads '@handle posted a marketplace listing.'",
+        "Specs cover the marketplace fan-out (follower-only + idempotent) and the wiring registration"
+      ],
+      "impact": 4,
+      "effort": 1,
+      "confidence": 0.9,
+      "score": 3.6,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-11",
+      "pr": "https://github.com/danecjensen/citysocial/pull/43",
+      "kind": "module_feature",
+      "product_family": "notifications",
+      "milestone": "follower-activity-marketplace"
+    },
     {
       "id": "F-017",
       "title": "Feedback 'Support' toggle emits aria-pressed",
@@ -131,6 +156,30 @@
       "notes": "Grounded in master repo state (existing Notifications badge pattern + existing Messaging::Inbox.unread_count public API + messaging being a personal inbox mislabeled as a browse pill). Independently corroborated by research brief R-006 (10/10), which is fresh only on PR #25's branch, not master, so it was NOT consumed from research.md; grounded directly in repo evidence via the 1b dead-end/unsurfaced-API veins."
     },
     {
+      "id": "F-038",
+      "title": "Preload photos on the marketplace listing cards",
+      "problem": "Marketplace listing cards call listing.photos.attached?/first per row with no preload, issuing an ActiveStorage lookup per card on the index and mine views.",
+      "evidence": "components/marketplace/app/views/marketplace/listings/_card.html.erb:4-5 rendered per row from index.html.erb:28 and mine.html.erb:9; components/marketplace/app/controllers/marketplace/listings_controller.rb:9-13 (index) and :62 (mine) don't preload.",
+      "northstar_fit": "weak: performance hygiene on the marketplace browse path; keeps the utilitarian core fast as inventory grows.",
+      "acceptance": [
+        "index and mine scopes use .with_attached_photos so photo lookups don't grow with rows",
+        "Rendered cards unchanged",
+        "Request spec asserts flat ActiveStorage query count across a small vs large page"
+      ],
+      "impact": 2,
+      "effort": 1,
+      "confidence": 0.9,
+      "score": 1.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "marketplace",
+      "milestone": "browse-performance"
+    },
+    {
       "id": "F-004",
       "title": "Vote control reflects the current user's own vote",
       "problem": "The up/down vote buttons look identical whether or not the current user has already voted, so casting a vote gives no visual confirmation.",
@@ -150,30 +199,6 @@
       "attempts": 1,
       "created": "2026-08-05",
       "pr": "https://github.com/danecjensen/citysocial/pull/13"
-    },
-    {
-      "id": "F-018",
-      "title": "Batch-load notification actors to remove the inbox N+1",
-      "problem": "The notifications inbox resolved each row's actor with a separate PlatformCore::Graph.user query, an N+1 scaling with inbox size.",
-      "evidence": "components/notifications/.../index.html.erb:22 called notification.actor per row; Graph exposed only single user(id).",
-      "acceptance": [
-        "PlatformCore::Graph.users(ids) returns id=>user hash (avatars preloaded) in one query",
-        "Inbox resolves actors via one batch",
-        "Rendered avatars/handles unchanged",
-        "Graph + request specs assert flat query count"
-      ],
-      "impact": 3,
-      "effort": 2,
-      "confidence": 0.9,
-      "score": 1.35,
-      "status": "done",
-      "origin": "auto",
-      "attempts": 1,
-      "created": "2026-08-07",
-      "pr": "https://github.com/danecjensen/citysocial/pull/24",
-      "kind": "module_feature",
-      "product_family": "notifications",
-      "milestone": "inbox-performance"
     },
     {
       "id": "F-001",
@@ -212,6 +237,82 @@
       "attempts": 1,
       "created": "2026-08-04",
       "pr": "https://github.com/danecjensen/citysocial/pull/1"
+    },
+    {
+      "id": "F-018",
+      "title": "Batch-load notification actors to remove the inbox N+1",
+      "problem": "The notifications inbox resolved each row's actor with a separate PlatformCore::Graph.user query, an N+1 scaling with inbox size.",
+      "evidence": "components/notifications/.../index.html.erb:22 called notification.actor per row; Graph exposed only single user(id).",
+      "acceptance": [
+        "PlatformCore::Graph.users(ids) returns id=>user hash (avatars preloaded) in one query",
+        "Inbox resolves actors via one batch",
+        "Rendered avatars/handles unchanged",
+        "Graph + request specs assert flat query count"
+      ],
+      "impact": 3,
+      "effort": 2,
+      "confidence": 0.9,
+      "score": 1.35,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-07",
+      "pr": "https://github.com/danecjensen/citysocial/pull/24",
+      "kind": "module_feature",
+      "product_family": "notifications",
+      "milestone": "inbox-performance"
+    },
+    {
+      "id": "F-022",
+      "title": "Share public events through a reusable capability",
+      "problem": "Residents who discover a CitySocial event have no reliable way to send its canonical page into the chats where local plans already happen.",
+      "evidence": "Research PR #28, R-009 (grader 10/10); components/events/app/views/events/events/show.html.erb already groups public ticket and calendar actions, while shared UI lives under components/platform_core/app/public/platform_core/ui/.",
+      "acceptance": [
+        "A public PlatformCore::Ui::ShareComponent accepts a title and canonical URL, composes shared buttons, and always renders a Copy link action",
+        "A Stimulus controller reveals a separate native Share action only when navigator.share is supported and keeps copy fallback usable after cancel, permission, or API failures",
+        "Accessible live status reports copy/share success or failure",
+        "Event detail shares event_url(@event), never the external ticket/source URL, while ticket and calendar actions remain unchanged",
+        "The design catalog plus component and request specs document and cover the capability without adding a dependency"
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 1.0,
+      "score": 1.333,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-07",
+      "pr": "https://github.com/danecjensen/citysocial/pull/29",
+      "kind": "app_wide_capability",
+      "product_family": "sharing",
+      "milestone": "public-event-sharing",
+      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
+    },
+    {
+      "id": "F-036",
+      "title": "Notify residents of new direct messages",
+      "problem": "A resident who receives a private message gets no Notifications inbox entry; the message only surfaces if they happen to reload messaging, so the highest-signal personal loop depends on manual polling.",
+      "evidence": "components/messaging/app/models/messaging/message.rb:41-49 publishes messaging.message_created carrying recipient_id/conversation_id/target_path; components/notifications/lib/notifications/events.rb subscribes to nothing from messaging; Notifications::DeliverDirect already provides direct-recipient delivery (feedback).",
+      "northstar_fit": "Closes the highest-signal personal loop -- a neighbor messages you -> you are notified -- so utilitarian coordination doesn't depend on reloading the inbox.",
+      "acceptance": [
+        "Notifications subscribes to messaging.message_created and delivers only to the recipient, never the sender",
+        "Each new message updates/resurfaces one per-conversation notification unread, deep-linking to the thread",
+        "Idempotent retried delivery does not re-alert an already-read notification",
+        "Service, wiring, and request specs cover delivery, recipient-only scoping, and inbox rendering"
+      ],
+      "impact": 5,
+      "effort": 3,
+      "confidence": 0.8,
+      "score": 1.333,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "notifications",
+      "milestone": "direct-message-delivery",
+      "notes": "Needs a DeliverDirect-style handler keyed on conversation; grounded in the existing recipient_id payload. The Messages nav badge (F-021) is ambient only and updates on reload."
     },
     {
       "id": "F-003",
@@ -355,6 +456,32 @@
       "milestone": "follower-activity-inbox"
     },
     {
+      "id": "F-037",
+      "title": "Notify pickup players when promoted off the waitlist",
+      "problem": "A waitlisted pickup player auto-promoted to a real spot, and a host whose roster fills or empties, get no notification; the promotion/roster events have no subscriber.",
+      "evidence": "components/pickup_sports/app/models/pickup_sports/roster_entry.rb:27-58 publishes roster_changed (host_id) and roster_promoted (recipient_id) with target_path; components/notifications/lib/notifications/events.rb has no pickup subscription; PRs #34/#36 explicitly defer notification delivery.",
+      "northstar_fit": "Makes the fair-waitlist feature pay off -- a promoted player learns a spot opened without revisiting the game page -- tightening the pickup coordination loop.",
+      "acceptance": [
+        "Notifications subscribes to pickup_sports.roster_promoted and delivers to the promoted resident only, deep-linking to the game",
+        "Host is notified on roster_changed with join/leave context",
+        "Delivery is idempotent per (recipient, game, change)",
+        "Service, wiring, and request specs cover promotion and host notifications"
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 0.8,
+      "score": 1.067,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "notifications",
+      "milestone": "pickup-roster-delivery",
+      "notes": "Depends on the direct-recipient delivery path; combine promotion + host-change. Not reserved by open PRs (#34/#36 defer this)."
+    },
+    {
       "id": "F-013",
       "title": "Create private resident messaging",
       "problem": "Residents have no private place to coordinate a meetup, marketplace handoff, or follow-up.",
@@ -403,7 +530,33 @@
       "kind": "module_feature",
       "product_family": "feedback",
       "milestone": "board-performance",
-      "notes": "Below the 1.0 schedule threshold; depends on F-018's Graph.users batch. Grounded but low-value."
+      "notes": "Below the 1.0 schedule threshold; depends on F-018's Graph.users batch. Grounded but low-value.",
+      "northstar_fit": "weak: performance hygiene on the feedback board so triage stays fast; reuses F-018's Graph.users batch."
+    },
+    {
+      "id": "F-039",
+      "title": "Batch-load comment authors on the community post page",
+      "problem": "The community post detail page resolves each comment's author with a per-comment Graph.user, an N+1 scaling with comment count.",
+      "evidence": "components/communities/app/models/communities/comment.rb:14-16 Comment#author calls PlatformCore::Graph.user; components/communities/app/views/communities/posts/show.html.erb:72-73 calls it per comment; posts_controller.rb:9 loads @comments without batching.",
+      "northstar_fit": "weak: performance hygiene on community conversations; keeps discussion pages fast as threads grow.",
+      "acceptance": [
+        "Controller batches comment authors via PlatformCore::Graph.users(ids) into an id->user hash passed to the view",
+        "Rendered handles/avatars unchanged",
+        "Request spec asserts author query count does not grow with comment count"
+      ],
+      "impact": 2,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 0.85,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "communities",
+      "milestone": "post-detail-performance",
+      "notes": "Mirrors F-018's Graph.users batch pattern. Distinct from F-014 (viewer vote batch on the same page)."
     },
     {
       "id": "F-015",
@@ -427,30 +580,6 @@
       "kind": "module_product",
       "product_family": "messaging",
       "milestone": "inbox-management"
-    },
-    {
-      "id": "F-020",
-      "title": "Batch-load the messaging conversations inbox",
-      "problem": "The messaging inbox issues three per-row queries for each of up to 50 conversations - other participant, last message, unread count - an N+1 scaling with inbox size.",
-      "evidence": "components/messaging/app/views/messaging/conversations/index.html.erb:15-17 calls other_participant / messages.last / unread_count_for per row; conversations_controller.rb:7 loads .limit(50).",
-      "acceptance": [
-        "Inbox resolves participants via Graph.users and last-message + unread counts via grouped queries so query count stays flat",
-        "Rendered participant, preview, and unread counts unchanged",
-        "Request spec asserts flat query count as conversations grow"
-      ],
-      "impact": 3,
-      "effort": 3,
-      "confidence": 0.8,
-      "score": 0.8,
-      "status": "ready",
-      "origin": "auto",
-      "attempts": 0,
-      "created": "2026-08-07",
-      "pr": null,
-      "kind": "module_product",
-      "product_family": "messaging",
-      "milestone": "inbox-performance",
-      "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold."
     },
     {
       "id": "F-016",
@@ -477,75 +606,29 @@
       "notes": "Product lane milestone 3: Marketplace listings and community posts now open a context-preserving private compose flow; Messaging stores only a validated internal path and public label, then renders the backlink without reading sibling models."
     },
     {
-      "id": "F-014",
-      "title": "Batch-load the viewer's votes on the community post list",
-      "problem": "Rendering the community post list calls vote_value_for(current_user.id) once per post/comment, issuing one communities_votes lookup per row.",
-      "evidence": "components/communities/app/views/communities/communities/show.html.erb:30 and posts/show.html.erb:11,56 — each vote_value_for runs a separate SELECT inside the loop (introduced with F-004).",
+      "id": "F-020",
+      "title": "Batch-load the messaging conversations inbox",
+      "problem": "The messaging inbox issues three per-row queries for each of up to 50 conversations - other participant, last message, unread count - an N+1 scaling with inbox size.",
+      "evidence": "components/messaging/app/views/messaging/conversations/index.html.erb:15-17 calls other_participant / messages.last / unread_count_for per row; conversations_controller.rb:7 loads .limit(50).",
       "acceptance": [
-        "Viewer's votes for a page load in a single query passed into the vote partial",
-        "Rendered vote highlighting unchanged from F-004",
-        "Spec asserts vote query count does not grow with rows"
+        "Inbox resolves participants via Graph.users and last-message + unread counts via grouped queries so query count stays flat",
+        "Rendered participant, preview, and unread counts unchanged",
+        "Request spec asserts flat query count as conversations grow"
       ],
-      "impact": 2,
-      "effort": 2,
-      "confidence": 0.75,
-      "score": 0.75,
-      "status": "ready",
-      "origin": "auto",
-      "attempts": 0,
-      "created": "2026-08-05",
-      "pr": null,
-      "notes": "Below the 1.0 schedule threshold; grounded but low-value (one indexed lookup per row)."
-    },
-    {
-      "id": "F-006",
-      "title": "Semantic <time> timestamps with exact-date tooltips",
-      "problem": "Relative timestamps render as plain text with no machine-readable datetime and no hover-to-see-exact-date.",
-      "evidence": "feed/posts/index.html.erb:10, communities/communities/show.html.erb:38, communities/posts/show.html.erb:14,52, marketplace/listings/show.html.erb:45 — 'X ago' rendered as bare text, no <time datetime title>.",
-      "acceptance": [
-        "Relative timestamps wrap a <time datetime=...> element with a title showing the exact date/time",
-        "Rendered text unchanged",
-        "Spec on at least one surface"
-      ],
-      "impact": 2,
+      "impact": 3,
       "effort": 3,
-      "confidence": 0.7,
-      "score": 0.47,
+      "confidence": 0.8,
+      "score": 0.8,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
-      "created": "2026-08-05",
+      "created": "2026-08-07",
       "pr": null,
       "kind": "module_product",
       "product_family": "messaging",
       "milestone": "inbox-performance",
-      "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold."
-    },
-    {
-      "id": "F-022",
-      "title": "Share public events through a reusable capability",
-      "problem": "Residents who discover a CitySocial event have no reliable way to send its canonical page into the chats where local plans already happen.",
-      "evidence": "Research PR #28, R-009 (grader 10/10); components/events/app/views/events/events/show.html.erb already groups public ticket and calendar actions, while shared UI lives under components/platform_core/app/public/platform_core/ui/.",
-      "acceptance": [
-        "A public PlatformCore::Ui::ShareComponent accepts a title and canonical URL, composes shared buttons, and always renders a Copy link action",
-        "A Stimulus controller reveals a separate native Share action only when navigator.share is supported and keeps copy fallback usable after cancel, permission, or API failures",
-        "Accessible live status reports copy/share success or failure",
-        "Event detail shares event_url(@event), never the external ticket/source URL, while ticket and calendar actions remain unchanged",
-        "The design catalog plus component and request specs document and cover the capability without adding a dependency"
-      ],
-      "impact": 4,
-      "effort": 3,
-      "confidence": 1.0,
-      "score": 1.333,
-      "status": "done",
-      "origin": "research",
-      "attempts": 1,
-      "created": "2026-08-07",
-      "pr": "https://github.com/danecjensen/citysocial/pull/29",
-      "kind": "app_wide_capability",
-      "product_family": "sharing",
-      "milestone": "public-event-sharing",
-      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
+      "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold.",
+      "northstar_fit": "weak: keeps the personal messaging inbox fast as conversation history grows, supporting the coordination loop."
     },
     {
       "id": "F-023",
@@ -573,6 +656,53 @@
       "product_family": "pickup_sports",
       "milestone": "roster-first-mvp",
       "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
+    },
+    {
+      "id": "F-014",
+      "title": "Batch-load the viewer's votes on the community post list",
+      "problem": "Rendering the community post list calls vote_value_for(current_user.id) once per post/comment, issuing one communities_votes lookup per row.",
+      "evidence": "components/communities/app/views/communities/communities/show.html.erb:30 and posts/show.html.erb:11,56 — each vote_value_for runs a separate SELECT inside the loop (introduced with F-004).",
+      "acceptance": [
+        "Viewer's votes for a page load in a single query passed into the vote partial",
+        "Rendered vote highlighting unchanged from F-004",
+        "Spec asserts vote query count does not grow with rows"
+      ],
+      "impact": 2,
+      "effort": 2,
+      "confidence": 0.75,
+      "score": 0.75,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "notes": "Below the 1.0 schedule threshold; grounded but low-value (one indexed lookup per row).",
+      "northstar_fit": "weak: keeps the community post list fast; preserves the vote-highlight feedback that shows a resident their action registered."
+    },
+    {
+      "id": "F-006",
+      "title": "Semantic <time> timestamps with exact-date tooltips",
+      "problem": "Relative timestamps render as plain text with no machine-readable datetime and no hover-to-see-exact-date.",
+      "evidence": "feed/posts/index.html.erb:10, communities/communities/show.html.erb:38, communities/posts/show.html.erb:14,52, marketplace/listings/show.html.erb:45 — 'X ago' rendered as bare text, no <time datetime title>.",
+      "acceptance": [
+        "Relative timestamps wrap a <time datetime=...> element with a title showing the exact date/time",
+        "Rendered text unchanged",
+        "Spec on at least one surface"
+      ],
+      "impact": 2,
+      "effort": 3,
+      "confidence": 0.7,
+      "score": 0.47,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-05",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "inbox-performance",
+      "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold.",
+      "northstar_fit": "weak: small accessibility/clarity polish (machine-readable, hover-exact timestamps) on already-shipped surfaces."
     }
   ]
 }
