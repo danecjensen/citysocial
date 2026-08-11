@@ -6,6 +6,11 @@ module Notifications
         source_key: :post_id,
         target_path: "/communities",
         action: "shared a community post"
+      },
+      "marketplace.listing_created" => {
+        source_key: :listing_id,
+        target_path: "/marketplace",
+        action: "posted a marketplace listing"
       }
     }.freeze
 
