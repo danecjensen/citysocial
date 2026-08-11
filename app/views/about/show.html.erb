@@ -1,0 +1,82 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "A small social network for Austin",
+      subtitle: "Invite-only, community-built, and intentionally fewer than 200 people."
+    ) %>
+
+<div class="space-y-6">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <div class="max-w-3xl space-y-4 text-base leading-7 text-ink-muted">
+      <p class="font-display text-xl font-bold text-ink">Hi, I’m Dane Jensen.</p>
+      <p>
+        I’m starting CitySocial as an artisanal social network: a small place where we can
+        build the features we actually want, together. The goal is to help us stay more
+        engaged with one another and with Austin—not to keep us scrolling.
+      </p>
+      <p>
+        Keeping the community under 200 people means it can stay personal, useful, and
+        shaped by the people in it.
+      </p>
+    </div>
+  <% end %>
+
+  <div>
+    <h2 class="mb-3 text-xl text-ink">What CitySocial should make easier</h2>
+    <div class="grid gap-4 md:grid-cols-3">
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>Know Austin<% end %>
+        <h3 class="mt-3 text-lg text-ink">Local news that matters</h3>
+        <p class="mt-2 leading-6 text-ink-muted">
+          A shared view of Austin news, neighborhood updates, openings, events, and the
+          stories worth talking about with people who live here.
+        </p>
+      <% end %>
+
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :agave) do %>Meet up<% end %>
+        <h3 class="mt-3 text-lg text-ink">Turn “maybe” into tonight</h3>
+        <p class="mt-2 leading-6 text-ink-muted">
+          Make it easy to start a movie night or post “I’m at this café—come meet me.”
+          Nearby friends can quickly say they’re in and turn an ordinary evening into time together.
+        </p>
+      <% end %>
+
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>Share more<% end %>
+        <h3 class="mt-3 text-lg text-ink">A community tool shelf</h3>
+        <p class="mt-2 leading-6 text-ink-muted">
+          Show the tools you’re happy to lend—from a drill to a ladder—so neighbors can
+          borrow what already exists instead of buying it again.
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <h2 class="text-xl text-ink">How borrowing a tool could work</h2>
+    <% end %>
+
+    <ol class="grid gap-5 md:grid-cols-4">
+      <li>
+        <p class="font-mono text-sm font-semibold text-brand-700">01 · LIST</p>
+        <p class="mt-1 font-semibold text-ink">Share what you have</p>
+        <p class="mt-1 text-sm leading-6 text-ink-muted">Add a photo, a few details, and when the tool is usually available.</p>
+      </li>
+      <li>
+        <p class="font-mono text-sm font-semibold text-brand-700">02 · REQUEST</p>
+        <p class="mt-1 font-semibold text-ink">Ask to borrow it</p>
+        <p class="mt-1 text-sm leading-6 text-ink-muted">Choose dates and tell the owner what you’re working on.</p>
+      </li>
+      <li>
+        <p class="font-mono text-sm font-semibold text-brand-700">03 · HAND OFF</p>
+        <p class="mt-1 font-semibold text-ink">Make a plan</p>
+        <p class="mt-1 text-sm leading-6 text-ink-muted">The owner approves the request and both people coordinate pickup.</p>
+      </li>
+      <li>
+        <p class="font-mono text-sm font-semibold text-brand-700">04 · RETURN</p>
+        <p class="mt-1 font-semibold text-ink">Bring it back</p>
+        <p class="mt-1 text-sm leading-6 text-ink-muted">A friendly reminder closes the loop, followed by a thank-you.</p>
+      </li>
+    </ol>
+  <% end %>
+</div>

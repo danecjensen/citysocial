@@ -1,7 +1,5 @@
-<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Admin · Modules", subtitle: "Turn app-modules on and off. Disabled modules disappear from navigation and their pages become unavailable.") %>
-
 <%= render PlatformCore::Ui::TableComponent.new(columns: ["Module", "Path", "Status", { label: "Actions", numeric: true }]) do |table| %>
-  <% @modules.each do |mod| %>
+  <% modules.each do |mod| %>
     <% table.with_row do |row| %>
       <% row.with_cell do %>
         <span class="font-semibold text-ink"><%= mod.label %></span>
@@ -32,3 +30,7 @@
     <% end %>
   <% end %>
 <% end %>
+
+<p class="mt-3 text-xs text-ink-faint">
+  Disabling a module hides it from navigation, blocks its routes, and removes its section from this page.
+</p>

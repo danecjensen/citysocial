@@ -1,0 +1,55 @@
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <div class="flex flex-wrap items-center gap-1.5">
+    <%= link_to "All", filter_path,
+                class: status.nil? ? "rounded-full border border-brand-400 bg-brand-50 px-3 py-1 text-sm font-bold text-brand-700" : "rounded-full border border-line px-3 py-1 text-sm font-semibold text-ink-muted transition-colors hover:border-brand-400 hover:text-brand-700" %>
+    <% status_options.each do |label, value| %>
+      <%= link_to label, filter_path(value),
+                  class: status == value ? "rounded-full border border-brand-400 bg-brand-50 px-3 py-1 text-sm font-bold text-brand-700" : "rounded-full border border-line px-3 py-1 text-sm font-semibold text-ink-muted transition-colors hover:border-brand-400 hover:text-brand-700" %>
+    <% end %>
+  </div>
+  <p class="font-mono text-xs text-ink-muted">
+    <%= truncated? ? "Showing #{submissions.size} of #{total_count}" : "#{total_count} item#{'s' unless total_count == 1}" %>
+  </p>
+</div>
+
+<% if submissions.any? %>
+  <%= render PlatformCore::Ui::TableComponent.new(
+        columns: ["Feedback", "Type", { label: "Supports", numeric: true }, "Submitted", "Status"]
+      ) do |table| %>
+    <% submissions.each do |submission| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <%= link_to submission.title, submission_path(submission), class: "font-semibold text-brand-700 hover:underline" %>
+          <% if submission.area.present? %><p class="font-mono text-xs text-ink-faint"><%= submission.area.humanize %></p><% end %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render PlatformCore::Ui::BadgeComponent.new(variant: submission.kind_badge) do %><%= submission.kind_label %><% end %>
+        <% end %>
+        <% row.with_cell(numeric: true) { submission.supports_count } %>
+        <% row.with_cell do %>
+          <span class="font-mono text-xs text-ink-muted"><%= submission.created_at.to_date %></span>
+        <% end %>
+        <% row.with_cell do %>
+          <%= form_with model: submission, scope: :submission, url: update_path(submission), method: :patch,
+                        html: { class: "flex items-end gap-2" } do |f| %>
+            <%= hidden_field_tag :feedback_status, status %>
+            <div class="w-36">
+              <%= render PlatformCore::Ui::FormFieldComponent.new(
+                    form: f, attribute: :status, type: :select, label: "Roadmap status",
+                    collection: status_options
+                  ) %>
+            </div>
+            <div class="mb-4">
+              <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, type: :submit) do %>Update<% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No feedback to triage",
+        body: status ? "Nothing is sitting in this status right now." : "Submissions from the feedback button land here."
+      ) %>
+<% end %>

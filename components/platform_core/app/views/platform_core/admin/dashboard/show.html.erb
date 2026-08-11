@@ -1,0 +1,40 @@
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Admin",
+      subtitle: "Every admin surface in the app, on one page. Jump to a section or scroll."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: "/design") do %>
+      Design system
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# Jump nav. Sticky under the site header so the sections stay reachable on a long page. %>
+<nav aria-label="Admin sections" class="sticky top-14 z-30 -mx-4 mb-10 border-y border-line bg-paper/90 px-4 py-2.5 backdrop-blur-lg">
+  <div class="flex flex-wrap items-center gap-1.5">
+    <span class="mr-1 font-mono text-xs uppercase tracking-wider text-ink-faint">Sections</span>
+    <% @sections.each do |section| %>
+      <%= link_to section.label, "##{section.anchor}",
+                  class: "rounded-full border border-line px-3 py-1 text-sm font-semibold text-ink-muted transition-colors hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700" %>
+    <% end %>
+  </div>
+</nav>
+
+<div class="space-y-14">
+  <% @sections.each do |section| %>
+    <%# scroll-mt keeps the section title clear of the two sticky bars when jumped to. %>
+    <section id="<%= section.anchor %>" class="scroll-mt-32">
+      <div class="mb-5 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-2.5">
+        <div>
+          <h2 class="font-display text-2xl font-black tracking-tight text-ink"><%= section.label %></h2>
+          <% if section.description %>
+            <p class="mt-0.5 text-sm text-ink-muted"><%= section.description %></p>
+          <% end %>
+        </div>
+        <%= link_to "Back to top", "#", class: "font-mono text-xs text-ink-faint hover:text-brand-700" %>
+      </div>
+
+      <%= render section.component(params) %>
+    </section>
+  <% end %>
+</div>

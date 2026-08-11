@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_11_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -185,12 +185,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
     t.bigint "first_participant_id", null: false
     t.bigint "second_participant_id", null: false
     t.datetime "last_message_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.datetime "first_participant_archived_at"
     t.datetime "second_participant_archived_at"
     t.string "context_path", limit: 500
     t.string "context_label", limit: 120
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.index ["first_participant_id", "first_participant_archived_at"], name: "index_messaging_conversations_on_first_archive"
     t.index ["first_participant_id", "second_participant_id"], name: "index_messaging_conversations_on_participant_pair", unique: true
     t.index ["first_participant_id"], name: "index_messaging_conversations_on_first_participant_id"
@@ -294,6 +294,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_220100) do
     t.integer "matches_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "hero_photo_id"
     t.index ["elo"], name: "index_restaurants_restaurants_on_elo"
     t.index ["name"], name: "index_restaurants_restaurants_on_name", unique: true
   end

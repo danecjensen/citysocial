@@ -10,9 +10,11 @@ PlatformCore::Engine.routes.draw do
   get   "/profile/edit", to: "profiles#edit", as: :edit_profile
   patch "/profile", to: "profiles#update"
 
+  # The admin area is a single page; the per-resource routes below are the
+  # actions its sections post to.
   namespace :admin do
-    root to: "users#index"
+    root to: "dashboard#show"
     resources :users, only: %i[update destroy]
-    resources :modules, only: %i[index update], param: :key
+    resources :modules, only: %i[update], param: :key
   end
 end

@@ -28,8 +28,18 @@ module Restaurants
     end
 
     # The representative image for this restaurant, or nil when none is attached.
+    # Admins pin one via `hero_photo_id` (an ActiveStorage attachment id); with
+    # nothing pinned -- or when the pinned photo has since been removed -- the
+    # oldest attachment stands in.
     def hero_photo
-      photos.attached? ? photos.first : nil
+      attached = photos.attachments
+      return nil if attached.empty?
+
+      attached.detect { |photo| photo.id == hero_photo_id } || attached.min_by(&:id)
+    end
+
+    def hero_photo?(photo)
+      hero_photo&.id == photo.id
     end
   end
 end

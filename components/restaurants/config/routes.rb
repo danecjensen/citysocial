@@ -4,6 +4,8 @@ Restaurants::Engine.routes.draw do
   get "/leaderboard", to: "leaderboard#index"
 
   namespace :admin do
-    resources :restaurants, only: %i[index create destroy]
+    resources :restaurants, only: %i[index create update destroy] do
+      delete "photos/:photo_id", action: :destroy_photo, on: :member, as: :photo
+    end
   end
 end

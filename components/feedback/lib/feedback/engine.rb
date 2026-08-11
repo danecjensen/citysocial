@@ -11,6 +11,15 @@ module Feedback
       g.test_framework :rspec
     end
 
+    # This module's slice of the single-page admin dashboard. The kernel renders
+    # whatever is registered here; it never names a Feedback constant.
+    config.to_prepare do
+      PlatformCore::AdminSections.register(
+        key: "feedback", label: "Feedback", module_key: "feedback", position: 40,
+        description: "Triage the public roadmap and keep submitters informed."
+      ) { |params| Feedback::Admin::SectionComponent.new(params: params) }
+    end
+
     # Make this engine's migrations run as part of the host app's db:migrate.
     initializer "feedback.append_migrations" do |app|
       unless app.root.to_s.match?(root.to_s)

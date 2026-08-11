@@ -35,9 +35,10 @@
       <% PlatformCore::Modules.nav_modules.each do |mod| %>
         <% nav.with_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>
       <% end %>
+      <% nav.with_link "About", "/about", active: request.path == "/about" %>
       <% if respond_to?(:admin?) && admin? %>
-        <% nav.with_link "Admin", "/admin", active: request.path == "/admin" || request.path.start_with?("/admin/users") %>
-        <% nav.with_link "Modules", "/admin/modules", active: request.path.start_with?("/admin/modules") %>
+        <%# The whole admin area is one page; every section lives at /admin. %>
+        <% nav.with_link "Admin", "/admin", active: request.path.start_with?("/admin") %>
       <% end %>
 
       <% if PlatformCore::Modules.enabled?("marketplace") %>
@@ -132,7 +133,7 @@
     <%= render PlatformCore::Ui::FooterComponent.new do |footer| %>
       <% footer.with_column(title: "Explore", links: PlatformCore::Modules.nav_modules.map { |m| [m.label, m.path] }) %>
       <% footer.with_column(title: "Account", links: [["Log in", "/login"], ["Sign up", "/signup"]]) %>
-      <% footer.with_column(title: "About", links: [["Design system", "/design"]]) %>
+      <% footer.with_column(title: "About", links: [["About CitySocial", "/about"], ["Design system", "/design"]]) %>
     <% end %>
   </body>
 </html>

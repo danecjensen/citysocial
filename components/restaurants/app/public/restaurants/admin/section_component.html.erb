@@ -1,0 +1,146 @@
+<div class="mb-8">
+  <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+    <% card.with_header do %>
+      <span class="font-bold">Add a restaurant</span>
+    <% end %>
+    <%= form_with model: new_restaurant, scope: :restaurant, url: Restaurants::Admin::SectionComponent::BASE_PATH,
+                  method: :post, html: { multipart: true } do |f| %>
+      <%= hidden_field_tag :restaurant_q, query %>
+      <div class="grid gap-x-4 sm:grid-cols-3">
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name, placeholder: "Franklin Barbecue") %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine, placeholder: "Barbecue") %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :area, placeholder: "East Austin") %>
+      </div>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <%= f.label :photos, "Photos", class: "mb-1 block text-sm font-bold text-ink" %>
+          <%= f.file_field :photos, multiple: true, accept: "image/png,image/jpeg,image/webp",
+                           class: "block w-full text-sm text-ink-muted file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700" %>
+          <p class="mt-1 text-xs text-ink-faint">Optional now — you can add or swap photos any time below.</p>
+        </div>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary) do %>
+          Add restaurant
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <%= form_with url: "/admin#section-restaurants", method: :get, html: { class: "flex items-center gap-2" } do %>
+    <%= text_field_tag :restaurant_q, query, placeholder: "Search name, cuisine, or area…",
+                       class: "w-64 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200" %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, type: :submit) do %>
+      Search
+    <% end %>
+    <% if query.present? %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/admin#section-restaurants") do %>
+        Clear
+      <% end %>
+    <% end %>
+  <% end %>
+  <p class="font-mono text-xs text-ink-muted">
+    <%= truncated? ? "Showing #{restaurants.size} of #{total_count}" : "#{total_count} restaurant#{'s' unless total_count == 1}" %>
+  </p>
+</div>
+
+<% if restaurants.any? %>
+  <div class="overflow-hidden rounded-lg border border-line bg-surface shadow-card">
+    <% restaurants.each do |restaurant| %>
+      <details class="group border-b border-line last:border-b-0">
+        <summary class="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-brand-50/40 [&::-webkit-details-marker]:hidden">
+          <div class="h-11 w-11 shrink-0 overflow-hidden rounded-md bg-sunken">
+            <% if restaurant.hero_photo %>
+              <%= image_tag photo_url(restaurant.hero_photo), class: "h-full w-full object-cover", alt: restaurant.name, loading: "lazy" %>
+            <% end %>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-bold text-ink"><%= restaurant.name %></p>
+            <p class="truncate text-xs text-ink-muted">
+              <%= [restaurant.cuisine.presence, restaurant.area.presence].compact.join(" · ").presence || "No cuisine or area set" %>
+            </p>
+          </div>
+          <span class="hidden font-mono text-xs text-ink-faint sm:inline">
+            <%= restaurant.photos.attachments.size %> photo<%= "s" unless restaurant.photos.attachments.size == 1 %>
+          </span>
+          <span class="font-mono text-sm font-semibold tabular-nums text-ink"><%= restaurant.elo %></span>
+          <span class="rounded-full border border-line px-2.5 py-1 text-xs font-bold text-ink-muted group-open:hidden">Manage</span>
+          <span class="hidden rounded-full border border-line px-2.5 py-1 text-xs font-bold text-ink-muted group-open:inline-block">Close</span>
+        </summary>
+
+        <div class="border-t border-line bg-sunken/40 px-4 py-5">
+          <h4 class="mb-2 font-mono text-xs uppercase tracking-wider text-ink-faint">Photos</h4>
+          <% if restaurant.photos.attachments.any? %>
+            <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <% restaurant.photos.attachments.sort_by(&:id).each do |photo| %>
+                <figure class="overflow-hidden rounded-md border border-line bg-surface">
+                  <%= image_tag photo_url(photo), class: "aspect-[4/3] w-full object-cover", alt: "#{restaurant.name} photo", loading: "lazy" %>
+                  <figcaption class="flex items-center justify-between gap-2 px-2 py-1.5">
+                    <% if restaurant.hero_photo?(photo) %>
+                      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :success) do %>Hero<% end %>
+                    <% else %>
+                      <%= render PlatformCore::Ui::ButtonComponent.new(
+                            variant: :ghost, size: :sm, method: :patch,
+                            href: restaurant_path(restaurant),
+                            params: { restaurant: { hero_photo_id: photo.id }, restaurant_q: query }
+                          ) do %>
+                        Make hero
+                      <% end %>
+                    <% end %>
+                    <%= render PlatformCore::Ui::ButtonComponent.new(
+                          variant: :danger, size: :sm, method: :delete,
+                          href: photo_path(restaurant, photo),
+                          params: { restaurant_q: query },
+                          confirm: "Remove this photo from #{restaurant.name}?"
+                        ) do %>
+                      Remove
+                    <% end %>
+                  </figcaption>
+                </figure>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="mb-6 text-sm text-ink-muted">No photos yet — matchups will show a blank tile until you add one.</p>
+          <% end %>
+
+          <%= form_with model: restaurant, scope: :restaurant, url: restaurant_path(restaurant),
+                        method: :patch, html: { multipart: true } do |f| %>
+            <%= hidden_field_tag :restaurant_q, query %>
+            <div class="grid gap-x-4 sm:grid-cols-3">
+              <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name) %>
+              <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine) %>
+              <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :area) %>
+            </div>
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <%= f.label :photos, "Add photos", class: "mb-1 block text-sm font-bold text-ink" %>
+                <%= f.file_field :photos, multiple: true, accept: "image/png,image/jpeg,image/webp",
+                                 class: "block w-full text-sm text-ink-muted file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700" %>
+                <p class="mt-1 text-xs text-ink-faint">New uploads are added to the set above, not replacing it.</p>
+              </div>
+              <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, size: :sm) do %>
+                Save changes
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="mt-5 flex justify-end border-t border-line pt-4">
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :danger, size: :sm, method: :delete,
+                  href: restaurant_path(restaurant),
+                  params: { restaurant_q: query },
+                  confirm: "Delete #{restaurant.name} and all of its photos?"
+                ) do %>
+              Delete restaurant
+            <% end %>
+          </div>
+        </div>
+      </details>
+    <% end %>
+  </div>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: query.present? ? "No restaurants match “#{query}”" : "No restaurants yet",
+        body: query.present? ? "Try a different name, cuisine, or area." : "Add the first spot with the form above."
+      ) %>
+<% end %>

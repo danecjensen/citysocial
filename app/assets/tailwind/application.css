@@ -9,7 +9,8 @@
    scanned or their classes get purged. */
 @source "../../views/**/*.erb";
 @source "../../../components/*/app/views/**/*.erb";
-@source "../../../components/platform_core/app/public/**/*.{rb,erb}";
+@source "../../../components/*/app/public/**/*.{rb,erb}";
+@source "../../../components/*/app/components/**/*.{rb,erb}";
 
 /* ---------------------------------------------------------------------------
    CitySocial design tokens — "local community marketplace"

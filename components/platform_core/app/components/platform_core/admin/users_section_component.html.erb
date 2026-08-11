@@ -1,7 +1,5 @@
-<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Admin · Users", subtitle: "Manage accounts and admin access.") %>
-
 <%= render PlatformCore::Ui::TableComponent.new(columns: ["Handle", "Email", "Role", "Joined", { label: "Actions", numeric: true }]) do |table| %>
-  <% @users.each do |user| %>
+  <% users.each do |user| %>
     <% table.with_row do |row| %>
       <% row.with_cell do %>
         <span class="font-mono font-semibold text-brand-700">@<%= user.handle %></span>

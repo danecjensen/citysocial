@@ -17,6 +17,7 @@ Rails.application.routes.draw do
 
   # Living style guide for the shared design system (PlatformCore::Ui).
   get "/design", to: "design#show"
+  get "/about", to: "about#show", as: :about
 
   root to: redirect("/feed")
 end

@@ -1,25 +1,25 @@
 module PlatformCore
   module Admin
+    # Actions behind the "Users" section of the /admin page. Every path leads
+    # back to that one page, anchored at the section that was acted on.
     class UsersController < BaseController
+      SECTION = "/admin#section-users".freeze
+
       before_action :require_login
       before_action :require_admin
       before_action :set_user, only: %i[update destroy]
 
-      def index
-        @users = PlatformCore::User.order(created_at: :asc)
-      end
-
       def update
         @user.update(admin: ActiveModel::Type::Boolean.new.cast(params[:admin]))
-        redirect_to "/admin/users", notice: "Updated @#{@user.handle}."
+        redirect_to SECTION, notice: "Updated @#{@user.handle}."
       end
 
       def destroy
         if @user == current_user
-          redirect_to "/admin/users", alert: "You cannot delete your own account."
+          redirect_to SECTION, alert: "You cannot delete your own account."
         else
           @user.destroy
-          redirect_to "/admin/users", notice: "Deleted @#{@user.handle}."
+          redirect_to SECTION, notice: "Deleted @#{@user.handle}."
         end
       end
 
