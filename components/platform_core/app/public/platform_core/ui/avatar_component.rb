@@ -21,7 +21,8 @@ module PlatformCore
 
       erb_template <<~ERB
         <% if renderable_avatar? %>
-          <%= image_tag @user.avatar, class: "\#{classes} object-cover", alt: @alt %>
+          <%= image_tag helpers.main_app.rails_blob_path(@user.avatar, only_path: true),
+                        class: "\#{classes} object-cover", alt: @alt %>
         <% else %>
           <%= tag.span @user.avatar_initial, class: classes, role: (@alt.present? ? "img" : nil),
                                               "aria-label": @alt.presence,
