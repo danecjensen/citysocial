@@ -24,6 +24,11 @@ module PlatformCore
       { key: "notifications", label: "Notifications", path: "/notifications", nav: false }
     ].freeze
 
+    # The only modules that earn a top-level pill in the nav bar, in this exact
+    # display order. Every other nav module lives behind the hamburger "More"
+    # menu (see primary_nav_modules / secondary_nav_modules).
+    PRIMARY_NAV_KEYS = %w[feed events restaurants].freeze
+
     def all
       flags = flags_by_key
       CATALOG.map do |entry|
@@ -33,6 +38,17 @@ module PlatformCore
 
     def nav_modules
       all.select { |m| m.nav && m.enabled }
+    end
+
+    # Nav modules that get a top-level pill, ordered by PRIMARY_NAV_KEYS.
+    def primary_nav_modules
+      nav_modules.select { |m| PRIMARY_NAV_KEYS.include?(m.key) }
+                 .sort_by { |m| PRIMARY_NAV_KEYS.index(m.key) }
+    end
+
+    # Nav modules that live behind the hamburger "More" menu (catalog order).
+    def secondary_nav_modules
+      nav_modules.reject { |m| PRIMARY_NAV_KEYS.include?(m.key) }
     end
 
     # Unknown keys (e.g. the "platform_core" kernel) are always enabled.

@@ -32,7 +32,7 @@
   </head>
   <body class="flex min-h-screen flex-col">
     <%= render PlatformCore::Ui::NavBarComponent.new do |nav| %>
-      <% PlatformCore::Modules.nav_modules.each do |mod| %>
+      <% PlatformCore::Modules.primary_nav_modules.each do |mod| %>
         <% nav.with_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>
       <% end %>
       <% nav.with_link "About", "/about", active: request.path == "/about" %>
@@ -40,6 +40,10 @@
         <%# The whole admin area is one page; every section lives at /admin. %>
         <% nav.with_link "Admin", "/admin", active: request.path.start_with?("/admin") %>
       <% end %>
+      <% PlatformCore::Modules.secondary_nav_modules.each do |mod| %>
+        <% nav.with_menu_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>
+      <% end %>
+
 
       <% if PlatformCore::Modules.enabled?("marketplace") %>
         <% nav.with_search do %>
