@@ -44,3 +44,11 @@ into CLAUDE.md.
 - Generate Active Storage URLs inside engine ViewComponents through
   `helpers.main_app.rails_blob_path`; polymorphic `image_tag` routing can otherwise
   prefix blob paths with the engine mount and produce persistent 404s.
+- When a page renders the SAME `form_with` scope more than once (an "add" form plus
+  a per-row "edit" form for every record), pass a unique `namespace:` to each form.
+  Without it every form emits identical DOM ids (`restaurant_photos`, ...), and a
+  `<label for=...>` then resolves to the FIRST matching input on the page — so a
+  file chosen in a row's "Add photos" field lands in the top add-form and the row's
+  save uploads nothing. Namespacing changes ids only; the submitted param names
+  stay on the shared scope, so controllers are unaffected. Give repeated hidden
+  fields `id: nil` too so they don't re-introduce the duplicate.
