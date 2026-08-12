@@ -14,6 +14,10 @@ or either operation fails. Override the thresholds with `DB_CHECKOUT_WARN_MS` an
 - A slow checkout and connect at the same timestamp usually means connection
   creation accounts for the checkout delay rather than pool contention.
 
+Production keeps established connections indefinitely (`idle_timeout: 0`) and
+warms the first connection when each Puma worker boots. libpq TCP keepalives
+detect a dead path without reintroducing the recurring cold-connection penalty.
+
 The probes use a monotonic clock and collect pool statistics only for slow or
 failed operations, keeping the healthy request path and normal log volume small.
 

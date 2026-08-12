@@ -68,3 +68,6 @@ into CLAUDE.md.
   save uploads nothing. Namespacing changes ids only; the submitted param names
   stay on the shared scope, so controllers are unaffected. Give repeated hidden
   fields `id: nil` too so they don't re-introduce the duplicate.
+- Rails 7.2 connection-pool `new_connection` only allocates a lazy adapter; call
+  `connect!` before recording physical-connect timing, or the expensive libpq
+  handshake and PostgreSQL type-map setup are misreported as query time.
