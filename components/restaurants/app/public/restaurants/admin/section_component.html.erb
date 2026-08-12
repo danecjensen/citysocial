@@ -4,8 +4,8 @@
       <span class="font-bold">Add a restaurant</span>
     <% end %>
     <%= form_with model: new_restaurant, scope: :restaurant, url: Restaurants::Admin::SectionComponent::BASE_PATH,
-                  method: :post, html: { multipart: true } do |f| %>
-      <%= hidden_field_tag :restaurant_q, query %>
+                  method: :post, namespace: "new_restaurant", html: { multipart: true } do |f| %>
+      <%= hidden_field_tag :restaurant_q, query, id: nil %>
       <div class="grid gap-x-4 sm:grid-cols-3">
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name, placeholder: "Franklin Barbecue") %>
         <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine, placeholder: "Barbecue") %>
@@ -104,8 +104,8 @@
           <% end %>
 
           <%= form_with model: restaurant, scope: :restaurant, url: restaurant_path(restaurant),
-                        method: :patch, html: { multipart: true } do |f| %>
-            <%= hidden_field_tag :restaurant_q, query %>
+                        method: :patch, namespace: "edit_restaurant_#{restaurant.id}", html: { multipart: true } do |f| %>
+            <%= hidden_field_tag :restaurant_q, query, id: nil %>
             <div class="grid gap-x-4 sm:grid-cols-3">
               <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :name) %>
               <%= render PlatformCore::Ui::FormFieldComponent.new(form: f, attribute: :cuisine) %>
