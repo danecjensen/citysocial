@@ -24,7 +24,12 @@ module DatabaseConnectionInstrumentation
     started_at = monotonic_milliseconds
     error = nil
 
-    super
+    connection = super
+    # Rails 7.2 creates adapters lazily, so timing `super` alone measures only
+    # Ruby object allocation. Force the actual socket setup and PostgreSQL type
+    # map initialization here so the connect probe measures what users wait on.
+    connection.connect!
+    connection
   rescue StandardError => e
     error = e
     raise

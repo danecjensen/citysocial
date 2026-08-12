@@ -21,6 +21,17 @@ RSpec.describe "Restaurants", type: :request do
       expect(response.body).to include("Which is better?")
     end
 
+    it "loads both matchup photos eagerly at high priority" do
+      create(:restaurant, :with_photo, name: "Franklin Barbecue")
+      create(:restaurant, :with_photo, name: "Uchi")
+      login_as(create(:user))
+
+      get "/restaurants"
+
+      page = Capybara.string(response.body)
+      expect(page).to have_css('img[loading="eager"][fetchpriority="high"][decoding="async"]', count: 2)
+    end
+
     it "records a vote and updates Elo" do
       winner = create(:restaurant)
       loser = create(:restaurant)
@@ -32,6 +43,18 @@ RSpec.describe "Restaurants", type: :request do
 
       expect(winner.reload.elo).to be > loser.reload.elo
       expect(response).to redirect_to("/restaurants")
+    end
+
+    it "rejects a vote for a restaurant against itself" do
+      restaurant = create(:restaurant)
+      login_as(create(:user))
+
+      expect do
+        post "/restaurants/matchups", params: { winner_id: restaurant.id, loser_id: restaurant.id }
+      end.not_to change(Restaurants::Vote, :count)
+
+      expect(response).to redirect_to("/restaurants")
+      expect(flash[:alert]).to eq("A restaurant can't beat itself.")
     end
   end
 

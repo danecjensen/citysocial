@@ -7,15 +7,25 @@ module Restaurants
     end
 
     def create
-      winner = Restaurants::Restaurant.find(params[:winner_id])
-      loser = Restaurants::Restaurant.find(params[:loser_id])
+      winner_id = integer_id_param(:winner_id)
+      loser_id = integer_id_param(:loser_id)
 
-      if winner == loser
+      if winner_id == loser_id
         redirect_to "/restaurants", alert: "A restaurant can't beat itself."
       else
-        Restaurants::RecordMatchup.call(winner: winner, loser: loser, voter_id: current_user.id)
-        redirect_to "/restaurants", notice: "Nice pick — #{winner.name} moves up."
+        result = Restaurants::RecordMatchup.call(
+          winner_id: winner_id,
+          loser_id: loser_id,
+          voter_id: current_user.id
+        )
+        redirect_to "/restaurants", notice: "Nice pick — #{result.winner_name} moves up."
       end
+    end
+
+    private
+
+    def integer_id_param(name)
+      Integer(params[name], exception: false) || raise(ActiveRecord::RecordNotFound)
     end
   end
 end
