@@ -50,6 +50,12 @@
   neighborhood, venue, capacity, public rosters, transactional join/leave, fair FIFO
   waitlist promotion, cancellation clarity, notification-ready events, and a public
   upcoming-games read API.
+- Google sign-in: kernel-owned "Continue with Google" on the login and signup pages
+  via OmniAuth (omniauth-google-oauth2 + rails_csrf_protection middleware in the
+  platform_core engine). User.from_omniauth creates an account with a generated
+  unique handle and a random password, or links the verified Google email to an
+  existing account; provider/uid columns with a unique index. Credentials come from
+  GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this

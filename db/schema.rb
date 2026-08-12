@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_11_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_12_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -282,8 +282,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_11_000000) do
     t.string "display_name"
     t.string "neighborhood"
     t.text "bio"
+    t.string "provider"
+    t.string "uid"
     t.index ["email"], name: "index_platform_core_users_on_email", unique: true
     t.index ["handle"], name: "index_platform_core_users_on_handle", unique: true
+    t.index ["provider", "uid"], name: "index_platform_core_users_on_provider_and_uid", unique: true
   end
 
   create_table "restaurants_restaurants", force: :cascade do |t|

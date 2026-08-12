@@ -17,6 +17,11 @@ gem "view_component"
 # Identity: password hashing for has_secure_password (kernel-owned auth).
 gem "bcrypt", "~> 3.1"
 
+# Identity: "Sign in with Google" via OmniAuth (kernel-owned auth), plus CSRF
+# protection for the OAuth request phase (button_to POST to /auth/:provider).
+gem "omniauth-google-oauth2", "~> 1.1"
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+
 # Async + event bus transport
 gem "redis", ">= 5.0"
 gem "sidekiq", "~> 7.0"

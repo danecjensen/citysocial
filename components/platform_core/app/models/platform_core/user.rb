@@ -36,6 +36,70 @@ module PlatformCore
       display_name_or_handle.first.upcase
     end
 
+    # True when this account signs in through an OAuth provider (e.g. Google).
+    def oauth?
+      provider.present?
+    end
+
+    # Find or create the local account for an OmniAuth identity (Google today).
+    # New OAuth users get a generated unique handle and a random password (they
+    # sign in with the provider, not a password). An existing account with the
+    # same email is linked to the OAuth identity so residents keep one profile.
+    #
+    # NOTE: linking trusts the provider's verified email. See docs/lessons.md
+    # before adding a second provider or an email/password reset flow.
+    def self.from_omniauth(auth)
+      return if auth.blank?
+
+      provider = auth["provider"].to_s
+      uid = auth["uid"].to_s
+      return if provider.blank? || uid.blank?
+
+      identity = find_by(provider: provider, uid: uid)
+      return identity if identity
+
+      info = auth["info"] || {}
+      email = info["email"].to_s.strip.downcase
+      return if email.blank?
+
+      if (existing = find_by(email: email))
+        existing.update!(provider: provider, uid: uid)
+        return existing
+      end
+
+      create_from_omniauth(provider, uid, email, info["name"].presence)
+    end
+
+    # Create a brand-new account for an OAuth identity with a generated handle
+    # and an unguessable random password (kept only to satisfy has_secure_password).
+    def self.create_from_omniauth(provider, uid, email, name)
+      password = SecureRandom.hex(24)
+      create!(
+        provider: provider,
+        uid: uid,
+        email: email,
+        handle: generate_handle(name || email.split("@").first),
+        display_name: name,
+        password: password,
+        password_confirmation: password
+      )
+    end
+    private_class_method :create_from_omniauth
+
+    # Derive a unique, lowercased handle from a display name or email local part,
+    # suffixing digits on collision (dane, dane1, dane2, ...).
+    def self.generate_handle(seed)
+      base = seed.to_s.downcase.gsub(/[^a-z0-9]/, "")[0, 20].presence || "resident"
+      candidate = base
+      suffix = 0
+      while exists?(handle: candidate)
+        suffix += 1
+        candidate = "#{base}#{suffix}"
+      end
+      candidate
+    end
+    private_class_method :generate_handle
+
     private
 
     def acceptable_avatar
