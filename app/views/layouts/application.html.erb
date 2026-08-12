@@ -44,61 +44,45 @@
         <% nav.with_menu_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>
       <% end %>
 
-
-      <% if PlatformCore::Modules.enabled?("marketplace") %>
-        <% nav.with_search do %>
-          <%= form_with url: "/marketplace", method: :get do |f| %>
-            <div class="relative">
-              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-faint">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </span>
-              <%= f.text_field :q, value: params[:q], placeholder: "Search the marketplace…", class: "w-full rounded-full border border-line bg-sunken py-2 pl-10 pr-3 text-sm text-ink placeholder-ink-faint transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500" %>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
-
       <% if respond_to?(:logged_in?) && logged_in? %>
         <% nav.with_session_area do %>
-          <% if PlatformCore::Modules.enabled?("messaging") %>
-            <%= render PlatformCore::Ui::ButtonComponent.new(
-                  variant: :ghost,
-                  size: :sm,
-                  href: messaging.root_path,
-                  aria_label: "Messages"
-                ) do %>
-              Messages
-              <% unread_messages = Messaging::Inbox.unread_count(current_user.id) %>
-              <% if unread_messages.positive? %>
-                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>
-                  <%= unread_messages %>
-                <% end %>
-              <% end %>
-            <% end %>
-          <% end %>
+          <%# Notifications live on their own page, reached from this bell; the red
+              bubble shows the unread count next to the profile avatar. %>
           <% if PlatformCore::Modules.enabled?("notifications") %>
-            <%= render PlatformCore::Ui::ButtonComponent.new(
-                  variant: :ghost,
-                  size: :sm,
-                  href: notifications.root_path,
-                  aria_label: "Notifications"
-                ) do %>
-              Notifications
-              <% unread_notifications = Notifications::Inbox.unread_count_for(current_user.id) %>
+            <% unread_notifications = Notifications::Inbox.unread_count_for(current_user.id) %>
+            <%= link_to "/notifications/", "aria-label": "Notifications",
+                        class: "relative rounded-full p-2 text-ink-muted transition-colors hover:bg-sunken hover:text-ink" do %>
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
               <% if unread_notifications.positive? %>
-                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>
-                  <%= unread_notifications %>
-                <% end %>
+                <span class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-xs font-bold leading-none text-white">
+                  <%= unread_notifications > 99 ? "99+" : unread_notifications %>
+                </span>
               <% end %>
             <% end %>
           <% end %>
-          <%= link_to "/people/#{current_user.handle}", class: "inline-flex items-center gap-2 text-ink-muted hover:text-brand-700" do %>
-            <%= render PlatformCore::Ui::AvatarComponent.new(user: current_user, size: :sm, alt: "") %>
-            <span class="hidden font-mono text-sm sm:inline">@<%= current_user.handle %></span>
-          <% end %>
-          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: "/logout", method: :delete) do %>
-            Log out
-          <% end %>
+
+          <%# The profile avatar is the account menu: click it for the profile link,
+              log out, and anything else that used to sit loose in the top bar. %>
+          <details class="relative"
+                   data-controller="menu"
+                   data-action="keydown.esc@window->menu#close click@window->menu#closeOnOutside">
+            <summary class="flex cursor-pointer list-none items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-sunken [&::-webkit-details-marker]:hidden"
+                     aria-label="Account menu">
+              <%= render PlatformCore::Ui::AvatarComponent.new(user: current_user, size: :sm, alt: "") %>
+              <span class="hidden font-mono text-sm text-ink-muted sm:inline">@<%= current_user.handle %></span>
+              <svg class="h-4 w-4 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </summary>
+            <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-line bg-surface p-2 shadow-card">
+              <div class="border-b border-line px-3 pb-2 pt-1">
+                <p class="truncate text-sm font-bold text-ink"><%= current_user.display_name_or_handle %></p>
+                <p class="truncate font-mono text-xs text-ink-faint">@<%= current_user.handle %></p>
+              </div>
+              <%= link_to "View profile", "/people/#{current_user.handle}",
+                          class: "mt-1 block rounded-xl px-3 py-2 text-sm font-semibold text-ink-muted transition-colors hover:bg-sunken hover:text-ink" %>
+              <%= button_to "Log out", "/logout", method: :delete,
+                            class: "block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-ink-muted transition-colors hover:bg-sunken hover:text-ink" %>
+            </div>
+          </details>
         <% end %>
       <% else %>
         <% nav.with_session_area do %>

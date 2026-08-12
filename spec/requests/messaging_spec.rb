@@ -231,37 +231,56 @@ RSpec.describe "Messaging", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "links to Messages from the global nav and badges the recipient's unread count" do
+  it "renders the resident's message inbox inline on their own profile" do
     conversation = create(
       :messaging_conversation,
       first_participant: neighbor,
       second_participant: resident
     )
-    create(:messaging_message, conversation: conversation, sender_id: neighbor.id, read_at: nil)
+    create(
+      :messaging_message,
+      conversation: conversation,
+      sender_id: neighbor.id,
+      body: "Are you going to the block party?",
+      read_at: nil
+    )
 
     sign_in(resident)
     get "/people/resident"
 
     doc = Capybara.string(response.body)
-    expect(doc).to have_link("Messages", href: "/messaging/")
-    expect(doc).to have_css("a[aria-label='Messages'] .uppercase", text: "1")
+    expect(doc).to have_text("Messages")
+    expect(doc).to have_text("1 unread message")
+    expect(doc).to have_text("Helpful Neighbor")
+    expect(doc).to have_text("Are you going to the block party?")
+    expect(doc).to have_css("a[href='/messaging/conversations/#{conversation.id}']")
   end
 
-  it "omits the unread badge when the resident has no unread messages" do
+  it "shows an empty inbox state on the profile when there are no conversations" do
     sign_in(resident)
     get "/people/resident"
 
     doc = Capybara.string(response.body)
-    expect(doc).to have_link("Messages", href: "/messaging/")
-    expect(doc).to have_no_css("a[aria-label='Messages'] .uppercase")
+    expect(doc).to have_text("No conversations yet")
+    expect(doc).to have_link("New message", href: "/messaging/conversations/new")
   end
 
-  it "hides the Messages nav link when the messaging module is disabled" do
+  it "keeps the personal message inbox off other residents' profiles" do
+    sign_in(resident)
+
+    get "/people/neighbor"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_text("Message resident")
+    expect(doc).to have_no_link("New message", href: "/messaging/conversations/new")
+  end
+
+  it "hides the inbox panel on the profile when the messaging module is disabled" do
     sign_in(resident)
     PlatformCore::Modules.disable!("messaging")
 
     get "/people/resident"
-    expect(response.body).not_to include("aria-label=\"Messages\"")
+    expect(response.body).not_to include("/messaging/conversations/new")
   ensure
     PlatformCore::Modules.enable!("messaging")
   end

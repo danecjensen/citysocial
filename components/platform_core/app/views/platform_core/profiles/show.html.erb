@@ -50,4 +50,13 @@
       </div>
     </div>
   <% end %>
+
+  <%# Owner-only inline panels contributed by modules (e.g. the messaging inbox),
+      so personal content is read right here on your own profile instead of a
+      separate nav destination. See PlatformCore::ProfilePanels. %>
+  <% if logged_in? && current_user == @user %>
+    <% PlatformCore::ProfilePanels.all.each do |panel| %>
+      <div class="mt-6"><%= render panel.component(current_user) %></div>
+    <% end %>
+  <% end %>
 </div>

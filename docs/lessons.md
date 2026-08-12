@@ -60,6 +60,15 @@ into CLAUDE.md.
 - Generate Active Storage URLs inside engine ViewComponents through
   `helpers.main_app.rails_blob_path`; polymorphic `image_tag` routing can otherwise
   prefix blob paths with the engine mount and produce persistent 404s.
+- To surface a module on a kernel-owned shared page (profile, admin), invert the
+  dependency with a `platform_core` public registry that modules populate from their
+  engine `to_prepare` (mirror `PlatformCore::AdminSections`; `ProfilePanels` renders a
+  module's ViewComponent inline on the owner's profile). The kernel builds the opaque
+  component lazily via the registered block and never names a module const.
+- Global-nav chrome (the notification bell + unread bubble) lives in the host
+  `app/views/layouts`, which MAY reference `Notifications::Inbox`/`Messaging::Inbox`
+  directly — packwerk only scans `components/**`, not the host `app/`. A `platform_core`
+  view may not; route those through a registry block instead.
 - When a page renders the SAME `form_with` scope more than once (an "add" form plus
   a per-row "edit" form for every record), pass a unique `namespace:` to each form.
   Without it every form emits identical DOM ids (`restaurant_photos`, ...), and a
