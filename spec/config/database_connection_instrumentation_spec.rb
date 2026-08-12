@@ -1,16 +1,21 @@
 require "rails_helper"
 
 RSpec.describe DatabaseConnectionInstrumentation do
+  let(:physical_connection) { instance_double(ActiveRecord::ConnectionAdapters::AbstractAdapter, connect!: true) }
+
   subject(:pool) do
+    connection = physical_connection
     Class.new do
       prepend DatabaseConnectionInstrumentation
+
+      define_method(:physical_connection) { connection }
 
       def checkout(*)
         :connection
       end
 
       def new_connection
-        :new_connection
+        physical_connection
       end
 
       def stat
@@ -54,10 +59,19 @@ RSpec.describe DatabaseConnectionInstrumentation do
   it "logs slow physical connection creation separately" do
     allow(pool).to receive(:monotonic_milliseconds).and_return(1_000.0, 1_300.0)
 
-    expect(pool.send(:new_connection)).to eq(:new_connection)
+    expect(pool.send(:new_connection)).to eq(physical_connection)
+    expect(physical_connection).to have_received(:connect!)
     expect(logger).to have_received(:warn).with(
       "event=database_connection_connect duration_ms=300.0 threshold_ms=250.0 " \
       "status=slow pool=primary size=5 connections=5 busy=4 idle=1 waiting=2"
     )
+  end
+
+  it "eagerly establishes healthy physical connections without logging them" do
+    allow(pool).to receive(:monotonic_milliseconds).and_return(1_000.0, 1_010.0)
+
+    expect(pool.send(:new_connection)).to eq(physical_connection)
+    expect(physical_connection).to have_received(:connect!)
+    expect(logger).not_to have_received(:warn)
   end
 end

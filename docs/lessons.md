@@ -38,6 +38,22 @@ into CLAUDE.md.
 - When concurrent module PRs conflict in shared registries, keep every module entry,
   regenerate Gemfile.lock and db/schema.rb, and parse-check routines/backlog.json;
   choosing one side can silently drop a module or commit invalid generated state.
+- OAuth/OmniAuth belongs in platform_core (identity is kernel-owned): register the
+  Rack strategy in the engine's own initializer via `app.middleware.use
+  OmniAuth::Builder`, not in a host `config/initializers` file. Missing ENV
+  credentials only fail at request time, so boot stays green without them.
+- OmniAuth request phase must be a CSRF-protected POST: render the "Continue with
+  Google" control with `button_to` (ButtonComponent href+method: :post) so Rails
+  injects the authenticity token that omniauth-rails_csrf_protection verifies. A
+  plain GET link is rejected by OmniAuth 2.
+- Test OmniAuth without the network: set `OmniAuth.config.test_mode = true` and
+  `OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(...)`, then GET
+  the callback path directly; reset both in an ensure/after block so the mock does
+  not leak into other request specs (the middleware runs on every request).
+- Linking a Google login to an existing account trusts the provider's verified
+  email. CitySocial does not verify password-account emails, so before adding a
+  second provider or an email/password-reset flow, add email verification to avoid
+  an unverified-email account-takeover path.
 - Before merging a stacked PR chain, rebuild each branch from only its own commits,
   scan the assembled tree for conflict markers, parse shared state files, and run
   `bin/verify`; a GitHub-mergeable stack can still contain committed conflict debris.
@@ -53,3 +69,14 @@ into CLAUDE.md.
   `app/views/layouts`, which MAY reference `Notifications::Inbox`/`Messaging::Inbox`
   directly — packwerk only scans `components/**`, not the host `app/`. A `platform_core`
   view may not; route those through a registry block instead.
+- When a page renders the SAME `form_with` scope more than once (an "add" form plus
+  a per-row "edit" form for every record), pass a unique `namespace:` to each form.
+  Without it every form emits identical DOM ids (`restaurant_photos`, ...), and a
+  `<label for=...>` then resolves to the FIRST matching input on the page — so a
+  file chosen in a row's "Add photos" field lands in the top add-form and the row's
+  save uploads nothing. Namespacing changes ids only; the submitted param names
+  stay on the shared scope, so controllers are unaffected. Give repeated hidden
+  fields `id: nil` too so they don't re-introduce the duplicate.
+- Rails 7.2 connection-pool `new_connection` only allocates a lazy adapter; call
+  `connect!` before recording physical-connect timing, or the expensive libpq
+  handshake and PostgreSQL type-map setup are misreported as query time.

@@ -18,4 +18,12 @@ production:
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  # The Essential-tier database has high connection setup latency. Keep Rails
+  # from throwing healthy connections away after the default five-minute idle
+  # window, and have libpq detect dead network paths promptly.
+  idle_timeout: <%= ENV.fetch("DB_IDLE_TIMEOUT", 0) %>
+  keepalives: 1
+  keepalives_idle: <%= ENV.fetch("DB_KEEPALIVES_IDLE", 60) %>
+  keepalives_interval: <%= ENV.fetch("DB_KEEPALIVES_INTERVAL", 10) %>
+  keepalives_count: <%= ENV.fetch("DB_KEEPALIVES_COUNT", 3) %>
   url: <%= ENV["DATABASE_URL"] %>

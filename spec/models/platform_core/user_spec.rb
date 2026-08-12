@@ -69,4 +69,62 @@ RSpec.describe PlatformCore::User, type: :model do
     expect(user).not_to be_valid
     expect(user.errors[:avatar]).to include("must be smaller than 5 MB")
   end
+
+  describe ".from_omniauth" do
+    def google_auth(uid: "google-123", email: "grace@example.com", name: "Grace Hopper")
+      OmniAuth::AuthHash.new(provider: "google_oauth2", uid: uid, info: { email: email, name: name })
+    end
+
+    it "creates a new account with a generated handle and display name" do
+      user = nil
+      expect { user = PlatformCore::User.from_omniauth(google_auth) }
+        .to change(PlatformCore::User, :count).by(1)
+
+      expect(user).to be_persisted
+      expect(user).to have_attributes(provider: "google_oauth2", uid: "google-123",
+                                      email: "grace@example.com", display_name: "Grace Hopper",
+                                      handle: "gracehopper")
+      expect(user.oauth?).to be(true)
+    end
+
+    it "is idempotent: repeat sign-ins return the same account" do
+      first = PlatformCore::User.from_omniauth(google_auth)
+      second = nil
+      expect { second = PlatformCore::User.from_omniauth(google_auth) }
+        .not_to change(PlatformCore::User, :count)
+
+      expect(second).to eq(first)
+    end
+
+    it "links the identity to an existing account with the same email" do
+      existing = create(:user, email: "grace@example.com")
+      linked = nil
+      expect { linked = PlatformCore::User.from_omniauth(google_auth) }
+        .not_to change(PlatformCore::User, :count)
+
+      expect(linked).to eq(existing)
+      expect(existing.reload).to have_attributes(provider: "google_oauth2", uid: "google-123")
+    end
+
+    it "generates a unique handle when the derived one is taken" do
+      create(:user, handle: "gracehopper")
+      expect(PlatformCore::User.from_omniauth(google_auth).handle).to eq("gracehopper1")
+    end
+
+    it "falls back to the email local part when no name is provided" do
+      user = PlatformCore::User.from_omniauth(google_auth(name: nil, email: "solo.act@example.com"))
+      expect(user.handle).to eq("soloact")
+      expect(user.display_name).to be_nil
+    end
+
+    it "returns nil when the identity is unusable" do
+      expect(PlatformCore::User.from_omniauth(nil)).to be_nil
+      expect(PlatformCore::User.from_omniauth(google_auth(uid: ""))).to be_nil
+      expect(PlatformCore::User.from_omniauth(google_auth(email: ""))).to be_nil
+    end
+
+    it "regular password accounts are not oauth?" do
+      expect(create(:user).oauth?).to be(false)
+    end
+  end
 end
