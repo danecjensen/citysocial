@@ -17,6 +17,21 @@ bin/rails server                # feed lives at /feed
 
 (There is no `node`/JS build here — add Hotwire or a JSON API per your mobile plan.)
 
+### Sign in with Google (optional)
+
+The login and signup pages offer "Continue with Google" via OmniAuth. Create an
+OAuth 2.0 Client ID in the Google Cloud console (type: Web application) and add
+its redirect URI, `https://<your-host>/auth/google_oauth2/callback` (locally,
+`http://localhost:3000/auth/google_oauth2/callback`). Then set:
+
+```bash
+GOOGLE_CLIENT_ID=...       # from Google Cloud → Credentials
+GOOGLE_CLIENT_SECRET=...
+```
+
+These are read from the environment (dotenv in development). Without them the app
+still boots and password auth works; the Google button only fails at request time.
+
 ## Architecture in one breath
 
 - `components/platform_core` — the shared kernel: `User`, the `Follow` social
