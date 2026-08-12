@@ -108,42 +108,30 @@ RSpec.describe "Notifications", type: :request do
     expect(private_notification.reload).to be_unread
   end
 
-  it "surfaces the Notifications inbox on the resident's own profile and badges unread count" do
+  it "shows a red notification bubble in the nav with the unread count" do
     resident = create(:user, handle: "belle")
-    create(:notification, recipient: resident)
+    create_list(:notification, 2, recipient: resident)
     login_as(resident)
 
     get "/people/belle"
 
     doc = Capybara.string(response.body)
-    expect(doc).to have_link("Notifications", href: "/notifications/")
-    expect(doc).to have_css("a[aria-label='Notifications'] .uppercase", text: "1")
+    expect(doc).to have_css("a[aria-label='Notifications'][href='/notifications/']")
+    expect(doc).to have_css("a[aria-label='Notifications'] span", text: "2")
   end
 
-  it "omits the unread badge on the profile when the resident is caught up" do
+  it "shows the notification bell without a bubble when the resident is caught up" do
     resident = create(:user, handle: "quiet")
     login_as(resident)
 
     get "/people/quiet"
 
     doc = Capybara.string(response.body)
-    expect(doc).to have_link("Notifications", href: "/notifications/")
-    expect(doc).to have_no_css("a[aria-label='Notifications'] .uppercase")
+    expect(doc).to have_css("a[aria-label='Notifications'][href='/notifications/']")
+    expect(doc).to have_no_css("a[aria-label='Notifications'] span")
   end
 
-  it "keeps the Notifications inbox off the global nav and other residents' profiles" do
-    resident = create(:user, handle: "viewer")
-    create(:user, handle: "stranger")
-    login_as(resident)
-
-    get "/people/stranger"
-
-    doc = Capybara.string(response.body)
-    expect(doc).to have_no_link("Notifications", href: "/notifications/")
-    expect(doc).to have_no_css("a[aria-label='Notifications']")
-  end
-
-  it "hides the Notifications profile link when the module is disabled" do
+  it "hides the notification bell when the module is disabled" do
     resident = create(:user, handle: "muted")
     login_as(resident)
     PlatformCore::Modules.disable!("notifications")
@@ -152,5 +140,16 @@ RSpec.describe "Notifications", type: :request do
     expect(response.body).not_to include("aria-label=\"Notifications\"")
   ensure
     PlatformCore::Modules.enable!("notifications")
+  end
+
+  it "no longer renders notifications inside the profile page body" do
+    resident = create(:user, handle: "calm")
+    create(:notification, recipient: resident)
+    login_as(resident)
+
+    get "/people/calm"
+
+    # Notifications live on their own page now; only the nav bell links there.
+    expect(response.body).not_to include("Updates and new activity across CitySocial")
   end
 end

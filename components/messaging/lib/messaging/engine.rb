@@ -11,16 +11,13 @@ module Messaging
       g.test_framework :rspec
     end
 
-    # Surface the resident's inbox on their own profile (the account hub) rather
-    # than in the global nav. The kernel renders whatever is registered here; it
-    # never names a Messaging constant.
+    # Render the resident's whole inbox inline on their own profile rather than
+    # behind a separate nav destination. The kernel renders whatever component is
+    # registered here; it never names a Messaging constant.
     config.to_prepare do
-      PlatformCore::ProfileLinks.register(
-        key: "messages", label: "Messages", path: "/messaging/",
-        module_key: "messaging", position: 10,
-        description: "Your private conversations with neighbors.",
-        icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-      ) { |user_id| Messaging::Inbox.unread_count(user_id) }
+      PlatformCore::ProfilePanels.register(
+        key: "messaging_inbox", module_key: "messaging", position: 10
+      ) { |user| Messaging::ProfileInboxComponent.new(user: user) }
     end
 
     # Make this engine's migrations run as part of the host app's db:migrate.
