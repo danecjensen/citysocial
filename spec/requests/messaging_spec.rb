@@ -231,7 +231,7 @@ RSpec.describe "Messaging", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "links to Messages from the global nav and badges the recipient's unread count" do
+  it "surfaces the Messages inbox on the resident's own profile and badges unread count" do
     conversation = create(
       :messaging_conversation,
       first_participant: neighbor,
@@ -256,7 +256,17 @@ RSpec.describe "Messaging", type: :request do
     expect(doc).to have_no_css("a[aria-label='Messages'] .uppercase")
   end
 
-  it "hides the Messages nav link when the messaging module is disabled" do
+  it "keeps the personal Messages inbox off the global nav and other residents' profiles" do
+    sign_in(resident)
+
+    get "/people/neighbor"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_no_link("Messages", href: "/messaging/")
+    expect(doc).to have_no_css("a[aria-label='Messages']")
+  end
+
+  it "hides the Messages profile link when the messaging module is disabled" do
     sign_in(resident)
     PlatformCore::Modules.disable!("messaging")
 

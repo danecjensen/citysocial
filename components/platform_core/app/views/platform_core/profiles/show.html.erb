@@ -50,4 +50,51 @@
       </div>
     </div>
   <% end %>
+
+  <%# The owner's account hub: personal inboxes (Messages, Notifications) live
+      here on your own profile, the standard social pattern, not in the global
+      nav. Modules contribute these via PlatformCore::ProfileLinks. %>
+  <% if logged_in? && current_user == @user %>
+    <% profile_links = PlatformCore::ProfileLinks.all %>
+    <% if profile_links.any? %>
+      <div class="mt-6">
+        <%= render PlatformCore::Ui::CardComponent.new(padded: false) do |card| %>
+          <% card.with_header do %>
+            <h2 class="font-display text-xs font-bold uppercase tracking-wider text-ink-muted">Your activity</h2>
+          <% end %>
+          <ul class="divide-y divide-line">
+            <% profile_links.each do |link| %>
+              <% count = link.unread_count(current_user.id) %>
+              <li>
+                <%= link_to link.path, "aria-label": link.label,
+                            class: "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-sunken" do %>
+                  <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                    <% if link.icon.present? %>
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= link.icon %>" />
+                      </svg>
+                    <% end %>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-center gap-2">
+                      <span class="font-semibold text-ink"><%= link.label %></span>
+                      <% if count.positive? %>
+                        <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %>
+                          <%= count %>
+                        <% end %>
+                      <% end %>
+                    </span>
+                    <% if link.description.present? %>
+                      <span class="mt-0.5 block text-sm text-ink-muted"><%= link.description %></span>
+                    <% end %>
+                  </span>
+                  <svg class="h-5 w-5 flex-none text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
 </div>

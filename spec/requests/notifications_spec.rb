@@ -107,4 +107,50 @@ RSpec.describe "Notifications", type: :request do
     expect(owned.map { |notification| notification.reload.read_at }).to all(be_present)
     expect(private_notification.reload).to be_unread
   end
+
+  it "surfaces the Notifications inbox on the resident's own profile and badges unread count" do
+    resident = create(:user, handle: "belle")
+    create(:notification, recipient: resident)
+    login_as(resident)
+
+    get "/people/belle"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_link("Notifications", href: "/notifications/")
+    expect(doc).to have_css("a[aria-label='Notifications'] .uppercase", text: "1")
+  end
+
+  it "omits the unread badge on the profile when the resident is caught up" do
+    resident = create(:user, handle: "quiet")
+    login_as(resident)
+
+    get "/people/quiet"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_link("Notifications", href: "/notifications/")
+    expect(doc).to have_no_css("a[aria-label='Notifications'] .uppercase")
+  end
+
+  it "keeps the Notifications inbox off the global nav and other residents' profiles" do
+    resident = create(:user, handle: "viewer")
+    create(:user, handle: "stranger")
+    login_as(resident)
+
+    get "/people/stranger"
+
+    doc = Capybara.string(response.body)
+    expect(doc).to have_no_link("Notifications", href: "/notifications/")
+    expect(doc).to have_no_css("a[aria-label='Notifications']")
+  end
+
+  it "hides the Notifications profile link when the module is disabled" do
+    resident = create(:user, handle: "muted")
+    login_as(resident)
+    PlatformCore::Modules.disable!("notifications")
+
+    get "/people/muted"
+    expect(response.body).not_to include("aria-label=\"Notifications\"")
+  ensure
+    PlatformCore::Modules.enable!("notifications")
+  end
 end

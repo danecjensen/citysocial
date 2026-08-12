@@ -44,3 +44,11 @@ into CLAUDE.md.
 - Generate Active Storage URLs inside engine ViewComponents through
   `helpers.main_app.rails_blob_path`; polymorphic `image_tag` routing can otherwise
   prefix blob paths with the engine mount and produce persistent 404s.
+- To surface a module on a kernel-owned shared page (nav, profile, admin), invert the
+  dependency with a `platform_core` public registry that modules populate from their
+  engine `to_prepare` (mirror `PlatformCore::AdminSections`; `ProfileLinks` is the
+  profile-page one). The kernel renders opaque entries and never names a module const.
+  Pass per-user values (e.g. unread counts) as lazy blocks so the kernel calls a proc
+  instead of referencing `Messaging::Inbox`/`Notifications::Inbox` — the host `app/`
+  layout may reference those, but a `platform_core` view may not (packwerk scans
+  `components/**`, not the host `app/`).
