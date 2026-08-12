@@ -34,4 +34,22 @@ RSpec.describe PlatformCore::Ui::NavBarComponent do
 
     expect(page).to have_no_css("details[data-controller='menu']")
   end
+
+  it "wires up the collapsible mobile drawer" do
+    render_inline(described_class.new) do |nav|
+      nav.with_link "Feed", "/feed"
+    end
+
+    # The header hosts the drawer controller and a hamburger toggle that
+    # controls the collapsible panel.
+    expect(page).to have_css("header[data-controller='nav']")
+    expect(page).to have_css(
+      "button[data-nav-target='button'][data-action='nav#toggle'][aria-controls='primary-nav']"
+    )
+
+    # The links/search/session region is the panel target the toggle reveals.
+    # It starts collapsed (hidden) on mobile and is shown from lg: up.
+    expect(page).to have_css("#primary-nav[data-nav-target='panel'].hidden.lg\\:flex")
+    expect(page).to have_css("#primary-nav a.rounded-full[href='/feed']", text: "Feed")
+  end
 end
