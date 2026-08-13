@@ -13,8 +13,27 @@
           <% if post.created_at %>
             <span class="font-mono text-xs text-ink-faint"><%= time_ago_in_words(post.created_at) %> ago</span>
           <% end %>
+          <% if post.source != "web" %>
+            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= post.source %><% end %>
+          <% end %>
         </div>
-        <p class="text-[15px] leading-relaxed text-ink"><%= post.body %></p>
+        <% if post.title.present? %>
+          <% if post.url.present? %>
+            <h2 class="font-display text-lg font-semibold text-ink">
+              <%= link_to post.title, post.url, target: "_blank", rel: "noopener noreferrer", class: "hover:text-brand-700 hover:underline" %>
+            </h2>
+          <% else %>
+            <h2 class="font-display text-lg font-semibold text-ink"><%= post.title %></h2>
+          <% end %>
+        <% end %>
+        <% if post.body.present? %>
+          <p class="text-[15px] leading-relaxed text-ink"><%= post.body %></p>
+        <% end %>
+        <% if post.url.present? && post.title.blank? %>
+          <p class="mt-2 truncate font-mono text-sm">
+            <%= link_to post.url, post.url, target: "_blank", rel: "noopener noreferrer", class: "text-brand-700 hover:underline" %>
+          </p>
+        <% end %>
       <% end %>
     <% end %>
   </div>

@@ -17,19 +17,22 @@ namespace :events do
 
     files.each do |file|
       records = load_records(file)
-      result = Events::Ingest.call(records)
+      result = Events::Ingest.call_many(records)
       totals[:created] += result.created
       totals[:updated] += result.updated
+      totals[:duplicates] = totals.fetch(:duplicates, 0) + result.duplicates
       totals[:skipped] += result.skipped
       totals[:errors]  += result.errors.size
       result.errors.each do |e|
-        warn "  ! #{File.basename(file)}[#{e[:index]}] #{e[:title]}: #{e[:messages].join(', ')}"
+        warn "  ! #{File.basename(file)}[#{e[:index]}]: #{e[:messages].join(', ')}"
       end
-      puts "  #{File.basename(file)}: +#{result.created} created, #{result.updated} updated, #{result.skipped} skipped"
+      puts "  #{File.basename(file)}: +#{result.created} created, #{result.updated} updated, " \
+           "#{result.duplicates} duplicates, #{result.skipped} skipped"
     end
 
     puts "events:ingest done — #{totals[:created]} created, #{totals[:updated]} updated, " \
-         "#{totals[:skipped]} skipped, #{totals[:errors]} errored across #{files.size} file(s)."
+         "#{totals[:duplicates]} duplicates, #{totals[:skipped]} skipped, " \
+         "#{totals[:errors]} errored across #{files.size} file(s)."
   end
 end
 

@@ -1,0 +1,45 @@
+<% identifier = @record.persisted? ? record_identifier(@record) : nil %>
+<% target = @record.persisted? ? record_path(model: model_identifier(@model), id: identifier) : records_path(model: model_identifier(@model)) %>
+
+<%= form_with model: @record,
+              scope: @model.model_name.param_key,
+              url: target,
+              method: @record.persisted? ? :patch : :post do |form| %>
+  <% if @record.errors.any? %>
+    <div class="mb-5">
+      <%= render PlatformCore::Ui::FlashComponent.new(
+            type: :error,
+            message: "#{pluralize(@record.errors.count, 'error')} prevented saving: #{@record.errors.full_messages.to_sentence}"
+          ) %>
+    </div>
+  <% end %>
+
+  <% editable_columns.each do |column| %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: column.name,
+          **form_field_options(column)
+        ) %>
+  <% end %>
+
+  <% password_attributes.each do |attribute| %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: attribute,
+          type: :password_field,
+          label: attribute,
+          hint: @record.persisted? ? "Leave blank to keep the current password." : nil,
+          autocomplete: "new-password"
+        ) %>
+  <% end %>
+
+  <div class="mt-6 flex flex-wrap gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>
+      <%= @record.persisted? ? "Save changes" : "Create #{@model.name}" %>
+    <% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :ghost,
+          href: @record.persisted? ? record_path(model: model_identifier(@model), id: identifier) : records_path(model: model_identifier(@model))
+        ) do %>Cancel<% end %>
+  </div>
+<% end %>

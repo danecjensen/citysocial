@@ -57,6 +57,11 @@ into CLAUDE.md.
 - Before merging a stacked PR chain, rebuild each branch from only its own commits,
   scan the assembled tree for conflict markers, parse shared state files, and run
   `bin/verify`; a GitHub-mergeable stack can still contain committed conflict debris.
+- Derive ingestion source and post author from the authenticated API token; never
+  permit producer attribution fields from an untrusted request body.
+- Key generic cross-engine ActiveRecord routes by the database table name, not
+  `model_name.route_key`: isolated engines collapse namespaced models such as
+  `Communities::Post` and `Feed::Post` to the same `posts` route key.
 - Generate Active Storage URLs inside engine ViewComponents through
   `helpers.main_app.rails_blob_path`; polymorphic `image_tag` routing can otherwise
   prefix blob paths with the engine mount and produce persistent 404s.

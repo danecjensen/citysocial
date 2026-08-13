@@ -17,6 +17,8 @@ module PlatformCore
                                 foreign_key: :followed_id, dependent: :destroy
     has_many :followers, through: :incoming_follows, source: :follower
 
+    has_many :api_tokens, class_name: "PlatformCore::ApiToken", dependent: :destroy
+
     validates :handle, presence: true, uniqueness: true
     validates :email, presence: true, uniqueness: { case_sensitive: false },
                       format: { with: URI::MailTo::EMAIL_REGEXP }

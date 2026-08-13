@@ -4,6 +4,8 @@ FactoryBot.define do
     venue { "Mohawk" }
     category { "music" }
     starts_at { 2.days.from_now }
+    source { "factory" }
+    sequence(:external_id) { |n| "event-#{n}" }
     score { 0.5 }
     url { "https://example.com/event" }
     image_url { "https://example.com/poster.jpg" }

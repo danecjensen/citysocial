@@ -9,10 +9,11 @@ bin/rails events:ingest         # ingests every db/events_feed/*.json
 bin/rails events:ingest[db/events_feed/2026-08-06.json]   # or a single file
 ```
 
-Ingestion is **deterministic and idempotent**: `Events::Ingest` computes a
-fingerprint from `title + venue + calendar-day` (Central Time) in Ruby and
-upserts by it, so re-running the same feed changes nothing and the same
-real-world event never lands twice — no LLM is involved in dedup.
+Ingestion is **deterministic and idempotent**: `Events::Ingest.call_many`
+derives a stable producer identity for each row and delegates to the singular
+`Events::Ingest.call`. The command also computes a fingerprint from `title +
+venue + calendar-day` (Central Time), so the same real-world event never lands
+twice even when separate producers discover it — no LLM is involved in dedup.
 
 ## File shape
 
@@ -30,7 +31,8 @@ Either a bare array, or `{ "events": [ ... ] }`. Each event object:
   "price": "$25+",                             // free-form; blank/omitted => "Free"
   "score": 0.92,                               // taste rank 0..1 (used ONLY to order)
   "confidence": 0.8,                           // optional 0..1
-  "source": "austinopera.org"                  // optional provenance
+  "source": "austinopera.org",                 // optional provenance
+  "external_id": "austin-opera-la-boheme-2026" // optional; URL/fingerprint fallback
 }
 ```
 

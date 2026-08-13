@@ -2,6 +2,9 @@
 
 ## Shipped
 - platform_core: identity, social graph, event bus, public Graph API.
+- developer portal: admin-only direct CRUD for every application ActiveRecord
+  model, with namespaced-model-safe URLs, sortable and paginated record tables,
+  complete per-model CSV exports, and validation-aware type-specific forms.
 - resident profiles: optional display name, neighborhood, bio, and validated avatar;
   public /people/:handle identity pages, PII-safe Graph snapshot, reusable
   AvatarComponent, cross-module author links, and platform_core.profile_updated.
@@ -56,6 +59,11 @@
   unique handle and a random password, or links the verified Google email to an
   existing account; provider/uid columns with a unique index. Credentials come from
   GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET.
+- ingestion API: kernel-owned, hashed and revocable producer tokens; canonical
+  `Feed::PublishPost` and singular `Events::Ingest` write paths; authenticated
+  `/api/v1/posts` and `/api/v1/events` transports with source attribution,
+  producer external IDs, deterministic event fingerprinting, and retry-safe
+  created/updated/duplicate responses.
 
 ## Next (suggested)
 - [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this

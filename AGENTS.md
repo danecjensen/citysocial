@@ -23,8 +23,8 @@ components/
    module's classes. Declared in each module's `package.yml`.
 2. **Modules talk to each other ONLY via `PlatformCore::EventBus`** — publish an
    event, let interested modules subscribe. The publisher must not know who
-   listens. See `components/feed/app/models/feed/post.rb` for the canonical
-   example (it emits `feed.post_created`).
+   listens. See `components/feed/app/public/feed/publish_post.rb` for the
+   canonical example (it emits `feed.post_created`).
 3. **Anything a module exposes to others goes in `app/public/<module>/`.**
    That's the only surface siblings may call. Packwerk privacy enforces this.
    Example: `Feed::Timeline`, `PlatformCore::Graph`.

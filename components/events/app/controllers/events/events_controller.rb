@@ -1,7 +1,7 @@
 module Events
   # Read-only public browsing surface. Events enter the store through
-  # Events::Ingest (a rake feed), never through this controller — so there is no
-  # login requirement and no write actions here.
+  # Events::Ingest (rake/API transports), never through this controller — so
+  # there is no login requirement and no write actions here.
   class EventsController < PlatformCore::BaseController
     PER_PAGE = 24
 

@@ -11,6 +11,8 @@ Nested memory for this module. Read alongside the root CLAUDE.md.
 - Controllers inherit from `PlatformCore::BaseController`.
 - Models inherit from `Events::ApplicationRecord` and use the table prefix `events_`.
 - Every new event must be documented in `events.rb`.
+- Every event transport calls the singular `Events::Ingest.call`; batch callers
+  use `call_many`, which delegates each row to that same command.
 
 ## UI (shared design system)
 - Build views from `PlatformCore::Ui::*` components (Button, Card, Table,

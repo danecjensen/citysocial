@@ -1,0 +1,91 @@
+<% content_for :title, "Developer · #{@model.name.pluralize}" %>
+<% first_row = @total_count.zero? ? 0 : ((@page - 1) * Developer::RecordsController::PER_PAGE) + 1 %>
+<% last_row = [@page * Developer::RecordsController::PER_PAGE, @total_count].min %>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: @model.name.pluralize,
+      subtitle: "#{@model.table_name} · #{@total_count} total · showing #{first_row}–#{last_row} · page #{@page} of #{@total_pages}"
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :ghost,
+          href: root_path
+        ) do %>Models<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :secondary,
+          href: records_path(model: model_identifier(@model), sort: @sort_column, dir: @sort_direction, format: :csv)
+        ) do %>Download CSV<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :primary,
+          href: new_record_path(model: model_identifier(@model))
+        ) do %>New <%= @model.name %><% end %>
+  <% end %>
+<% end %>
+
+<% if @records.any? %>
+  <%= render PlatformCore::Ui::TableComponent.new(columns: @columns.map { |column| sort_heading(column) } + ["Actions"]) do |table| %>
+    <% @records.each do |record| %>
+      <% table.with_row do |row| %>
+        <% @columns.each do |column| %>
+          <% row.with_cell do %>
+            <span class="block max-w-64 truncate font-mono text-xs text-ink-muted" title="<%= display_value(record, column) %>">
+              <%= truncate(display_value(record, column), length: 64) %>
+            </span>
+          <% end %>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="flex items-center justify-end gap-1 whitespace-nowrap">
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :ghost, size: :sm,
+                  href: record_path(model: model_identifier(@model), id: record_identifier(record))
+                ) do %>View<% end %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :secondary, size: :sm,
+                  href: edit_record_path(model: model_identifier(@model), id: record_identifier(record))
+                ) do %>Edit<% end %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(
+                  variant: :danger, size: :sm,
+                  href: record_path(model: model_identifier(@model), id: record_identifier(record)),
+                  method: :delete,
+                  confirm: "Delete #{@model.name} ##{record_identifier(record)}?"
+                ) do %>Delete<% end %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= render PlatformCore::Ui::EmptyStateComponent.new(
+        title: "No #{@model.name.pluralize.downcase} yet",
+        body: "Create the first record directly from the developer portal."
+      ) do |empty| %>
+    <% empty.with_action do %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :primary,
+            href: new_record_path(model: model_identifier(@model))
+          ) do %>New <%= @model.name %><% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @total_pages > 1 %>
+  <nav class="mt-5 flex items-center justify-between" aria-label="Pagination">
+    <div>
+      <% if @page > 1 %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :secondary,
+              href: records_path(model: model_identifier(@model), sort: @sort_column, dir: @sort_direction, page: @page - 1)
+            ) do %>← Previous<% end %>
+      <% end %>
+    </div>
+    <span class="font-mono text-xs text-ink-faint">Page <%= @page %> of <%= @total_pages %></span>
+    <div>
+      <% if @page < @total_pages %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :secondary,
+              href: records_path(model: model_identifier(@model), sort: @sort_column, dir: @sort_direction, page: @page + 1)
+            ) do %>Next →<% end %>
+      <% end %>
+    </div>
+  </nav>
+<% end %>

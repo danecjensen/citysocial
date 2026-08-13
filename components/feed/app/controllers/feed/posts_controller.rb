@@ -7,8 +7,12 @@ module Feed
     end
 
     def create
-      Feed::Post.create!(author_id: current_user.id, body: params[:body])
-      redirect_to posts_path
+      result = Feed::PublishPost.call(source: "web", author_id: current_user.id, body: params[:body])
+      if result.success?
+        redirect_to posts_path
+      else
+        redirect_to posts_path, alert: result.errors.to_sentence
+      end
     end
   end
 end

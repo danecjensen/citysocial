@@ -1,0 +1,11 @@
+<% identifier = record_identifier(@record) %>
+<% content_for :title, "Developer · Edit #{@model.name} ##{identifier}" %>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Edit #{@model.name} ##{identifier}",
+      subtitle: "Update the underlying #{@model.table_name} row. Model validations and callbacks still run."
+    ) %>
+
+<%= render PlatformCore::Ui::CardComponent.new do %>
+  <%= render "form" %>
+<% end %>

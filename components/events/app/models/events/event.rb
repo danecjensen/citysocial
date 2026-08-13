@@ -42,9 +42,15 @@ module Events
     validates :starts_at, presence: true
     validates :category, inclusion: { in: CATEGORIES }
     validates :fingerprint, presence: true, uniqueness: true
+    validates :source, :external_id, presence: true
+    validates :source, length: { maximum: 100 }
+    validates :external_id, length: { maximum: 500 }, uniqueness: { scope: :source }
+    validates :title, length: { maximum: 300 }
+    validates :url, :image_url, length: { maximum: 2_048 }
 
     before_validation :normalize_category
     before_validation :assign_fingerprint
+    validate :urls_are_http
 
     # --- Selection & ranking (deterministic, pure SQL) --------------------
 
@@ -207,6 +213,20 @@ module Events
       return if title.blank? || starts_at.blank?
 
       self.fingerprint = self.class.fingerprint_for(title, venue, starts_at)
+    end
+
+    def urls_are_http
+      %i[url image_url].each do |attribute|
+        value = public_send(attribute)
+        next if value.blank?
+
+        uri = URI.parse(value)
+        next if uri.is_a?(URI::HTTP) && uri.host.present?
+
+        errors.add(attribute, "must be an HTTP or HTTPS URL")
+      rescue URI::InvalidURIError
+        errors.add(attribute, "must be an HTTP or HTTPS URL")
+      end
     end
   end
 end

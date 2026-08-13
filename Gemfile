@@ -40,6 +40,7 @@ gem "aws-sdk-s3", require: false
 # Every app-module lives in components/ and is wired in here by the
 # `app_module` generator. platform_core is the shared kernel.
 gem "communities", path: "components/communities"
+gem "developer", path: "components/developer"
 gem "events", path: "components/events"
 gem "feed", path: "components/feed"
 gem "feedback", path: "components/feedback"

@@ -11,7 +11,7 @@ module Feed
     end
 
     # Events feed PUBLISHES:
-    #   - "feed.post_created" { post_id:, author_id: }
-    #     -> emitted by Feed::Post after_create_commit (see model).
+    #   - "feed.post_created" { post_id:, author_id:, source: }
+    #     -> emitted by Feed::PublishPost after a successful create.
   end
 end

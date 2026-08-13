@@ -39,6 +39,7 @@
       <% if respond_to?(:admin?) && admin? %>
         <%# The whole admin area is one page; every section lives at /admin. %>
         <% nav.with_link "Admin", "/admin", active: request.path.start_with?("/admin") %>
+        <% nav.with_link "Developer", "/developer", active: request.path.start_with?("/developer") %>
       <% end %>
       <% PlatformCore::Modules.secondary_nav_modules.each do |mod| %>
         <% nav.with_menu_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>

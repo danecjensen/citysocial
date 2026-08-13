@@ -1,80 +1,104 @@
 require "rails_helper"
 
 RSpec.describe Events::Ingest do
-  let(:feed) do
-    [
-      {
-        "title" => "La Bohème",
-        "venue" => "The Long Center",
-        "category" => "performing_arts",
-        "starts_at" => "2026-08-08T19:30:00-05:00",
-        "url" => "https://austinopera.org/la-boheme",
-        "image_url" => "https://austinopera.org/poster.jpg",
-        "price" => "$25+",
-        "score" => 0.92,
-        "source" => "austinopera.org"
-      },
-      {
-        "title" => "Dr. Dog",
-        "venue" => "Mohawk",
-        "category" => "music",
-        "starts_at" => "2026-08-09T20:00:00-05:00",
-        "score" => 0.80
-      }
-    ]
+  let(:payload) do
+    {
+      "title" => "La Bohème",
+      "venue" => "The Long Center",
+      "category" => "performing_arts",
+      "starts_at" => "2026-08-08T19:30:00-05:00",
+      "url" => "https://austinopera.org/la-boheme",
+      "image_url" => "https://austinopera.org/poster.jpg",
+      "price" => "$25+",
+      "score" => 0.92,
+      "source" => "spoofed-source"
+    }
   end
 
-  it "creates one row per event with parsed, typed attributes" do
-    result = described_class.call(feed)
+  it "creates a parsed, typed row attributed to the authenticated producer" do
+    result = described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
 
-    expect(result.created).to eq(2)
-    expect(Events::Event.count).to eq(2)
-
-    opera = Events::Event.find_by(title: "La Bohème")
-    expect(opera.category).to eq("performing_arts")
-    expect(opera.score).to eq(0.92)
-    expect(opera.starts_at).to eq(Time.zone.parse("2026-08-08T19:30:00-05:00"))
+    expect(result.status).to eq(:created)
+    expect(result.event).to have_attributes(
+      source: "claude-events",
+      external_id: "opera-2026",
+      category: "performing_arts",
+      score: 0.92,
+      starts_at: Time.zone.parse("2026-08-08T19:30:00-05:00")
+    )
   end
 
-  it "is idempotent — re-ingesting the same feed updates, never duplicates" do
-    described_class.call(feed)
-    result = described_class.call(feed)
+  it "reports an exact retry as a duplicate without another write" do
+    first = described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
+    duplicate = described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
 
-    expect(Events::Event.count).to eq(2)
-    expect(result.created).to eq(0)
-    expect(result.updated).to eq(2)
+    expect(duplicate.status).to eq(:duplicate)
+    expect(duplicate.event).to eq(first.event)
+    expect(Events::Event.count).to eq(1)
   end
 
-  it "updates mutable fields on re-ingest while keeping the same row" do
-    described_class.call(feed)
-    id = Events::Event.find_by(title: "Dr. Dog").id
+  it "updates mutable data when the same producer identity carries a correction" do
+    first = described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
+    updated = described_class.call(
+      source: "claude-events",
+      external_id: "opera-2026",
+      payload: payload.merge("score" => 0.99, "price" => "$30")
+    )
 
-    described_class.call([feed[1].merge("score" => 0.99, "price" => "$30")])
-
-    row = Events::Event.find(id)
-    expect(row.score).to eq(0.99)
-    expect(row.price).to eq("$30")
+    expect(updated.status).to eq(:updated)
+    expect(updated.event.id).to eq(first.event.id)
+    expect(updated.event).to have_attributes(score: 0.99, price: "$30")
   end
 
-  it "skips records missing a title or start time, counting them" do
-    result = described_class.call([{ "title" => "No date" }, { "starts_at" => "2026-08-08T19:30:00-05:00" }])
+  it "deduplicates the same real-world event across producer identities" do
+    first = described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
+    duplicate = described_class.call(source: "other-routine", external_id: "other-55", payload: payload)
 
-    expect(result.created).to eq(0)
-    expect(result.skipped).to eq(2)
+    expect(duplicate.status).to eq(:duplicate)
+    expect(duplicate.event).to eq(first.event)
+    expect(duplicate.event).to have_attributes(source: "claude-events", external_id: "opera-2026")
+    expect(Events::Event.count).to eq(1)
+  end
+
+  it "rejects missing ingestion identity or required event data" do
+    result = described_class.call(source: "", external_id: "", payload: { title: "No date" })
+
+    expect(result.status).to eq(:invalid)
+    expect(result.errors).to include("source can't be blank", "external ID can't be blank", "starts at can't be blank")
     expect(Events::Event.count).to eq(0)
   end
 
-  it "clamps unknown categories to 'other'" do
-    described_class.call([feed[0].merge("category" => "opera-night")])
-    expect(Events::Event.first.category).to eq("other")
+  it "clamps unknown categories to other" do
+    result = described_class.call(
+      source: "claude-events", external_id: "opera-2026", payload: payload.merge("category" => "opera-night")
+    )
+
+    expect(result.event.category).to eq("other")
   end
 
-  it "publishes events.events_ingested when at least one row is written" do
-    payloads = []
-    PlatformCore::EventBus.subscribe("events.events_ingested", ->(_n, p) { payloads << p })
+  it "publishes a singular ingestion event only when a row is written" do
+    allow(PlatformCore::EventBus).to receive(:publish)
 
-    described_class.call(feed)
+    described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
+    described_class.call(source: "claude-events", external_id: "opera-2026", payload: payload)
 
-    expect(payloads.last).to include(created: 2)
+    expect(PlatformCore::EventBus).to have_received(:publish).with(
+      "events.event_ingested",
+      event_id: kind_of(Integer),
+      source: "claude-events",
+      external_id: "opera-2026",
+      status: :created
+    ).once
+  end
+
+  it "funnels batch feeds through the singular command and reports duplicates" do
+    feed = [payload, payload.merge("title" => "Dr. Dog", "url" => nil, "venue" => "Mohawk")]
+
+    first = described_class.call_many(feed, source: "events-routine")
+    second = described_class.call_many(feed, source: "events-routine")
+
+    expect(first).to have_attributes(created: 2, updated: 0, duplicates: 0, skipped: 0)
+    expect(second).to have_attributes(created: 0, updated: 0, duplicates: 2, skipped: 0)
+    expect(Events::Event.count).to eq(2)
   end
 end

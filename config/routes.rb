@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  namespace :api do
+    namespace :v1 do
+      resources :posts, only: :create
+      resources :events, only: :create
+    end
+  end
+
+  mount Developer::Engine => "/developer"
   mount PickupSports::Engine => "/pickup_sports"
   mount Messaging::Engine => "/messaging"
   mount Notifications::Engine => "/notifications"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_12_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_12_010200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -115,22 +115,29 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_12_000000) do
     t.string "price"
     t.float "score", default: 0.0, null: false
     t.float "confidence", default: 1.0, null: false
-    t.string "source"
+    t.string "source", null: false
     t.datetime "last_seen_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_id", null: false
     t.index ["category"], name: "index_events_events_on_category"
     t.index ["fingerprint"], name: "index_events_events_on_fingerprint", unique: true
+    t.index ["source", "external_id"], name: "index_events_on_ingestion_identity", unique: true
     t.index ["starts_at", "score"], name: "index_events_events_on_starts_at_and_score"
     t.index ["starts_at"], name: "index_events_events_on_starts_at"
   end
 
   create_table "feed_posts", force: :cascade do |t|
     t.bigint "author_id", null: false
-    t.text "body", null: false
+    t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "title"
+    t.string "url"
+    t.string "source", default: "web", null: false
+    t.string "external_id"
     t.index ["author_id", "created_at"], name: "index_feed_posts_on_author_id_and_created_at"
+    t.index ["source", "external_id"], name: "index_feed_posts_on_ingestion_identity", unique: true, where: "(external_id IS NOT NULL)"
   end
 
   create_table "feedback_submissions", force: :cascade do |t|
@@ -254,6 +261,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_12_000000) do
     t.index ["game_id", "status", "created_at"], name: "index_pickup_sports_roster_queue"
     t.index ["game_id"], name: "index_pickup_sports_roster_entries_on_game_id"
     t.index ["resident_id"], name: "index_pickup_sports_roster_entries_on_resident_id"
+  end
+
+  create_table "platform_core_api_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "source", null: false
+    t.string "token_digest", null: false
+    t.datetime "last_used_at"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["source"], name: "index_platform_core_api_tokens_on_source"
+    t.index ["token_digest"], name: "index_platform_core_api_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_platform_core_api_tokens_on_user_id"
   end
 
   create_table "platform_core_follows", force: :cascade do |t|

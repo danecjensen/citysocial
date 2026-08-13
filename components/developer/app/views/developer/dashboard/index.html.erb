@@ -1,0 +1,25 @@
+<% content_for :title, "Developer portal" %>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Developer portal",
+      subtitle: "Direct, validation-aware CRUD and CSV exports for every application record. Use with care."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "/admin") do %>
+      Admin
+    <% end %>
+  <% end %>
+<% end %>
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <% @model_stats.each do |model, count| %>
+    <%= link_to records_path(model: model_identifier(model)), class: "block" do %>
+      <%= render PlatformCore::Ui::CardComponent.new do %>
+        <p class="font-mono text-xs uppercase tracking-wider text-ink-faint"><%= model.table_name %></p>
+        <h2 class="mt-1 font-display text-lg font-black text-ink"><%= model.name %></h2>
+        <p class="mt-4 font-mono text-3xl font-bold tabular-nums text-brand-700"><%= count %></p>
+        <p class="text-xs text-ink-muted"><%= "record".pluralize(count) %></p>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

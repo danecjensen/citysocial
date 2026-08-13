@@ -1,0 +1,33 @@
+<% identifier = record_identifier(@record) %>
+<% content_for :title, "Developer · #{@model.name} ##{identifier}" %>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "#{@model.name} ##{identifier}",
+      subtitle: @model.table_name
+    ) do |header| %>
+  <% header.with_actions do %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :ghost,
+          href: records_path(model: model_identifier(@model))
+        ) do %>All <%= @model.name.pluralize %><% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :primary,
+          href: edit_record_path(model: model_identifier(@model), id: identifier)
+        ) do %>Edit<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: :danger,
+          href: record_path(model: model_identifier(@model), id: identifier),
+          method: :delete,
+          confirm: "Delete #{@model.name} ##{identifier}?"
+        ) do %>Delete<% end %>
+  <% end %>
+<% end %>
+
+<%= render PlatformCore::Ui::TableComponent.new(columns: ["Attribute", "Value"]) do |table| %>
+  <% @model.column_names.each do |column| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %><span class="font-mono text-xs font-bold text-ink"><%= column %></span><% end %>
+      <% row.with_cell do %><pre class="max-w-3xl whitespace-pre-wrap break-all font-mono text-xs text-ink-muted"><%= display_value(@record, column) %></pre><% end %>
+    <% end %>
+  <% end %>
+<% end %>
