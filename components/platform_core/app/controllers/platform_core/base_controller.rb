@@ -8,6 +8,7 @@ module PlatformCore
 
     # Every module controller inherits this, so gate disabled modules here in one
     # place. The kernel ("platform_core") is never toggleable.
+    before_action :set_sentry_request_context
     before_action :ensure_module_enabled
 
     helper_method :current_user, :logged_in?, :admin?
@@ -46,14 +47,34 @@ module PlatformCore
       reset_session
       session[:user_id] = user.id
       @current_user = user
+      apply_sentry_user(user)
     end
 
     def logout
       reset_session
       @current_user = nil
+      apply_sentry_user(nil)
     end
 
     private
+
+    def set_sentry_request_context
+      return unless Sentry.initialized?
+
+      user = current_user
+      apply_sentry_user(user)
+      Sentry.set_tags(
+        app_module: current_module_key,
+        authentication: user ? "session" : "anonymous"
+      )
+      Sentry.set_context("request", request_id: request.request_id)
+    end
+
+    def apply_sentry_user(user)
+      return unless Sentry.initialized?
+
+      Sentry.set_user(user ? { id: user.id.to_s } : {})
+    end
 
     # The module a controller belongs to is its top-level namespace, e.g.
     # Marketplace::ListingsController => "marketplace". If that module is

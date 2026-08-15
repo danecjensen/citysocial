@@ -32,6 +32,17 @@ gem "packwerk", "~> 3.0"
 gem "bootsnap", require: false
 gem "dotenv-rails"
 
+# Product analytics. posthog-rails supplies request/session context while
+# posthog-ruby owns the single async client used by the whole modular monolith.
+gem "posthog-rails"
+gem "posthog-ruby", require: "posthog"
+
+# Production observability. Sentry selects Vernier's multi-thread profiler in
+# its initializer so profiles cover every Puma thread.
+gem "sentry-rails", "~> 6.7"
+gem "sentry-sidekiq", "~> 6.7"
+gem "vernier", "~> 1.10"
+
 # Active Storage on S3 in production (Heroku Bucketeer addon provisions the
 # bucket + credentials). Disk storage is ephemeral on Heroku's dynos.
 gem "aws-sdk-s3", require: false
@@ -50,6 +61,7 @@ gem "notifications", path: "components/notifications"
 gem "pickup_sports", path: "components/pickup_sports"
 gem "platform_core", path: "components/platform_core"
 gem "restaurants",   path: "components/restaurants"
+gem "shared_calendar", path: "components/shared_calendar"
 
 group :development, :test do
   gem "factory_bot_rails"

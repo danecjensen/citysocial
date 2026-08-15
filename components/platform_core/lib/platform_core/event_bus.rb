@@ -18,6 +18,8 @@ module PlatformCore
       end
 
       def publish(event_name, **payload)
+        PlatformCore::Analytics.capture_domain_event(event_name, payload) if defined?(PlatformCore::Analytics)
+
         registry[event_name.to_s].each do |sub|
           if sub.async
             EventBus::AsyncDispatch.perform_later(event_name.to_s, sub.handler.to_s, payload)

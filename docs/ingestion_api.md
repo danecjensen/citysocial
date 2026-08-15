@@ -61,9 +61,21 @@ curl -X POST https://citysocial.example/api/v1/events \
     "venue": "Republic Square",
     "starts_at": "2026-08-20T19:00:00-05:00",
     "category": "food",
-    "url": "https://example.com/night-market"
+    "url": "https://example.com/night-market",
+    "image_url": "https://example.com/night-market.jpg",
+    "score": 0.81,
+    "confidence": 0.95,
+    "why": "A distinctive outdoor market with local vendors.",
+    "ticket_urgency": "advance tickets recommended",
+    "age_limit": "All ages"
   }'
 ```
+
+The ATX routine maps `start_datetime`/`end_datetime` to
+`starts_at`/`ends_at`, sends its single curated `category`, and uses a stable
+producer `external_id` derived from the event identity. The API preserves the
+routine's `why`, `ticket_urgency`, and `age_limit` alongside the factual event
+details so the rolling top-ten page can explain each pick.
 
 Local scripts may skip HTTP and call the same commands with `bin/rails runner`;
 that is another transport into the same write path, not a separate ingestion

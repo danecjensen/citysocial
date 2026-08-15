@@ -1,0 +1,213 @@
+<% calendar_logged_in = logged_in? %>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Community Calendar",
+      subtitle: "A shared, resident-made view of what's happening around the city."
+    ) do |header| %>
+  <% header.with_actions do %>
+    <% if calendar_logged_in %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_event_path) do %>
+        Add an event
+      <% end %>
+    <% else %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: "/login") do %>
+        Log in to add
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @featured_events.any? %>
+  <section class="mb-8" aria-labelledby="featured-events-heading">
+    <div class="mb-3 flex items-end justify-between gap-4">
+      <div>
+        <p class="font-mono text-xs font-bold uppercase tracking-widest text-brand-700">In pictures</p>
+        <h2 id="featured-events-heading" class="mt-1 font-display text-2xl font-black text-ink">Picture your month</h2>
+      </div>
+      <p class="hidden max-w-sm text-right text-sm text-ink-muted sm:block">Resident photos put the people, places, and atmosphere right on the calendar.</p>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-3">
+      <% @featured_events.each_with_index do |event, index| %>
+        <% featured_classes = if index.zero?
+                                "group relative block aspect-[4/3] overflow-hidden rounded-xl bg-sunken shadow-card transition-shadow hover:shadow-pop"
+                              else
+                                "group relative hidden aspect-[4/3] overflow-hidden rounded-xl bg-sunken shadow-card transition-shadow hover:shadow-pop md:block"
+                              end %>
+        <%= link_to event_path(event), class: featured_classes do %>
+          <%= image_tag main_app.rails_blob_path(event.image, only_path: true),
+                class: "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105",
+                alt: event.title %>
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/60 to-transparent p-4 pt-14 text-white">
+            <p class="font-mono text-xs font-bold uppercase tracking-wide text-white/80">
+              <%= event.starts_at.in_time_zone.strftime("%a, %b %-d · %-I:%M %p") %>
+            </p>
+            <h3 class="mt-1 line-clamp-2 font-display text-lg font-black"><%= event.title %></h3>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<section aria-labelledby="calendar-month-heading">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="font-mono text-xs font-bold uppercase tracking-widest text-ink-faint">Month view</p>
+      <h2 id="calendar-month-heading" class="mt-1 font-display text-2xl font-black text-ink"><%= @month.strftime("%B %Y") %></h2>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :secondary,
+            size: :sm,
+            href: events_path(month: (@month - 1.month).strftime("%Y-%m"), category: @category),
+            aria_label: "Previous month"
+          ) do %>←<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :ghost,
+            size: :sm,
+            href: events_path(category: @category)
+          ) do %>Today<% end %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: :secondary,
+            size: :sm,
+            href: events_path(month: (@month + 1.month).strftime("%Y-%m"), category: @category),
+            aria_label: "Next month"
+          ) do %>→<% end %>
+    </div>
+  </div>
+
+  <div class="mb-5 flex flex-wrap gap-2" aria-label="Filter events by category">
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: @category.nil? ? :primary : :secondary,
+          size: :sm,
+          href: events_path(month: @month.strftime("%Y-%m")),
+          pressed: @category.nil?
+        ) do %>All events<% end %>
+    <% SharedCalendar::Event::CATEGORIES.each do |key, details| %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(
+            variant: @category == key ? :primary : :secondary,
+            size: :sm,
+            href: events_path(month: @month.strftime("%Y-%m"), category: key),
+            pressed: @category == key
+          ) do %><%= details.last %> <%= details.first %><% end %>
+    <% end %>
+  </div>
+
+  <div class="hidden md:block">
+    <%= render PlatformCore::Ui::CardComponent.new(padded: false) do %>
+      <div class="grid grid-cols-7 border-b border-line bg-sunken/70" role="row">
+        <% %w[Sun Mon Tue Wed Thu Fri Sat].each do |weekday| %>
+          <div class="px-2 py-3 text-center font-mono text-xs font-bold uppercase tracking-wide text-ink-muted" role="columnheader">
+            <%= weekday %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-7" role="grid" aria-label="<%= @month.strftime("%B %Y") %> calendar">
+        <% @calendar_days.each do |date| %>
+          <% day_events = @events_by_date.fetch(date, []) %>
+          <% day_classes = if date.month == @month.month
+                             "min-h-36 border-b border-r border-line bg-surface p-2 last:border-r-0"
+                           else
+                             "min-h-36 border-b border-r border-line bg-sunken/40 p-2 text-ink-faint last:border-r-0"
+                           end %>
+          <div class="<%= day_classes %>" role="gridcell" aria-label="<%= date.strftime("%A, %B %-d") %>">
+            <div class="mb-2 flex items-center justify-between">
+              <% if date == Time.zone.today %>
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 font-mono text-xs font-black text-white" aria-label="Today"><%= date.day %></span>
+              <% else %>
+                <span class="font-mono text-xs font-bold"><%= date.day %></span>
+              <% end %>
+              <% if calendar_logged_in && date.month == @month.month %>
+                <%= render PlatformCore::Ui::ButtonComponent.new(
+                      variant: :ghost,
+                      size: :sm,
+                      href: new_event_path(date: date.iso8601),
+                      aria_label: "Add an event on #{date.strftime('%B %-d')}"
+                    ) do %>+<% end %>
+              <% end %>
+            </div>
+
+            <div class="space-y-2">
+              <% day_events.first(2).each do |event| %>
+                <%= link_to event_path(event), class: "group block overflow-hidden rounded-md border border-line bg-surface shadow-card transition-shadow hover:shadow-pop" do %>
+                  <% if event.image.attached? %>
+                    <div class="h-14 overflow-hidden bg-sunken">
+                      <%= image_tag main_app.rails_blob_path(event.image, only_path: true),
+                            class: "h-full w-full object-cover transition-transform group-hover:scale-105",
+                            alt: "",
+                            loading: "lazy" %>
+                    </div>
+                  <% else %>
+                    <div class="flex h-9 items-center gap-2 bg-gradient-to-r from-brand-100 to-agave-100 px-2 text-brand-800">
+                      <span aria-hidden="true"><%= event.category_symbol %></span>
+                      <span class="truncate font-mono text-[10px] font-bold uppercase tracking-wide"><%= event.category_label %></span>
+                    </div>
+                  <% end %>
+                  <div class="p-2">
+                    <p class="truncate font-mono text-[10px] font-bold text-brand-700"><%= event.starts_at.in_time_zone.strftime("%-I:%M %p") %></p>
+                    <p class="mt-0.5 line-clamp-2 text-xs font-bold leading-tight text-ink group-hover:text-brand-700"><%= event.title %></p>
+                  </div>
+                <% end %>
+              <% end %>
+              <% if day_events.size > 2 %>
+                <p class="px-1 font-mono text-[10px] font-bold text-ink-muted">+<%= day_events.size - 2 %> more</p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="space-y-5 md:hidden">
+    <% if @events.any? %>
+      <% @events_by_date.each do |date, events| %>
+        <section aria-labelledby="agenda-<%= date.iso8601 %>">
+          <div class="mb-2 flex items-center gap-3">
+            <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-brand-600 text-white shadow-card">
+              <span class="font-mono text-[10px] font-bold uppercase"><%= date.strftime("%b") %></span>
+              <span class="font-display text-xl font-black leading-none"><%= date.day %></span>
+            </div>
+            <h3 id="agenda-<%= date.iso8601 %>" class="font-display text-lg font-bold text-ink"><%= date.strftime("%A") %></h3>
+          </div>
+
+          <div class="space-y-3">
+            <% events.each do |event| %>
+              <%= link_to event_path(event), class: "group flex min-h-28 overflow-hidden rounded-lg border border-line bg-surface shadow-card transition-shadow hover:shadow-pop" do %>
+                <div class="w-28 shrink-0 overflow-hidden bg-gradient-to-br from-brand-100 to-agave-100">
+                  <% if event.image.attached? %>
+                    <%= image_tag main_app.rails_blob_path(event.image, only_path: true), class: "h-full w-full object-cover", alt: "", loading: "lazy" %>
+                  <% else %>
+                    <div class="flex h-full items-center justify-center text-3xl text-brand-800" aria-hidden="true"><%= event.category_symbol %></div>
+                  <% end %>
+                </div>
+                <div class="min-w-0 flex-1 p-3">
+                  <p class="font-mono text-xs font-bold text-brand-700"><%= event.starts_at.in_time_zone.strftime("%-I:%M %p") %></p>
+                  <h4 class="mt-1 line-clamp-2 font-display font-bold text-ink group-hover:text-brand-700"><%= event.title %></h4>
+                  <% if event.venue_name.present? || event.location.present? %>
+                    <p class="mt-2 line-clamp-1 text-xs text-ink-muted">📍 <%= [event.venue_name, event.location].compact.join(" · ") %></p>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    <% else %>
+      <%= render PlatformCore::Ui::EmptyStateComponent.new(
+            title: "Nothing on this view yet",
+            body: @category ? "Try all categories, another month, or add the first matching event." : "Be the first resident to put something worth doing on the calendar."
+          ) do |empty| %>
+        <% empty.with_action do %>
+          <% if calendar_logged_in %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, href: new_event_path) do %>Add an event<% end %>
+          <% elsif @category %>
+            <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, href: events_path(month: @month.strftime("%Y-%m"))) do %>Show all events<% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</section>

@@ -93,6 +93,17 @@ UI is centralized so modules never drift visually. The stack is Tailwind CSS v4
 - `bundle exec rubocop` — style holds.
 If you add a feature without a test, the loop will (correctly) consider it unfinished.
 
+## Product analytics (agents must preserve the contract)
+
+Read `docs/analytics.md` before adding or changing a user-facing flow. Modules
+never call PostHog directly. Publish one content-free domain event from the
+canonical successful write path and let `PlatformCore::Analytics` bridge it to
+PostHog. Every feature spec names the resident outcome, event, baseline, target,
+time window, and minimum sample. Analytics is evidence, never authorization or
+a runtime dependency. Never capture free-form resident content, credentials,
+emails, search text, or private URLs. Keep Sentry as the owner of errors and
+performance unless the observability contract is explicitly changed.
+
 ## Self-improvement
 
 When you discover a rule the hard way (a boundary you almost broke, a pattern that

@@ -1,0 +1,14 @@
+<div class="mb-3">
+  <%= link_to "← #{@event.title}", event_path(@event), class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Edit event",
+      subtitle: "Keep the shared calendar accurate for everyone planning around it."
+    ) %>
+
+<div class="mx-auto max-w-3xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", event: @event %>
+  <% end %>
+</div>

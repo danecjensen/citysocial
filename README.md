@@ -32,6 +32,20 @@ GOOGLE_CLIENT_SECRET=...
 These are read from the environment (dotenv in development). Without them the app
 still boots and password auth works; the Google button only fails at request time.
 
+### Product analytics with PostHog (optional)
+
+Production product analytics, privacy-masked session replay, and server-side
+domain events are enabled when a PostHog project token is present:
+
+```bash
+POSTHOG_PROJECT_TOKEN=phc_...
+POSTHOG_HOST=https://us.i.posthog.com # use eu.i.posthog.com for EU Cloud
+```
+
+Development stays off unless `POSTHOG_ENABLED=true`. See
+[`docs/analytics.md`](docs/analytics.md) for the event contract, privacy defaults,
+dashboard recommendations, and operating rules for AI coding agents.
+
 ## Architecture in one breath
 
 - `components/platform_core` — the shared kernel: `User`, the `Follow` social

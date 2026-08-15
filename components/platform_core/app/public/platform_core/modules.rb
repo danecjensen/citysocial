@@ -18,6 +18,7 @@ module PlatformCore
       { key: "communities",  label: "Communities",  path: "/communities",  nav: true },
       { key: "marketplace",  label: "Marketplace",  path: "/marketplace",  nav: true },
       { key: "events",       label: "Events",       path: "/events",       nav: true },
+      { key: "shared_calendar", label: "Calendar", path: "/shared_calendar", nav: true },
       { key: "pickup_sports", label: "Pickup Sports", path: "/pickup_sports", nav: true },
       { key: "messaging",    label: "Messages",     path: "/messaging",    nav: false },
       { key: "feedback",     label: "Feedback",     path: "/feedback",     nav: true },

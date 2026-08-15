@@ -11,6 +11,9 @@ RSpec.describe Events::Ingest do
       "image_url" => "https://austinopera.org/poster.jpg",
       "price" => "$25+",
       "score" => 0.92,
+      "why" => "An ambitious production at a favorite venue.",
+      "ticket_urgency" => "likely to sell out",
+      "age_limit" => "18+",
       "source" => "spoofed-source"
     }
   end
@@ -24,6 +27,9 @@ RSpec.describe Events::Ingest do
       external_id: "opera-2026",
       category: "performing_arts",
       score: 0.92,
+      why: "An ambitious production at a favorite venue.",
+      ticket_urgency: "likely to sell out",
+      age_limit: "18+",
       starts_at: Time.zone.parse("2026-08-08T19:30:00-05:00")
     )
   end

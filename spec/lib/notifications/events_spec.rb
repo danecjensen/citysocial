@@ -14,6 +14,7 @@ RSpec.describe Notifications::Events do
     expected = {
       "feed.post_created" => Notifications::DeliverActivity,
       "communities.post_created" => Notifications::DeliverActivity,
+      "shared_calendar.event_created" => Notifications::DeliverActivity,
       "feedback.submission_status_changed" => Notifications::DeliverDirect
     }
 

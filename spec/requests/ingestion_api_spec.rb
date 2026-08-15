@@ -70,6 +70,9 @@ RSpec.describe "Ingestion API", type: :request do
         venue: "Republic Square",
         starts_at: "2026-08-20T19:00:00-05:00",
         category: "food",
+        why: "A distinctive outdoor market with local vendors.",
+        ticket_urgency: "advance tickets recommended",
+        age_limit: "All ages",
         source: "spoofed-source"
       }
     end
@@ -79,7 +82,13 @@ RSpec.describe "Ingestion API", type: :request do
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body).to include("status" => "created")
-      expect(Events::Event.last).to have_attributes(source: "newsblur-cli", external_id: "event-42")
+      expect(Events::Event.last).to have_attributes(
+        source: "newsblur-cli",
+        external_id: "event-42",
+        why: "A distinctive outdoor market with local vendors.",
+        ticket_urgency: "advance tickets recommended",
+        age_limit: "All ages"
+      )
     end
 
     it "returns duplicate for an exact retry and updated for a correction" do

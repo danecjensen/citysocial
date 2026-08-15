@@ -34,4 +34,21 @@ RSpec.describe Notifications::DeliverActivity do
       target_path: "/communities"
     )
   end
+
+  it "notifies followers about a calendar contribution without referencing calendar models" do
+    author = create(:user, handle: "organizer")
+    follower = create(:user)
+    PlatformCore::Follow.create!(follower_id: follower.id, followed_id: author.id)
+
+    described_class.call("shared_calendar.event_created", event_id: 18, author_id: author.id)
+
+    expect(Notifications::Notification.last).to have_attributes(
+      recipient_id: follower.id,
+      actor_id: author.id,
+      event_name: "shared_calendar.event_created",
+      source_id: 18,
+      message: "@organizer added an event to the community calendar.",
+      target_path: "/shared_calendar"
+    )
+  end
 end

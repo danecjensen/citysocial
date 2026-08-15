@@ -28,14 +28,24 @@ RSpec.describe "Google sign-in", type: :request do
   end
 
   it "creates and signs in a new user from the callback" do
+    allow(PlatformCore::Analytics).to receive(:identify)
+    allow(PlatformCore::Analytics).to receive(:capture)
+
     expect { get "/auth/google_oauth2/callback" }
       .to change(PlatformCore::User, :count).by(1)
 
     expect(response).to redirect_to("/")
-    expect(session[:user_id]).to eq(PlatformCore::User.last.id)
+    user = PlatformCore::User.last
+    expect(session[:user_id]).to eq(user.id)
+    expect(PlatformCore::Analytics).to have_received(:capture).with(
+      "user signed up",
+      user_id: user,
+      properties: { authentication_method: "google" }
+    )
   end
 
   it "links the Google identity to an existing account with the same email" do
+    allow(PlatformCore::Analytics).to receive(:capture)
     existing = create(:user, email: "ada@example.com")
 
     expect { get "/auth/google_oauth2/callback" }
@@ -43,6 +53,11 @@ RSpec.describe "Google sign-in", type: :request do
 
     expect(response).to redirect_to("/")
     expect(existing.reload.provider).to eq("google_oauth2")
+    expect(PlatformCore::Analytics).to have_received(:capture).with(
+      "user logged in",
+      user_id: existing,
+      properties: { authentication_method: "google" }
+    )
   end
 
   it "redirects to login when the identity is unusable" do

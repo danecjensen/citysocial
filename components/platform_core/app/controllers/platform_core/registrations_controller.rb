@@ -10,6 +10,12 @@ module PlatformCore
 
       if @user.save
         login(@user)
+        PlatformCore::Analytics.identify(@user)
+        PlatformCore::Analytics.capture(
+          "user signed up",
+          user_id: @user,
+          properties: { authentication_method: "password" }
+        )
         redirect_to "/", notice: "Welcome to CitySocial, #{@user.handle}."
       else
         render :new, status: :unprocessable_content

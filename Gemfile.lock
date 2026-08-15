@@ -77,6 +77,13 @@ PATH
       platform_core
       rails (~> 7.2)
 
+PATH
+  remote: components/shared_calendar
+  specs:
+    shared_calendar (0.1.0)
+      platform_core
+      rails (~> 7.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -343,6 +350,11 @@ GEM
     pg (1.6.3-x86_64-darwin)
     pg (1.6.3-x86_64-linux)
     pg (1.6.3-x86_64-linux-musl)
+    posthog-rails (3.18.2)
+      posthog-ruby (= 3.23.1)
+      railties (>= 5.2.0)
+    posthog-ruby (3.23.1)
+      concurrent-ruby (~> 1)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -461,6 +473,16 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    sentry-rails (6.7.0)
+      railties (>= 5.2.0)
+      sentry-ruby (~> 6.7.0)
+    sentry-ruby (6.7.0)
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      logger
+    sentry-sidekiq (6.7.0)
+      sentry-ruby (~> 6.7.0)
+      sidekiq (>= 5.0)
     sidekiq (7.3.9)
       base64
       connection_pool (>= 2.3.0)
@@ -497,6 +519,7 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
+    vernier (1.10.1)
     version_gem (1.1.15)
     view_component (4.12.0)
       actionview (>= 7.1.0)
@@ -545,6 +568,8 @@ DEPENDENCIES
   pg (~> 1.5)
   pickup_sports!
   platform_core!
+  posthog-rails
+  posthog-ruby
   propshaft
   puma (>= 6.0)
   rails (~> 7.2)
@@ -553,10 +578,14 @@ DEPENDENCIES
   rspec-rails (~> 7.0)
   rubocop-rails
   selenium-webdriver
+  sentry-rails (~> 6.7)
+  sentry-sidekiq (~> 6.7)
+  shared_calendar!
   sidekiq (~> 7.0)
   stimulus-rails
   tailwindcss-rails (~> 4.0)
   turbo-rails
+  vernier (~> 1.10)
   view_component
 
 RUBY VERSION

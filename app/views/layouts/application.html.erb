@@ -28,9 +28,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= render "layouts/posthog" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="flex min-h-screen flex-col">
+  <% posthog_user = current_user if respond_to?(:current_user) && PlatformCore::Analytics.enabled? %>
+  <body class="flex min-h-screen flex-col"
+        data-posthog-distinct-id="<%= posthog_user&.posthog_distinct_id %>"
+        data-posthog-person-properties="<%= PlatformCore::Analytics.person_properties(posthog_user).to_json if posthog_user %>">
     <%= render PlatformCore::Ui::NavBarComponent.new do |nav| %>
       <% PlatformCore::Modules.primary_nav_modules.each do |mod| %>
         <% nav.with_link mod.label, mod.path, active: request.path.start_with?(mod.path) && !request.path.include?("/admin") %>

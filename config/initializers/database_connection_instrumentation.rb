@@ -61,9 +61,34 @@ module DatabaseConnectionInstrumentation
     }.compact
 
     Rails.logger.warn(fields.map { |key, value| "#{key}=#{value}" }.join(" "))
+    report_database_connection_to_sentry(event, fields)
   rescue StandardError
     # Observability must never turn a slow checkout into a failed request.
     nil
+  end
+
+  def report_database_connection_to_sentry(operation, fields)
+    return unless defined?(Sentry) && Sentry.initialized? && Sentry.configuration.sending_allowed?
+
+    attributes = {
+      operation: operation,
+      status: fields.fetch(:status),
+      pool: fields.fetch(:pool)
+    }
+    Sentry.metrics.distribution(
+      "citysocial.database_connection.duration",
+      fields.fetch(:duration_ms),
+      unit: "millisecond",
+      attributes: attributes
+    )
+    return unless Sentry.configuration.enable_logs
+
+    Sentry.logger.warn(
+      "Database connection slow or failed",
+      **fields,
+      operation: operation,
+      origin: "manual.database"
+    )
   end
 end
 

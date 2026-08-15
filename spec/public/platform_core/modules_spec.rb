@@ -21,7 +21,7 @@ RSpec.describe PlatformCore::Modules do
     it "returns the remaining nav modules and none of the primary ones" do
       keys = described_class.secondary_nav_modules.map(&:key)
 
-      expect(keys).to include("communities", "marketplace", "pickup_sports", "feedback")
+      expect(keys).to include("communities", "marketplace", "shared_calendar", "pickup_sports", "feedback")
       expect(keys).not_to include("feed", "events", "restaurants")
     end
 

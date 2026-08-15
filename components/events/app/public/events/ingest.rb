@@ -8,7 +8,7 @@ module Events
 
     PERMITTED = %w[
       title description venue category url image_url starts_at ends_at price
-      score confidence
+      score confidence why ticket_urgency age_limit
     ].freeze
 
     Result = Struct.new(:status, :event, :errors, keyword_init: true) do

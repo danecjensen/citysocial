@@ -85,3 +85,12 @@ into CLAUDE.md.
 - Rails 7.2 connection-pool `new_connection` only allocates a lazy adapter; call
   `connect!` before recording physical-connect timing, or the expensive libpq
   handshake and PostgreSQL type-map setup are misreported as query time.
+- Put API credentials for cloud routines in the cloud schedule's secret environment;
+  a local `.env` is unavailable to remote runs, and a token must never be committed
+  to the routine repository.
+- Treat remote image URLs as untrusted claims: require an anonymous GET whose bytes
+  decode as an image before ingestion, never synthesize plausible CDN paths, and keep
+  a client-side category placeholder for later 404s or hotlink blocking.
+- Cache `logged_in?` once before a repeated view loop: `current_user` uses `||=`, so
+  an anonymous `nil` is not memoized and repeated checks can issue one user lookup
+  per rendered row or calendar cell.

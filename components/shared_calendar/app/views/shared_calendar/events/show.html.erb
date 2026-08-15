@@ -1,0 +1,92 @@
+<div class="mb-4">
+  <%= link_to "← Community Calendar", events_path(month: @event.starts_at.in_time_zone.strftime("%Y-%m")), class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<article class="mx-auto max-w-4xl">
+  <div class="relative mb-6 aspect-[16/9] overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-agave-100 shadow-pop">
+    <% if @event.image.attached? %>
+      <%= image_tag main_app.rails_blob_path(@event.image, only_path: true), class: "h-full w-full object-cover", alt: @event.title %>
+    <% else %>
+      <div class="flex h-full flex-col items-center justify-center text-brand-800">
+        <span class="text-7xl" aria-hidden="true"><%= @event.category_symbol %></span>
+        <span class="mt-3 font-mono text-xs font-bold uppercase tracking-[0.25em]"><%= @event.category_label %></span>
+      </div>
+    <% end %>
+
+    <div class="absolute left-4 top-4 flex h-20 w-20 flex-col items-center justify-center rounded-xl border border-white/60 bg-surface/95 text-center shadow-pop">
+      <span class="font-mono text-xs font-bold uppercase tracking-widest text-brand-700"><%= @event.starts_at.in_time_zone.strftime("%b") %></span>
+      <span class="font-display text-3xl font-black leading-none text-ink"><%= @event.starts_at.in_time_zone.day %></span>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="min-w-0 flex-1">
+      <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= @event.category_symbol %> <%= @event.category_label %><% end %>
+      <h1 class="mt-3 font-display text-3xl font-black tracking-tight text-ink sm:text-4xl"><%= @event.title %></h1>
+    </div>
+    <% if logged_in? && @event.author_id == current_user.id %>
+      <div class="flex flex-wrap gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: edit_event_path(@event)) do %>Edit<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :danger,
+              size: :sm,
+              href: event_path(@event),
+              method: :delete,
+              confirm: "Remove this event from the community calendar?"
+            ) do %>Remove<% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-6 grid gap-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <p class="font-mono text-xs font-bold uppercase tracking-widest text-ink-faint">When</p>
+      <p class="mt-2 font-display text-lg font-bold text-ink"><%= @event.starts_at.in_time_zone.strftime("%A, %B %-d") %></p>
+      <p class="mt-1 text-sm text-ink-muted">
+        <%= @event.starts_at.in_time_zone.strftime("%-I:%M %p") %>
+        <% if @event.ends_at.present? %>
+          – <%= @event.ends_at.in_time_zone.strftime(@event.ends_at.in_time_zone.to_date == @event.starts_at.in_time_zone.to_date ? "%-I:%M %p" : "%a, %b %-d at %-I:%M %p") %>
+        <% end %>
+      </p>
+    <% end %>
+
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <p class="font-mono text-xs font-bold uppercase tracking-widest text-ink-faint">Where</p>
+      <% if @event.venue_name.present? || @event.location.present? %>
+        <% if @event.venue_name.present? %><p class="mt-2 font-display text-lg font-bold text-ink"><%= @event.venue_name %></p><% end %>
+        <% if @event.location.present? %><p class="mt-1 text-sm text-ink-muted"><%= @event.location %></p><% end %>
+      <% else %>
+        <p class="mt-2 text-sm text-ink-muted">The contributor has not added a location yet.</p>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+    <div class="space-y-6">
+      <% if @event.description.present? %>
+        <%= render PlatformCore::Ui::CardComponent.new do |card| %>
+          <% card.with_header do %><h2 class="font-display text-lg font-bold text-ink">About this event</h2><% end %>
+          <p class="whitespace-pre-wrap leading-relaxed text-ink"><%= @event.description %></p>
+        <% end %>
+      <% end %>
+
+      <%= render PlatformCore::Ui::ShareComponent.new(title: @event.title, url: event_url(@event)) %>
+    </div>
+
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <p class="font-mono text-xs font-bold uppercase tracking-widest text-ink-faint">Added by</p>
+      <% if @author %>
+        <div class="mt-3 flex items-center gap-3">
+          <%= render PlatformCore::Ui::AvatarComponent.new(user: @author, size: :md, alt: "") %>
+          <div class="min-w-0">
+            <%= link_to @author.display_name_or_handle, "/people/#{@author.handle}", class: "block truncate font-bold text-ink hover:text-brand-700" %>
+            <p class="truncate font-mono text-xs text-ink-faint">@<%= @author.handle %></p>
+          </div>
+        </div>
+      <% else %>
+        <p class="mt-3 text-sm text-ink-muted">A former CitySocial resident</p>
+      <% end %>
+      <p class="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-muted">Community events are contributed by residents. Check details with the organizer before heading out.</p>
+    <% end %>
+  </div>
+</article>

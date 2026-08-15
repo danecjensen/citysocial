@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_12_010200) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_15_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -120,6 +120,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_12_010200) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "external_id", null: false
+    t.text "why"
+    t.string "ticket_urgency"
+    t.string "age_limit"
     t.index ["category"], name: "index_events_events_on_category"
     t.index ["fingerprint"], name: "index_events_events_on_fingerprint", unique: true
     t.index ["source", "external_id"], name: "index_events_on_ingestion_identity", unique: true
@@ -330,6 +333,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_12_010200) do
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_restaurants_votes_on_created_at"
     t.index ["voter_id"], name: "index_restaurants_votes_on_voter_id"
+  end
+
+  create_table "shared_calendar_events", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.string "category", null: false
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at"
+    t.string "venue_name"
+    t.string "location"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_shared_calendar_events_on_author_id"
+    t.index ["category"], name: "index_shared_calendar_events_on_category"
+    t.index ["starts_at"], name: "index_shared_calendar_events_on_starts_at"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

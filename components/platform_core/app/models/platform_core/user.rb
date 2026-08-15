@@ -38,6 +38,12 @@ module PlatformCore
       display_name_or_handle.first.upcase
     end
 
+    # Stable across browser and server analytics. Never use mutable PII such as
+    # email or handle as a PostHog distinct id.
+    def posthog_distinct_id
+      PlatformCore::Analytics.distinct_id(id)
+    end
+
     # True when this account signs in through an OAuth provider (e.g. Google).
     def oauth?
       provider.present?

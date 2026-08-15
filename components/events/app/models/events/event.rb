@@ -47,6 +47,9 @@ module Events
     validates :external_id, length: { maximum: 500 }, uniqueness: { scope: :source }
     validates :title, length: { maximum: 300 }
     validates :url, :image_url, length: { maximum: 2_048 }
+    validates :why, length: { maximum: 1_000 }
+    validates :ticket_urgency, length: { maximum: 300 }
+    validates :age_limit, length: { maximum: 100 }
 
     before_validation :normalize_category
     before_validation :assign_fingerprint

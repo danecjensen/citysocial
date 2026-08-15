@@ -7,7 +7,14 @@ module PlatformCore
       user = PlatformCore::User.from_omniauth(request.env["omniauth.auth"])
 
       if user&.persisted?
+        new_account = user.previously_new_record?
         login(user)
+        PlatformCore::Analytics.identify(user)
+        PlatformCore::Analytics.capture(
+          new_account ? "user signed up" : "user logged in",
+          user_id: user,
+          properties: { authentication_method: "google" }
+        )
         redirect_to "/", notice: "Signed in with Google. Welcome, #{user.handle}."
       else
         redirect_to "/login", alert: sign_in_failed_message

@@ -3,7 +3,13 @@ require "rails_helper"
 RSpec.describe "Events", type: :request do
   describe "GET /events (this week's top 10)" do
     it "shows the ten best-scoring events in the week ahead and hides the rest" do
-      create(:event, title: "Top Pick Headliner", score: 0.99, starts_at: 2.days.from_now)
+      create(
+        :event,
+        title: "Top Pick Headliner",
+        why: "A rare favorite-venue show.",
+        score: 0.99,
+        starts_at: 2.days.from_now
+      )
       11.times { |i| create(:event, title: "Filler #{i}", score: 0.2, starts_at: 3.days.from_now) }
       create(:event, title: "Lowest Ranked Pick", score: 0.01, starts_at: 4.days.from_now)
 
@@ -11,12 +17,25 @@ RSpec.describe "Events", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Top Pick Headliner")
+      expect(response.body).to include("A rare favorite-venue show.")
       expect(response.body).not_to include("Lowest Ranked Pick")
     end
 
     it "renders an empty state when nothing is scheduled" do
       get "/events"
       expect(response.body).to include("No events yet this week")
+    end
+
+    it "provides a category placeholder when remote artwork fails" do
+      create(:event, title: "Fragile Poster", image_url: "https://venue.example/missing.jpg")
+
+      get "/events"
+
+      page = Capybara.string(response.body)
+      image = "[data-controller='remote-image'] img[data-remote-image-target='image']"
+      placeholder = "[data-remote-image-target='placeholder'][hidden]"
+      expect(page).to have_css("#{image}[data-action*='error->remote-image#showPlaceholder']")
+      expect(page).to have_css(placeholder, text: "Image unavailable", visible: :all)
     end
   end
 
@@ -40,17 +59,43 @@ RSpec.describe "Events", type: :request do
 
   describe "GET /events/e/:id" do
     it "shows a single event with a safe new-tab ticket link" do
-      event = create(:event, title: "La Bohème", url: "https://austinopera.org/la-boheme")
+      event = create(
+        :event,
+        title: "La Bohème",
+        why: "Ambitious opera at a favorite venue.",
+        ticket_urgency: "likely to sell out",
+        age_limit: "All ages",
+        url: "https://austinopera.org/la-boheme"
+      )
 
       get "/events/e/#{event.id}"
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("La Bohème").and include("austinopera.org/la-boheme")
+      expect(response.body).to include("Ambitious opera at a favorite venue.")
+      expect(response.body).to include("likely to sell out").and include("All ages")
       page = Capybara.string(response.body)
       expect(page).to have_css(
         "a[href='https://austinopera.org/la-boheme'][target='_blank'][rel='noopener noreferrer']",
         text: "Tickets & details"
       )
+      expect(page).to have_css("[data-controller='remote-image'] img[data-remote-image-target='image']")
+      expect(page).to have_css(
+        "[data-remote-image-target='placeholder'][hidden]",
+        text: "Image unavailable",
+        visible: :all
+      )
+    end
+
+    it "renders the category placeholder immediately when no artwork was supplied" do
+      event = create(:event, title: "Posterless Performance", image_url: nil, category: "performing_arts")
+
+      get "/events/e/#{event.id}"
+
+      page = Capybara.string(response.body)
+      expect(page).to have_no_css("[data-controller='remote-image']")
+      expect(page).to have_css("[role='img'][aria-label='No image available for Posterless Performance']")
+      expect(page).to have_css("[role='img']", text: "Image unavailable")
     end
   end
 

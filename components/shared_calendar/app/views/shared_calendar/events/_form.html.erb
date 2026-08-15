@@ -1,0 +1,87 @@
+<%= form_with model: event do |form| %>
+  <% if event.errors.any? %>
+    <div class="mb-5">
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: event.errors.full_messages.to_sentence) %>
+    </div>
+  <% end %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :title,
+        label: "Event name",
+        placeholder: "Sunset concert at the park"
+      ) %>
+
+  <div class="grid gap-x-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: :category,
+          type: :select,
+          label: "Category",
+          collection: SharedCalendar::Event::CATEGORIES.map { |key, details| ["#{details.last} #{details.first}", key] },
+          include_blank: "Choose a category"
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: :venue_name,
+          label: "Venue",
+          placeholder: "Zilker Hillside Theater"
+        ) %>
+  </div>
+
+  <div class="grid gap-x-4 sm:grid-cols-2">
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: :starts_at,
+          type: :datetime_local_field,
+          label: "Starts",
+          value: event.starts_at&.in_time_zone&.strftime("%Y-%m-%dT%H:%M")
+        ) %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: :ends_at,
+          type: :datetime_local_field,
+          label: "Ends",
+          hint: "Optional, but useful for planning.",
+          value: event.ends_at&.in_time_zone&.strftime("%Y-%m-%dT%H:%M")
+        ) %>
+  </div>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :location,
+        label: "Address or area",
+        hint: "Share enough detail for neighbors to find it.",
+        placeholder: "2206 William Barton Dr, Austin"
+      ) %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :description,
+        type: :text_area,
+        label: "What should people know?",
+        placeholder: "Describe the atmosphere, accessibility, cost, and anything to bring.",
+        rows: 7
+      ) %>
+
+  <% if event.image.attached? && event.persisted? %>
+    <div class="mb-4 overflow-hidden rounded-lg border border-line bg-sunken">
+      <%= image_tag main_app.rails_blob_path(event.image, only_path: true), class: "max-h-72 w-full object-cover", alt: "Current image for #{event.title}" %>
+      <p class="px-4 py-3 text-xs text-ink-muted">Choose a new image below to replace this one.</p>
+    </div>
+  <% end %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :image,
+        type: :file_field,
+        label: "Event image",
+        hint: "Optional. JPEG, PNG, or WebP up to 10 MB. Landscape images look best across the calendar.",
+        accept: SharedCalendar::Event::IMAGE_CONTENT_TYPES.join(",")
+      ) %>
+
+  <div class="mt-6 flex flex-wrap gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Save event<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: event.persisted? ? event_path(event) : events_path) do %>Cancel<% end %>
+  </div>
+<% end %>

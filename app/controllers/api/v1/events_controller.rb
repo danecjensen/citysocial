@@ -17,7 +17,8 @@ module Api
       def event_params
         params.permit(
           :external_id, :title, :description, :venue, :category, :url,
-          :image_url, :starts_at, :ends_at, :price, :score, :confidence
+          :image_url, :starts_at, :ends_at, :price, :score, :confidence,
+          :why, :ticket_urgency, :age_limit
         ).to_h.symbolize_keys
       end
 

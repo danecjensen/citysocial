@@ -1,6 +1,10 @@
 # Roadmap
 
 ## Shipped
+- product analytics: official PostHog Rails/Ruby SDKs, Turbo-aware browser
+  identity, privacy-masked autocapture/session replay, content-free EventBus to
+  analytics bridge, authentication lifecycle events, environment-safe setup,
+  and a durable measurement/AI-agent operating contract.
 - platform_core: identity, social graph, event bus, public Graph API.
 - developer portal: admin-only direct CRUD for every application ActiveRecord
   model, with namespaced-model-safe URLs, sortable and paginated record tables,
@@ -31,7 +35,13 @@
   unique index); Events::Ingest upsert API + `rake events:ingest` over
   db/events_feed/*.json. Home (/events) = the 10 highest-scoring events in the
   next 7 days (taste `score` supplied upstream, selection is pure SQL); /events/all
-  = searchable/paginated archive. Emits events.events_ingested.
+  = searchable/paginated archive. Curated reasons, ticket urgency, and age limits
+  survive ingestion and render with each pick; failed remote artwork degrades to an
+  accessible category placeholder. Emits events.events_ingested.
+- shared calendar: public, resident-created month calendar with owner-managed
+  events, category filtering, responsive desktop grid/mobile agenda, validated
+  ActiveStorage event images surfaced in featured cards, calendar cells, and
+  detail heroes, plus follower notifications via shared_calendar.event_created.
 - feedback: public product ideas and issue reports with optional app-area/page
   context, one support per member, public roadmap statuses, and an admin triage
   queue. Emits feedback.submission_created, feedback.submission_supported, and
@@ -66,9 +76,9 @@
   created/updated/duplicate responses.
 
 ## Next (suggested)
-- [ ] wire the ATX events routine to emit db/events_feed/<date>.json into this
-      repo (adapt v2/atx-events/ROUTINE.md) + a post-deploy `events:ingest` step,
-      so the loop actually populates the module in production.
+- [ ] deploy the event curation-field migration. `CITYSOCIAL_INGEST_TOKEN` is
+      configured in the Claude cloud routine, which posts its final daily picks to
+      the production event API and reports created/updated/duplicate/failed counts.
 - [ ] production ActiveStorage service (S3/GCS) — dev/test use Disk; Heroku's
       filesystem is ephemeral, so photos need a real bucket before launch.
 - [ ] pickup sports milestone 2 — host attendance closeout after game time, with

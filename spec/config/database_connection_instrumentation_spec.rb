@@ -48,6 +48,32 @@ RSpec.describe DatabaseConnectionInstrumentation do
     )
   end
 
+  it "sends slow connection logs and trace-connected metrics to Sentry when enabled" do
+    sentry_config = instance_double(Sentry::Configuration, sending_allowed?: true, enable_logs: true)
+    metrics = spy("Sentry metrics")
+    sentry_logger = spy("Sentry logger")
+    allow(Sentry).to receive_messages(
+      initialized?: true,
+      configuration: sentry_config,
+      metrics: metrics,
+      logger: sentry_logger
+    )
+    allow(pool).to receive(:monotonic_milliseconds).and_return(1_000.0, 1_150.5)
+
+    pool.checkout
+
+    expect(metrics).to have_received(:distribution).with(
+      "citysocial.database_connection.duration",
+      150.5,
+      unit: "millisecond",
+      attributes: { operation: "checkout", status: "slow", pool: "primary" }
+    )
+    expect(sentry_logger).to have_received(:warn).with(
+      "Database connection slow or failed",
+      hash_including(operation: "checkout", status: "slow", duration_ms: 150.5, origin: "manual.database")
+    )
+  end
+
   it "does not log healthy connection checkouts" do
     allow(pool).to receive(:monotonic_milliseconds).and_return(1_000.0, 1_010.0)
 

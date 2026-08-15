@@ -6,6 +6,11 @@ module Notifications
         source_key: :post_id,
         target_path: "/communities",
         action: "shared a community post"
+      },
+      "shared_calendar.event_created" => {
+        source_key: :event_id,
+        target_path: "/shared_calendar",
+        action: "added an event to the community calendar"
       }
     }.freeze
 

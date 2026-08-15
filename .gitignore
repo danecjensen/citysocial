@@ -6,6 +6,7 @@
 !/tmp/.keep
 .env
 .env.*
+!.env.example
 /config/master.key
 /node_modules
 

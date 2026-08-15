@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount SharedCalendar::Engine => "/shared_calendar"
   namespace :api do
     namespace :v1 do
       resources :posts, only: :create

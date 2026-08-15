@@ -1,0 +1,14 @@
+<div class="mb-3">
+  <%= link_to "← Community Calendar", events_path, class: "font-mono text-xs text-ink-muted hover:text-brand-700" %>
+</div>
+
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Add to the calendar",
+      subtitle: "Give neighbors a clear picture of something worth showing up for."
+    ) %>
+
+<div class="mx-auto max-w-3xl">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <%= render "form", event: @event %>
+  <% end %>
+</div>

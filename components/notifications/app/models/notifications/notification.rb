@@ -3,6 +3,7 @@ module Notifications
     SUPPORTED_EVENTS = %w[
       feed.post_created
       communities.post_created
+      shared_calendar.event_created
       feedback.submission_status_changed
     ].freeze
 

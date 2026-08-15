@@ -31,6 +31,9 @@ Either a bare array, or `{ "events": [ ... ] }`. Each event object:
   "price": "$25+",                             // free-form; blank/omitted => "Free"
   "score": 0.92,                               // taste rank 0..1 (used ONLY to order)
   "confidence": 0.8,                           // optional 0..1
+  "why": "Ambitious opera at a favorite venue.", // curated reason shown in CitySocial
+  "ticket_urgency": "likely to sell out",      // optional urgency note
+  "age_limit": "All ages",                     // optional restriction
   "source": "austinopera.org",                 // optional provenance
   "external_id": "austin-opera-la-boheme-2026" // optional; URL/fingerprint fallback
 }

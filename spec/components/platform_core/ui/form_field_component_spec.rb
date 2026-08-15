@@ -29,8 +29,14 @@ RSpec.describe PlatformCore::Ui::FormFieldComponent do
     expect(page).to have_css("input[type=file][name='user[avatar]'][accept='image/png,image/jpeg']")
   end
 
+  it "renders a native datetime-local field" do
+    render_inline(described_class.new(form: form, attribute: :created_at, type: :datetime_local_field))
+
+    expect(page).to have_css("input[type=datetime-local][name='user[created_at]']")
+  end
+
   it "rejects unsupported input types" do
-    expect { described_class.new(form: form, attribute: :email, type: :date_field) }
+    expect { described_class.new(form: form, attribute: :email, type: :color_field) }
       .to raise_error(ArgumentError)
   end
 
