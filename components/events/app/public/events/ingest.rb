@@ -187,7 +187,8 @@ module Events
         event_id: event.id,
         source: event.source,
         external_id: event.external_id,
-        status: status
+        status: status,
+        target_path: "/events/e/#{event.id}"
       )
     end
     private_class_method :announce_event

@@ -33,7 +33,10 @@ RSpec.describe SharedCalendar::Event, type: :model do
     expect(PlatformCore::EventBus).to have_received(:publish).with(
       "shared_calendar.event_created",
       event_id: event.id,
-      author_id: event.author_id
+      author_id: event.author_id,
+      target_path: "/shared_calendar/#{event.id}",
+      media_blob_ids: [],
+      media_count: 0
     )
   end
 end

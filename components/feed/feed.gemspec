@@ -7,5 +7,7 @@ Gem::Specification.new do |spec|
   spec.summary  = "Hyperlocal feed app-module (reference implementation)."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]
   spec.add_dependency "rails", "~> 7.2"
+  spec.add_dependency "marcel"
+  spec.add_dependency "nokogiri"
   spec.add_dependency "platform_core"
 end

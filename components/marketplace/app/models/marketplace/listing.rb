@@ -114,7 +114,14 @@ module Marketplace
     end
 
     def announce_creation
-      PlatformCore::EventBus.publish("marketplace.listing_created", listing_id: id, author_id: author_id)
+      PlatformCore::EventBus.publish(
+        "marketplace.listing_created",
+        listing_id: id,
+        author_id: author_id,
+        target_path: "/marketplace/#{slug}",
+        media_blob_ids: photos.blobs.ids,
+        media_count: photos.attachments.size
+      )
     end
   end
 end

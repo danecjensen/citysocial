@@ -1,0 +1,60 @@
+<div class="mx-auto max-w-3xl space-y-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: posts_path) do %>← Back to Home<% end %>
+    <% if @post.author_id == current_user.id %>
+      <div class="flex gap-2">
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: edit_post_path(@post)) do %>Edit<% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: :danger,
+              size: :sm,
+              href: post_path(@post),
+              method: :delete,
+              confirm: "Delete this post and its conversation?"
+            ) do %>Delete<% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render "post", post: @post, author: @authors[@post.author_id], detailed: true %>
+
+  <div id="share">
+    <%= render PlatformCore::Ui::ShareComponent.new(title: @post.title.presence || "CitySocial post", url: request.original_url) %>
+  </div>
+
+  <section id="comments" aria-labelledby="comments-heading" class="space-y-4">
+    <h2 id="comments-heading" class="font-display text-2xl font-black text-ink">Conversation</h2>
+
+    <%= render PlatformCore::Ui::CardComponent.new do %>
+      <%= form_with model: @comment, url: post_comments_path(@post) do |form| %>
+        <%= render PlatformCore::Ui::FormFieldComponent.new(
+              form: form,
+              attribute: :body,
+              type: :text_area,
+              label: "Add a comment",
+              placeholder: "Be useful, curious, and neighborly…",
+              rows: 4,
+              maxlength: 5_000
+            ) %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>Comment<% end %>
+      <% end %>
+    <% end %>
+
+    <% if @comments.any? %>
+      <% @comments.each do |comment| %>
+        <% comment_author = @authors[comment.author_id] %>
+        <%= render PlatformCore::Ui::CardComponent.new do %>
+          <div class="mb-3 flex items-center gap-2">
+            <% if comment_author %>
+              <%= render PlatformCore::Ui::AvatarComponent.new(user: comment_author, size: :sm, alt: "") %>
+              <%= link_to "@#{comment_author.handle}", "/people/#{comment_author.handle}", class: "font-mono text-sm font-semibold text-brand-700 hover:underline" %>
+            <% end %>
+            <span class="font-mono text-xs text-ink-faint"><%= time_ago_in_words(comment.created_at) %> ago</span>
+          </div>
+          <div class="whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= comment.body %></div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= render PlatformCore::Ui::EmptyStateComponent.new(title: "No comments yet", body: "Start the conversation with something useful.") %>
+    <% end %>
+  </section>
+</div>

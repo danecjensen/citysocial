@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_15_020000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_15_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -130,8 +130,39 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_15_020000) do
     t.index ["starts_at"], name: "index_events_events_on_starts_at"
   end
 
-  create_table "feed_posts", force: :cascade do |t|
+  create_table "feed_comments", force: :cascade do |t|
+    t.bigint "post_id", null: false
     t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_feed_comments_on_author_id"
+    t.index ["post_id", "created_at"], name: "index_feed_comments_on_post_id_and_created_at"
+    t.index ["post_id"], name: "index_feed_comments_on_post_id"
+  end
+
+  create_table "feed_poll_options", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.string "label", null: false
+    t.integer "votes_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id"], name: "index_feed_poll_options_on_post_id"
+  end
+
+  create_table "feed_poll_votes", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.bigint "poll_option_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["poll_option_id"], name: "index_feed_poll_votes_on_poll_option_id"
+    t.index ["post_id", "user_id"], name: "index_feed_poll_votes_on_post_id_and_user_id", unique: true
+    t.index ["post_id"], name: "index_feed_poll_votes_on_post_id"
+  end
+
+  create_table "feed_posts", force: :cascade do |t|
+    t.bigint "author_id"
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -139,8 +170,36 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_15_020000) do
     t.string "url"
     t.string "source", default: "web", null: false
     t.string "external_id"
+    t.string "kind", default: "text", null: false
+    t.string "target_path"
+    t.string "preview_title"
+    t.text "preview_description"
+    t.string "preview_site_name"
+    t.integer "comments_count", default: 0, null: false
+    t.integer "reactions_count", default: 0, null: false
+    t.integer "saves_count", default: 0, null: false
     t.index ["author_id", "created_at"], name: "index_feed_posts_on_author_id_and_created_at"
+    t.index ["kind"], name: "index_feed_posts_on_kind"
     t.index ["source", "external_id"], name: "index_feed_posts_on_ingestion_identity", unique: true, where: "(external_id IS NOT NULL)"
+  end
+
+  create_table "feed_reactions", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id", "user_id"], name: "index_feed_reactions_on_post_id_and_user_id", unique: true
+    t.index ["post_id"], name: "index_feed_reactions_on_post_id"
+  end
+
+  create_table "feed_saves", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id", "user_id"], name: "index_feed_saves_on_post_id_and_user_id", unique: true
+    t.index ["post_id"], name: "index_feed_saves_on_post_id"
   end
 
   create_table "feedback_submissions", force: :cascade do |t|
@@ -353,6 +412,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_15_020000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "feed_comments", "feed_posts", column: "post_id"
+  add_foreign_key "feed_poll_options", "feed_posts", column: "post_id"
+  add_foreign_key "feed_poll_votes", "feed_poll_options", column: "poll_option_id"
+  add_foreign_key "feed_poll_votes", "feed_posts", column: "post_id"
+  add_foreign_key "feed_reactions", "feed_posts", column: "post_id"
+  add_foreign_key "feed_saves", "feed_posts", column: "post_id"
   add_foreign_key "feedback_supports", "feedback_submissions", column: "submission_id"
   add_foreign_key "messaging_messages", "messaging_conversations", column: "conversation_id"
   add_foreign_key "pickup_sports_roster_entries", "pickup_sports_games", column: "game_id"

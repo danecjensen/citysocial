@@ -40,6 +40,27 @@ RSpec.describe Marketplace::Listing, type: :model do
     expect(events.last).to include(listing_id: active.id)
   end
 
+  it "publishes a content-free feed projection with its attached photo references" do
+    allow(PlatformCore::EventBus).to receive(:publish)
+    listing = build(:listing, title: "Neighborhood bike")
+    listing.photos.attach(
+      io: StringIO.new(TestImages.png_1x1),
+      filename: "bike.png",
+      content_type: "image/png"
+    )
+
+    listing.save!
+
+    expect(PlatformCore::EventBus).to have_received(:publish).with(
+      "marketplace.listing_created",
+      listing_id: listing.id,
+      author_id: listing.author_id,
+      target_path: "/marketplace/neighborhood-bike",
+      media_blob_ids: [listing.photos.blobs.sole.id],
+      media_count: 1
+    )
+  end
+
   describe "#renew!" do
     it "resurfaces a stale listing and extends the expiration" do
       listing = create(:listing, created_at: 3.days.ago, expires_at: 2.days.from_now)

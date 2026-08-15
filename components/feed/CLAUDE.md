@@ -7,6 +7,8 @@ module is the **reference implementation** for the conventions -- copy its shape
 - `app/public/feed/publish_post.rb` -- the canonical post write path; emits
   `feed.post_created` after a successful create.
 - `app/public/feed/timeline.rb` -- the ONLY entry point other modules may use.
+- `app/public/feed/ingest_activity.rb` -- projects public sibling-module events
+  into retry-safe feed cards without reading sibling models.
 - `lib/feed/events.rb` -- the honest map of what feed publishes/subscribes.
 
 ## Boundaries
@@ -15,3 +17,6 @@ module is the **reference implementation** for the conventions -- copy its shape
 - Controllers inherit from `PlatformCore::BaseController`; models from `Feed::ApplicationRecord`.
 - Every feed transport calls `Feed::PublishPost`; do not write `Feed::Post`
   directly from controllers, jobs, scripts, or API code.
+- Engagement writes go through the matching public command (`CreateComment`,
+  `ReactToPost`, `ToggleSave`, or `CastPollVote`) so each successful action emits
+  one content-free domain event.

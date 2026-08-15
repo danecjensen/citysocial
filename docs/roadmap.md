@@ -12,7 +12,12 @@
 - resident profiles: optional display name, neighborhood, bio, and validated avatar;
   public /people/:handle identity pages, PII-safe Graph snapshot, reusable
   AvatarComponent, cross-module author links, and platform_core.profile_updated.
-- feed: reference module (posts + timeline + feed.post_created event).
+- feed / Home Feed 2.0: prominent multi-format composer for text, photos,
+  article links, polls, and typed event/marketplace/game shares; safe rich news
+  previews with verified lead-image ingestion; permanent detail pages; comments,
+  like/celebrate/helpful reactions, poll voting, saves, sharing, and owner-only
+  edit/delete; idempotent EventBus projections from every public content module
+  with source media carried by opaque ActiveStorage blob ids.
 - design system: Tailwind v4 tokens + PlatformCore::Ui ViewComponents + Hotwire;
   living catalog at /design.
 - public sharing: reusable progressive-enhancement ShareComponent with a permanent

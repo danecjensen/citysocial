@@ -59,7 +59,9 @@ RSpec.describe PlatformCore::Analytics do
       author_id: 42,
       post_id: 7,
       body: "resident-authored content",
-      source_url: "https://example.com/private?token=secret"
+      source_url: "https://example.com/private?token=secret",
+      target_path: "/marketplace/title-derived-slug",
+      media_blob_ids: [91]
     )
 
     expect(PostHog).to have_received(:capture) do |event|
@@ -71,7 +73,9 @@ RSpec.describe PlatformCore::Analytics do
         "event_schema_version" => 1,
         "analytics_source" => "server"
       )
-      expect(event[:properties]).not_to include("body", "source_url", "author_id")
+      expect(event[:properties]).not_to include(
+        "body", "source_url", "target_path", "media_blob_ids", "author_id"
+      )
     end
   end
 

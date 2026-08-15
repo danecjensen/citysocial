@@ -1,0 +1,91 @@
+<%= form_with model: post, url: url, method: method, multipart: true,
+              data: (composer ? { controller: "composer", action: "change->composer#change" } : {}) do |form| %>
+  <% if post.errors.any? %>
+    <div class="mb-4">
+      <%= render PlatformCore::Ui::FlashComponent.new(type: :error, message: post.errors.full_messages.to_sentence) %>
+    </div>
+  <% end %>
+
+  <% if composer %>
+    <%= render PlatformCore::Ui::FormFieldComponent.new(
+          form: form,
+          attribute: :kind,
+          type: :select,
+          label: "What are you sharing?",
+          collection: [
+            ["A quick update", "text"],
+            ["Photos", "photo"],
+            ["News article or link", "link"],
+            ["Poll", "poll"],
+            ["Event", "event"],
+            ["Marketplace listing", "marketplace"],
+            ["Pickup game", "game"]
+          ],
+          selected: post.kind.presence || "text"
+        ) %>
+  <% end %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :title,
+        label: "Headline or title",
+        hint: "Optional for quick updates; recommended for articles, events, listings, and polls.",
+        placeholder: "What should neighbors know?",
+        maxlength: 300
+      ) %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :body,
+        type: :text_area,
+        label: "Say something",
+        placeholder: "Add context, ask a question, or tell neighbors why this matters…",
+        rows: composer ? 4 : 7,
+        maxlength: 40_000
+      ) %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :url,
+        type: :text_field,
+        label: "Article or destination link",
+        hint: "For news articles, CitySocial pulls the headline, publisher, description, and lead image when available.",
+        placeholder: "https://…",
+        inputmode: "url"
+      ) %>
+
+  <%= render PlatformCore::Ui::FormFieldComponent.new(
+        form: form,
+        attribute: :photos,
+        type: :file_field,
+        label: "Photos",
+        hint: "Up to 4 JPEG, PNG, WebP, or GIF images, 10 MB each.",
+        accept: Feed::Post::IMAGE_CONTENT_TYPES.join(","),
+        multiple: true
+      ) %>
+
+  <% if composer %>
+    <div data-composer-target="poll" <%= "hidden" unless post.kind == "poll" %>
+      <p class="mb-3 font-display text-base font-bold text-ink">Poll choices</p>
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <% Feed::Post::POLL_OPTION_ATTRIBUTES.each_with_index do |attribute, index| %>
+          <%= render PlatformCore::Ui::FormFieldComponent.new(
+                form: form,
+                attribute: attribute,
+                label: "Choice #{index + 1}#{index > 1 ? " (optional)" : ""}",
+                maxlength: 120
+              ) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(variant: :primary, type: :submit) do %>
+      <%= composer ? "Post to the feed" : "Save changes" %>
+    <% end %>
+    <% unless composer %>
+      <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, href: post_path(post)) do %>Cancel<% end %>
+    <% end %>
+  </div>
+<% end %>

@@ -71,7 +71,12 @@ module Communities
     end
 
     def announce_creation
-      PlatformCore::EventBus.publish("communities.community_created", community_id: id, creator_id: creator_id)
+      PlatformCore::EventBus.publish(
+        "communities.community_created",
+        community_id: id,
+        creator_id: creator_id,
+        target_path: "/communities/#{slug}"
+      )
     end
   end
 end

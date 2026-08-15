@@ -93,7 +93,8 @@ RSpec.describe Events::Ingest do
       event_id: kind_of(Integer),
       source: "claude-events",
       external_id: "opera-2026",
-      status: :created
+      status: :created,
+      target_path: a_string_matching(%r{\A/events/e/\d+\z})
     ).once
   end
 

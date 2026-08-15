@@ -94,3 +94,6 @@ into CLAUDE.md.
 - Cache `logged_in?` once before a repeated view loop: `current_user` uses `||=`, so
   an anonymous `nil` is not memoized and repeated checks can issue one user lookup
   per rendered row or calendar cell.
+- Include a content-free internal target path and opaque media blob ids in public
+  creation events that must become rich cross-module feed cards; the subscriber
+  must never query the publishing module's private model to reconstruct display data.

@@ -62,7 +62,10 @@ module SharedCalendar
       PlatformCore::EventBus.publish(
         "shared_calendar.event_created",
         event_id: id,
-        author_id: author_id
+        author_id: author_id,
+        target_path: "/shared_calendar/#{id}",
+        media_blob_ids: image.attached? ? [image.blob.id] : [],
+        media_count: image.attached? ? 1 : 0
       )
     end
   end

@@ -1,0 +1,127 @@
+<% author ||= post.author %>
+<% detailed = local_assigns.fetch(:detailed, false) %>
+<% reaction = post.reaction_for(current_user.id) %>
+<% vote = post.poll_vote_for(current_user.id) %>
+
+<%= render PlatformCore::Ui::CardComponent.new(padded: false) do %>
+  <article>
+    <div class="p-5">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <% if author %>
+            <%= render PlatformCore::Ui::AvatarComponent.new(user: author, size: :sm, alt: "") %>
+            <div class="min-w-0">
+              <%= link_to "@#{author.handle}", "/people/#{author.handle}", class: "block truncate font-mono text-sm font-semibold text-brand-700 hover:underline" %>
+              <%= link_to "#{time_ago_in_words(post.created_at)} ago", post_path(post), class: "font-mono text-xs text-ink-faint hover:text-brand-700" %>
+            </div>
+          <% else %>
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 font-display text-sm font-black text-brand-800" aria-hidden="true">CS</div>
+            <div>
+              <p class="font-mono text-sm font-semibold text-ink">CitySocial</p>
+              <%= link_to "#{time_ago_in_words(post.created_at)} ago", post_path(post), class: "font-mono text-xs text-ink-faint hover:text-brand-700" %>
+            </div>
+          <% end %>
+        </div>
+        <%= render PlatformCore::Ui::BadgeComponent.new(variant: post.system_activity? ? :agave : :neutral) do %>
+          <%= post.kind_label %>
+        <% end %>
+      </div>
+
+      <% if post.title.present? %>
+        <h2 class="font-display text-xl font-black leading-tight text-ink">
+          <%= link_to post.title, post_path(post), class: "hover:text-brand-700 hover:underline" %>
+        </h2>
+      <% end %>
+
+      <% if post.body.present? %>
+        <div class="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= detailed ? post.body : truncate(post.body, length: 520) %></div>
+      <% end %>
+
+      <% if post.photos.attached? %>
+        <div class="mt-4 grid gap-1 overflow-hidden rounded-lg bg-sunken <%= post.photos.size > 1 ? "grid-cols-2" : "grid-cols-1" %>">
+          <% post.photos.first(4).each do |photo| %>
+            <%= image_tag main_app.rails_blob_path(photo, only_path: true),
+                          class: "h-full max-h-96 min-h-48 w-full object-cover",
+                          alt: "Photo shared#{author ? " by @#{author.handle}" : ""}" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if post.url.present? %>
+        <a href="<%= post.url %>" target="_blank" rel="noopener noreferrer"
+           class="mt-4 block overflow-hidden rounded-lg border border-line bg-sunken/50 transition-colors hover:border-brand-400">
+          <% if post.preview_image.attached? %>
+            <%= image_tag main_app.rails_blob_path(post.preview_image, only_path: true),
+                          class: "aspect-[16/9] max-h-80 w-full object-cover",
+                          alt: "Article preview image" %>
+          <% end %>
+          <div class="p-4">
+            <p class="font-mono text-xs uppercase tracking-wide text-ink-muted"><%= post.preview_site_name.presence || URI.parse(post.url).host %></p>
+            <p class="mt-1 font-display text-lg font-bold text-ink"><%= post.preview_title.presence || post.title.presence || "Open link" %></p>
+            <% if post.preview_description.present? %>
+              <p class="mt-1 text-sm leading-relaxed text-ink-muted"><%= truncate(post.preview_description, length: detailed ? 500 : 220) %></p>
+            <% end %>
+            <p class="mt-3 text-sm font-bold text-brand-700">Read the full story ↗</p>
+          </div>
+        </a>
+      <% end %>
+
+      <% if post.kind == "poll" %>
+        <div class="mt-4 space-y-2" aria-label="Poll choices">
+          <% total = post.poll_votes_total %>
+          <% post.poll_options.each do |option| %>
+            <% percentage = total.positive? ? ((option.votes_count.to_f / total) * 100).round : 0 %>
+            <div class="flex items-center justify-between gap-3 rounded-md border border-line bg-sunken/50 p-2">
+              <%= render PlatformCore::Ui::ButtonComponent.new(
+                    variant: vote&.poll_option_id == option.id ? :primary : :secondary,
+                    size: :sm,
+                    href: post_poll_votes_path(post),
+                    method: :post,
+                    params: { option_id: option.id },
+                    pressed: vote&.poll_option_id == option.id
+                  ) do %><%= option.label %><% end %>
+              <span class="font-mono text-xs text-ink-muted"><%= percentage %>% · <%= option.votes_count %></span>
+            </div>
+          <% end %>
+          <p class="font-mono text-xs text-ink-faint"><%= pluralize(total, "vote") %></p>
+        </div>
+      <% end %>
+
+      <% if post.target_path.present? %>
+        <div class="mt-4">
+          <%= render PlatformCore::Ui::ButtonComponent.new(variant: :secondary, size: :sm, href: post.target_path) do %>
+            View in <%= post.kind_label %> →
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="border-t border-line px-4 py-3">
+      <div class="flex flex-wrap items-center gap-1">
+        <% Feed::Reaction::KINDS.each do |kind| %>
+          <%= render PlatformCore::Ui::ButtonComponent.new(
+                variant: reaction&.kind == kind ? :primary : :ghost,
+                size: :sm,
+                href: post_reaction_path(post),
+                method: :post,
+                params: { kind: kind },
+                pressed: reaction&.kind == kind,
+                aria_label: "React #{kind}"
+              ) do %><%= { "like" => "♥ Like", "celebrate" => "✦ Celebrate", "helpful" => "✓ Helpful" }.fetch(kind) %><% end %>
+        <% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: post_path(post, anchor: "comments")) do %>
+          <%= pluralize(post.comments_count, "comment") %>
+        <% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(
+              variant: post.saved_by?(current_user.id) ? :primary : :ghost,
+              size: :sm,
+              href: post_save_path(post),
+              method: post.saved_by?(current_user.id) ? :delete : :post,
+              pressed: post.saved_by?(current_user.id)
+            ) do %>🔖 <%= post.saved_by?(current_user.id) ? "Saved" : "Save" %><% end %>
+        <%= render PlatformCore::Ui::ButtonComponent.new(variant: :ghost, size: :sm, href: post_path(post, anchor: "share")) do %>↗ Share<% end %>
+      </div>
+      <p class="mt-2 font-mono text-xs text-ink-faint"><%= pluralize(post.reactions_count, "reaction") %> · <%= pluralize(post.saves_count, "save") %></p>
+    </div>
+  </article>
+<% end %>

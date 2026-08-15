@@ -1,45 +1,46 @@
-<%= render PlatformCore::Ui::PageHeaderComponent.new(title: "Feed", subtitle: "What your city is up to.") %>
+<%= render PlatformCore::Ui::PageHeaderComponent.new(
+      title: "Home",
+      subtitle: "News, conversations, and useful things happening around your city."
+    ) %>
 
-<% if @posts.any? %>
-  <div class="mx-auto max-w-2xl space-y-4">
-    <% @posts.each do |post| %>
-      <% author = post.author %>
-      <%= render PlatformCore::Ui::CardComponent.new do %>
-        <div class="mb-2 flex items-center gap-2">
-          <% if author %>
-            <%= render PlatformCore::Ui::AvatarComponent.new(user: author, size: :sm, alt: "") %>
-            <%= link_to "@#{author.handle}", "/people/#{author.handle}", class: "font-mono text-sm font-semibold text-brand-700 hover:underline" %>
-          <% end %>
-          <% if post.created_at %>
-            <span class="font-mono text-xs text-ink-faint"><%= time_ago_in_words(post.created_at) %> ago</span>
-          <% end %>
-          <% if post.source != "web" %>
-            <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %><%= post.source %><% end %>
-          <% end %>
-        </div>
-        <% if post.title.present? %>
-          <% if post.url.present? %>
-            <h2 class="font-display text-lg font-semibold text-ink">
-              <%= link_to post.title, post.url, target: "_blank", rel: "noopener noreferrer", class: "hover:text-brand-700 hover:underline" %>
-            </h2>
-          <% else %>
-            <h2 class="font-display text-lg font-semibold text-ink"><%= post.title %></h2>
-          <% end %>
-        <% end %>
-        <% if post.body.present? %>
-          <p class="text-[15px] leading-relaxed text-ink"><%= post.body %></p>
-        <% end %>
-        <% if post.url.present? && post.title.blank? %>
-          <p class="mt-2 truncate font-mono text-sm">
-            <%= link_to post.url, post.url, target: "_blank", rel: "noopener noreferrer", class: "text-brand-700 hover:underline" %>
-          </p>
-        <% end %>
+<div class="mx-auto max-w-3xl space-y-5">
+  <%= render PlatformCore::Ui::CardComponent.new do %>
+    <div class="mb-5 flex items-center gap-3">
+      <%= render PlatformCore::Ui::AvatarComponent.new(user: current_user, size: :md, alt: "") %>
+      <div>
+        <h2 class="font-display text-xl font-black text-ink">Share with your city</h2>
+        <p class="text-sm text-ink-muted">Start a conversation or bring an article, event, listing, or game into the feed.</p>
+      </div>
+    </div>
+    <%= render "form", post: @composer, url: posts_path, method: :post, composer: true %>
+  <% end %>
+
+  <nav aria-label="Feed filters" class="flex flex-wrap gap-2">
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: @filter.nil? ? :primary : :secondary,
+          size: :sm,
+          href: posts_path,
+          pressed: @filter.nil?
+        ) do %>Latest<% end %>
+    <%= render PlatformCore::Ui::ButtonComponent.new(
+          variant: @filter == "saved" ? :primary : :secondary,
+          size: :sm,
+          href: posts_path(filter: "saved"),
+          pressed: @filter == "saved"
+        ) do %>Saved<% end %>
+  </nav>
+
+  <% if @posts.any? %>
+    <div class="space-y-5">
+      <% @posts.each do |post| %>
+        <%= render "post", post: post, author: @authors[post.author_id], detailed: false %>
       <% end %>
-    <% end %>
-  </div>
-<% else %>
-  <%= render PlatformCore::Ui::EmptyStateComponent.new(
-        title: "Nothing here yet",
-        body: "Follow people in your city and their posts will show up here."
-      ) %>
-<% end %>
+    </div>
+  <% else %>
+    <%= render PlatformCore::Ui::EmptyStateComponent.new(
+          title: @filter == "saved" ? "No saved posts yet" : "Your home feed is ready",
+          body: @filter == "saved" ? "Save useful posts and articles to find them here." :
+            "Share the first update, or follow residents to bring their posts into your feed."
+        ) %>
+  <% end %>
+</div>

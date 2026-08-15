@@ -24,6 +24,8 @@ PATH
   remote: components/feed
   specs:
     feed (0.1.0)
+      marcel
+      nokogiri
       platform_core
       rails (~> 7.2)
 

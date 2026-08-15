@@ -7,7 +7,10 @@ module PlatformCore
       user_id actor_id supporter_id resident_id author_id creator_id sender_id
       voter_id recipient_id host_id
     ].freeze
-    SENSITIVE_PROPERTY_PATTERN = /(body|content|message|description|bio|email|password|secret|token|query|search|url)/i
+    SENSITIVE_PROPERTY_PATTERN = /
+      (body|content|message|description|bio|email|password|secret|token|
+       query|search|url|path|blob)
+    /ix
     MAX_STRING_LENGTH = 200
     MAX_COLLECTION_LENGTH = 20
 

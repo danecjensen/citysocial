@@ -19,7 +19,11 @@ module Restaurants
     def self.announce_created(vote_id:, voter_id:, winner_id:, loser_id:)
       PlatformCore::EventBus.publish(
         "restaurants.matchup_decided",
-        vote_id: vote_id, voter_id: voter_id, winner_id: winner_id, loser_id: loser_id
+        vote_id: vote_id,
+        voter_id: voter_id,
+        winner_id: winner_id,
+        loser_id: loser_id,
+        target_path: "/restaurants"
       )
     end
 
