@@ -1,11 +1,24 @@
 <%# Local: event, optional rank %>
 <%= link_to event_path(event), class: "group block overflow-hidden rounded-lg border border-line bg-surface shadow-card transition-shadow hover:shadow-pop" do %>
-  <div class="relative aspect-[16/9] w-full overflow-hidden bg-sunken">
+  <div class="relative aspect-[16/9] w-full overflow-hidden bg-sunken" <%= tag.attributes(data: { controller: "remote-image" }) if event.image_url.present? %>>
     <% if event.image_url.present? %>
       <%= image_tag event.image_url, loading: "lazy", alt: event.title,
-            class: "h-full w-full object-cover transition-transform group-hover:scale-105" %>
+            class: "h-full w-full object-cover transition-transform group-hover:scale-105",
+            data: {
+              remote_image_target: "image",
+              action: "load->remote-image#verify error->remote-image#showPlaceholder"
+            } %>
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-50 to-sunken text-center"
+           data-remote-image-target="placeholder" hidden role="img" aria-label="Image unavailable for <%= event.title %>">
+        <span class="text-4xl" aria-hidden="true"><%= event.category_emoji %></span>
+        <span class="font-mono text-xs font-bold uppercase tracking-wide text-ink-muted">Image unavailable</span>
+      </div>
     <% else %>
-      <div class="flex h-full items-center justify-center text-4xl"><%= event.category_emoji %></div>
+      <div class="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-50 to-sunken text-center"
+           role="img" aria-label="No image available for <%= event.title %>">
+        <span class="text-4xl" aria-hidden="true"><%= event.category_emoji %></span>
+        <span class="font-mono text-xs font-bold uppercase tracking-wide text-ink-muted">Image unavailable</span>
+      </div>
     <% end %>
     <% if defined?(rank) && rank %>
       <span class="absolute left-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 font-display text-sm font-black text-white shadow-pop">
