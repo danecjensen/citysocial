@@ -3,11 +3,26 @@
 </div>
 
 <article class="mx-auto max-w-3xl">
-  <% if @event.image_url.present? %>
-    <div class="mb-6 aspect-[16/9] w-full overflow-hidden rounded-lg border border-line bg-sunken">
-      <%= image_tag @event.image_url, alt: @event.title, class: "h-full w-full object-cover" %>
-    </div>
-  <% end %>
+  <div class="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded-lg border border-line bg-sunken" <%= tag.attributes(data: { controller: "remote-image" }) if @event.image_url.present? %>>
+    <% if @event.image_url.present? %>
+      <%= image_tag @event.image_url, alt: @event.title, class: "h-full w-full object-cover",
+            data: {
+              remote_image_target: "image",
+              action: "load->remote-image#verify error->remote-image#showPlaceholder"
+            } %>
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-50 to-sunken text-center"
+           data-remote-image-target="placeholder" hidden role="img" aria-label="Image unavailable for <%= @event.title %>">
+        <span class="text-5xl" aria-hidden="true"><%= @event.category_emoji %></span>
+        <span class="font-mono text-xs font-bold uppercase tracking-wide text-ink-muted">Image unavailable</span>
+      </div>
+    <% else %>
+      <div class="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-brand-50 to-sunken text-center"
+           role="img" aria-label="No image available for <%= @event.title %>">
+        <span class="text-5xl" aria-hidden="true"><%= @event.category_emoji %></span>
+        <span class="font-mono text-xs font-bold uppercase tracking-wide text-ink-muted">Image unavailable</span>
+      </div>
+    <% end %>
+  </div>
 
   <div class="mb-3 flex flex-wrap items-center gap-2">
     <%= render PlatformCore::Ui::BadgeComponent.new(variant: :brand) do %><%= @event.category_emoji %> <%= @event.category_label %><% end %>
