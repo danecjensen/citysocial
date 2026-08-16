@@ -28,6 +28,11 @@
             </p>
           </div>
           <p class="whitespace-pre-wrap text-[15px] leading-relaxed text-ink"><%= message.body %></p>
+          <% if message.sender_id == current_user.id && message.read_at.present? %>
+            <p class="mt-2 text-right font-mono text-xs text-ink-faint">
+              <span aria-hidden="true">✓</span> Read
+            </p>
+          <% end %>
         <% end %>
       </div>
     <% end %>

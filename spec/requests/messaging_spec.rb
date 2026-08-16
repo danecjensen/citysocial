@@ -59,6 +59,32 @@ RSpec.describe "Messaging", type: :request do
     expect(conversation.messages.last.sender_id).to eq(neighbor.id)
   end
 
+  it "shows a read receipt on the sender's own message only once the recipient has opened it" do
+    conversation = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor
+    )
+    create(:messaging_message, conversation: conversation, sender_id: resident.id, body: "Did you get this?")
+
+    # Before the recipient opens the thread, the sender sees no read receipt.
+    sign_in(resident)
+    get "/messaging/conversations/#{conversation.id}"
+    expect(response).to have_http_status(:ok)
+    expect(Capybara.string(response.body)).to have_no_css("p", text: "Read")
+
+    # The neighbor opens the thread, which marks the resident's message read.
+    sign_in(neighbor)
+    get "/messaging/conversations/#{conversation.id}"
+    # The recipient never sees a read receipt on a message they received.
+    expect(Capybara.string(response.body)).to have_no_css("p", text: "Read")
+
+    # The sender now sees the read receipt on their own delivered message.
+    sign_in(resident)
+    get "/messaging/conversations/#{conversation.id}"
+    expect(Capybara.string(response.body)).to have_css("p", text: "Read")
+  end
+
   it "reuses the existing participant pair instead of creating duplicate conversations" do
     conversation = create(
       :messaging_conversation,
