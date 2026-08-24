@@ -26,6 +26,24 @@ RSpec.describe Feed::IngestActivity do
     end
   end
 
+  it "projects the restaurant vote in the background so the vote path stays a single round trip" do
+    subscriptions = PlatformCore::EventBus.registry.fetch("restaurants.matchup_decided")
+                                          .select { |subscription| subscription.handler == described_class }
+
+    expect(subscriptions).to all(have_attributes(async: true))
+  end
+
+  it "keeps every other module's feed projection inline" do
+    inline_events = described_class::ACTIVITY.keys - Feed::Events::ASYNC_EVENTS
+
+    inline_events.each do |event_name|
+      subscriptions = PlatformCore::EventBus.registry.fetch(event_name)
+                                            .select { |subscription| subscription.handler == described_class }
+
+      expect(subscriptions).to all(have_attributes(async: false)), "expected #{event_name} to project inline"
+    end
+  end
+
   it "projects activity without reading a sibling module model and is retry-safe" do
     author = create(:user)
     payload = {

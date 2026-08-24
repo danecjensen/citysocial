@@ -97,3 +97,13 @@ into CLAUDE.md.
 - Include a content-free internal target path and opaque media blob ids in public
   creation events that must become rich cross-module feed cards; the subscriber
   must never query the publishing module's private model to reconstruct display data.
+- Subscribe a cross-module projection (feed card, notification) that does its own
+  DB writes with `async: true` when the publisher's write path is latency-tuned.
+  `EventBus.publish` runs inline subscribers synchronously inside the publisher's
+  request, so an inline feed projection bolted several `Feed::Post` queries onto
+  the restaurant vote — a path `RecordMatchup` had deliberately reduced to a single
+  round trip for the high-latency production DB. Because the vote SQL commits first,
+  the extra latency shows up as "the vote saved but the page never returned a fresh
+  matchup." Project it in the background instead (mirror `Notifications`); the vote
+  request stays one round trip and the retry-safe card lands a moment later. The
+  `record_matchup` "single database round trip" spec is the guard.
