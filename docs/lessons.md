@@ -107,3 +107,15 @@ into CLAUDE.md.
   matchup." Project it in the background instead (mirror `Notifications`); the vote
   request stays one round trip and the retry-safe card lands a moment later. The
   `record_matchup` "single database round trip" spec is the guard.
+- `EventBus.publish` must isolate every subscriber delivery: a published event is a
+  decoupled signal, so a subscriber that raises — or an `async:` handler whose
+  Sidekiq/Redis backend is unreachable when `perform_later` enqueues — must never
+  propagate into the publisher's request. This bit production hard: with no Redis
+  addon on Heroku, `perform_later` raised `RedisClient::CannotConnectError` on the
+  vote request, which had already committed the vote SQL, so every vote returned a
+  500 and the page never advanced (the exact "casts the vote but won't reset the
+  restaurants" report). `publish` now rescues each delivery, reports it to Sentry +
+  the log (`event=event_bus_delivery_failed`), and runs the remaining subscribers.
+  The async side effect is then merely lost until the queue backend exists — never a
+  reason to fail the domain write. (Provision Redis + run a Sidekiq worker so those
+  jobs actually execute; the resilience is defense-in-depth for transient outages.)

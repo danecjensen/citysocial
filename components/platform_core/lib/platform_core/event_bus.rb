@@ -9,6 +9,14 @@ module PlatformCore
   # them through ActiveJob/Sidekiq instead of inline. The registry is public so
   # the wiring of the whole system can be introspected at runtime (e.g. for an
   # agent-callable capability map).
+  #
+  # Publishing is decoupled by contract: a published event is a signal, not a
+  # method call. A subscriber that raises -- including an async handler whose job
+  # backend (Redis) is unreachable at enqueue time -- must NEVER break the
+  # publisher's own write. Such failures are reported to Sentry and the log, and
+  # the remaining subscribers still run. (A missing/unreachable Sidekiq is an
+  # infrastructure gap: the async side effect is simply lost until it is fixed,
+  # but the domain write it reacted to stands.)
   module EventBus
     Subscription = Struct.new(:handler, :async, keyword_init: true)
 
@@ -18,15 +26,10 @@ module PlatformCore
       end
 
       def publish(event_name, **payload)
+        event_name = event_name.to_s
         PlatformCore::Analytics.capture_domain_event(event_name, payload) if defined?(PlatformCore::Analytics)
 
-        registry[event_name.to_s].each do |sub|
-          if sub.async
-            EventBus::AsyncDispatch.perform_later(event_name.to_s, sub.handler.to_s, payload)
-          else
-            sub.handler.call(event_name.to_s, payload)
-          end
-        end
+        registry[event_name].each { |sub| deliver(event_name, sub, payload) }
       end
 
       # Full map of event_name => [handlers]. Useful for debugging and for
@@ -37,6 +40,27 @@ module PlatformCore
 
       def reset!
         @registry = nil
+      end
+
+      private
+
+      def deliver(event_name, sub, payload)
+        if sub.async
+          EventBus::AsyncDispatch.perform_later(event_name, sub.handler.to_s, payload)
+        else
+          sub.handler.call(event_name, payload)
+        end
+      rescue StandardError => e
+        report_delivery_failure(event_name, sub, e)
+      end
+
+      def report_delivery_failure(event_name, sub, error)
+        Sentry.capture_exception(error) if defined?(Sentry) && Sentry.initialized?
+        Rails.logger.error(
+          "event=event_bus_delivery_failed domain_event=#{event_name.inspect} " \
+          "handler=#{sub.handler} async=#{sub.async} " \
+          "error_class=#{error.class.name} error=#{error.message.inspect}"
+        )
       end
     end
 
