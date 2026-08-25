@@ -165,3 +165,68 @@ The recommended investigation sequence for a human or agent is:
 References: [Sentry Rails](https://docs.sentry.io/platforms/ruby/guides/rails/),
 [Seer](https://docs.sentry.io/product/ai-in-sentry/seer/), and
 [Sentry MCP](https://github.com/getsentry/sentry-mcp).
+
+## Restaurant catalog: Eater 38 sync
+
+The `restaurants` module ships a curated catalog (`Restaurants::Catalog::SEED`).
+Production does **not** re-run `db:seed` on deploy — the release phase only runs
+`db:migrate` (see `Procfile`) — so newly added seed rows do not reach an existing
+production database on their own. `Restaurants::Catalog::EATER_38` pins the
+canonical catalog names of every restaurant on Eater Austin's "Best Restaurants
+in Austin" map (the "Eater 38"), and two rake tasks reconcile the live database
+with it:
+
+```
+bin/rails restaurants:eater38:missing   # audit only — prints what's absent
+bin/rails restaurants:eater38:sync      # idempotently creates any missing ones
+```
+
+`sync` is safe to re-run: each restaurant is matched by its unique name, existing
+rows (including any an admin added by hand) are left untouched, and only missing
+ones are created — with their curated hero photo when one ships. It touches only
+the 38, never the rest of the SEED catalog.
+
+Run it against production on Heroku:
+
+```
+heroku run -a citysocial-app bin/rails restaurants:eater38:missing   # dry audit
+heroku run -a citysocial-app bin/rails restaurants:eater38:sync      # apply
+```
+
+### Audit — Summer 2026 edition (run 2026-08-25)
+
+Source: <https://austin.eater.com/maps/best-restaurants-austin-eater-38>. Of the
+38 map entries, 15 were already in the catalog (Fonda San Miguel, Foreign &
+Domestic, Uchiko, Dai Due, Jeffrey's, Birdie's, Nixta Taqueria, Franklin
+Barbecue, Veracruz All Natural, Odd Duck, La Barbecue, plus four under a fuller
+name already present: Komé → "Kome Sushi Kitchen", Justine's → "Justine's
+Brasserie", LeRoy & Lewis → "LeRoy and Lewis Barbecue", Distant Relatives →
+"Distant Relatives BBQ"). The following 23 were missing and were added to SEED /
+`EATER_38`; run `restaurants:eater38:sync` to push them to production:
+
+1. Himalaya Kosheli Nepali & Indian — Nepali, North Austin
+2. Pho Phong Luu — Vietnamese, North Austin
+3. Usta Kababgy — Middle Eastern, North Austin
+4. House of Three Gorges — Sichuan, North Austin
+5. Korea House — Korean, North Shoal Creek
+6. Bufalina Due — Pizza, Brentwood (distinct second location from "Bufalina")
+7. Paprika ATX — Tacos, North Austin
+8. Allday Pizza — Pizza, Tarrytown
+9. P Thai's Khao Man Gai & Noodles — Thai, North Loop
+10. Crown & Anchor Pub — Pub, North Campus
+11. KG BBQ — Barbecue, East Austin
+12. Este — Mexican, Cherrywood
+13. Ensenada ATX — Seafood, East Austin
+14. Better Half Coffee & Cocktails — Cafe, Clarksville
+15. Lao'd Bar — Laotian, East Austin
+16. Fish Shop — Seafood, South Austin
+17. Canje — Caribbean, East Austin
+18. Apt 115 — Wine Bar, East Austin
+19. Joe's Bakery & Coffee Shop — Tex-Mex, East Austin
+20. Dee Dee — Thai, Sunset Valley
+21. Mercado Sin Nombre — Mexican, East Austin
+22. Intero — Italian, East Austin
+23. Bouldin Creek Cafe — Vegetarian, Bouldin Creek
+
+Re-audit when Eater refreshes the map (the title carries the season, e.g.
+"Summer 2026"); update `EATER_38` (and SEED for any new spots), then re-run sync.
