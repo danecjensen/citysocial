@@ -72,6 +72,11 @@
                   <%= pluralize(unread_count, "unread") %>
                 <% end %>
               <% end %>
+              <% if conversation.context? %>
+                <%= render PlatformCore::Ui::BadgeComponent.new(variant: :neutral) do %>
+                  <span aria-hidden="true">↩</span> <%= conversation.context_label %>
+                <% end %>
+              <% end %>
             </div>
             <% if last_message %>
               <p class="mt-1 truncate text-sm text-ink-muted"><%= last_message.body %></p>

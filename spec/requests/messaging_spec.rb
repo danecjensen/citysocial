@@ -59,6 +59,34 @@ RSpec.describe "Messaging", type: :request do
     expect(conversation.messages.last.sender_id).to eq(neighbor.id)
   end
 
+  it "shows a conversation context label on inbox cards only when the thread has context" do
+    contextual = create(
+      :messaging_conversation,
+      first_participant: resident,
+      second_participant: neighbor,
+      context_path: "/marketplace/vintage-bike",
+      context_label: "Vintage commuter bike"
+    )
+    create(:messaging_message, conversation: contextual, sender_id: neighbor.id, body: "Still available?")
+
+    artist = create(:user, handle: "artist", display_name: "Mural Painter")
+    plain = create(:messaging_conversation, first_participant: resident, second_participant: artist)
+    create(:messaging_message, conversation: plain, sender_id: artist.id, body: "Hello there")
+
+    sign_in(resident)
+    get "/messaging"
+    expect(response).to have_http_status(:ok)
+
+    page = Capybara.string(response.body)
+    # Both conversations render in the inbox.
+    expect(page).to have_text("Helpful Neighbor")
+    expect(page).to have_text("Mural Painter")
+    # The contextual thread surfaces its label; the plain thread carries no context badge.
+    expect(page).to have_text("Vintage commuter bike")
+    expect(response.body.scan("Vintage commuter bike").size).to eq(1)
+    expect(response.body.scan("↩").size).to eq(1)
+  end
+
   it "reuses the existing participant pair instead of creating duplicate conversations" do
     conversation = create(
       :messaging_conversation,
