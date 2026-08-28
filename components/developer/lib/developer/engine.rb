@@ -2,11 +2,6 @@ module Developer
   class Engine < ::Rails::Engine
     isolate_namespace Developer
 
-    # Wire this module's event subscriptions once the app has booted.
-    config.after_initialize do
-      Developer::Events.subscribe!
-    end
-
     config.generators do |g|
       g.test_framework :rspec
     end

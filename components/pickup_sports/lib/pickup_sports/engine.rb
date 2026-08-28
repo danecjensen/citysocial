@@ -2,11 +2,6 @@ module PickupSports
   class Engine < ::Rails::Engine
     isolate_namespace PickupSports
 
-    # Wire this module's event subscriptions once the app has booted.
-    config.after_initialize do
-      PickupSports::Events.subscribe!
-    end
-
     config.generators do |g|
       g.test_framework :rspec
     end

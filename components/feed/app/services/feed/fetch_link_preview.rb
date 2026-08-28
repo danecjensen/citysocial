@@ -26,6 +26,39 @@ module Feed
       new.call(url)
     end
 
+    # Fetch the preview for a post's URL and write it onto the post. A preview
+    # is a nicety, never a reason to fail the write, so every failure is logged
+    # and swallowed.
+    def self.enrich(post)
+      preview = call(post.url)
+      post.update!(
+        preview_title: clean(preview.title, 300),
+        preview_description: clean(preview.description, 1_000),
+        preview_site_name: clean(preview.site_name, 120)
+      )
+      attach_image(post, preview)
+      post
+    rescue StandardError => e
+      Rails.logger.info("event=feed_link_preview_skipped post_id=#{post.id} error=#{e.class.name}")
+      post
+    end
+
+    def self.attach_image(post, preview)
+      return unless preview.image_io
+
+      post.preview_image.attach(
+        io: preview.image_io,
+        filename: preview.image_filename,
+        content_type: preview.image_content_type
+      )
+    end
+    private_class_method :attach_image
+
+    def self.clean(value, limit)
+      value.to_s.squish.first(limit).presence
+    end
+    private_class_method :clean
+
     def call(url)
       page = fetch(url, limit: HTML_LIMIT, accept: "text/html,application/xhtml+xml")
       raise Error, "link did not return HTML" unless page.content_type.in?(%w[text/html application/xhtml+xml])

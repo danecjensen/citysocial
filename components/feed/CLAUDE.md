@@ -4,11 +4,17 @@ Nested memory for the feed module. Read alongside the root CLAUDE.md. This
 module is the **reference implementation** for the conventions -- copy its shape.
 
 ## What lives here
+`app/public/` is the cross-module surface and holds ONLY what a sibling calls:
 - `app/public/feed/publish_post.rb` -- the canonical post write path; emits
   `feed.post_created` after a successful create.
-- `app/public/feed/timeline.rb` -- the ONLY entry point other modules may use.
 - `app/public/feed/ingest_activity.rb` -- projects public sibling-module events
   into retry-safe feed cards without reading sibling models.
+
+Everything else is feed's own business and lives in `app/services/feed/`
+(`timeline.rb`, `create_comment.rb`, `react_to_post.rb`, `toggle_save.rb`,
+`cast_poll_vote.rb`, `update_post.rb`, `delete_post.rb`, `fetch_link_preview.rb`).
+Put a file in `app/public/` only when a sibling module actually calls it.
+
 - `lib/feed/events.rb` -- the honest map of what feed publishes/subscribes.
 
 ## Boundaries
@@ -17,6 +23,6 @@ module is the **reference implementation** for the conventions -- copy its shape
 - Controllers inherit from `PlatformCore::BaseController`; models from `Feed::ApplicationRecord`.
 - Every feed transport calls `Feed::PublishPost`; do not write `Feed::Post`
   directly from controllers, jobs, scripts, or API code.
-- Engagement writes go through the matching public command (`CreateComment`,
+- Engagement writes go through the matching command object (`CreateComment`,
   `ReactToPost`, `ToggleSave`, or `CastPollVote`) so each successful action emits
   one content-free domain event.

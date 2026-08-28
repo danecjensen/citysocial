@@ -1,8 +1,6 @@
-require_relative "lib/communities/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "communities"
-  spec.version  = Communities::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "Communities app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]

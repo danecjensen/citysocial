@@ -20,7 +20,7 @@ module Feed
 
       if post.url != previous_url
         clear_preview(post)
-        Feed::LinkPreview.enrich(post) if post.url.present?
+        Feed::FetchLinkPreview.enrich(post) if post.url.present?
       end
 
       PlatformCore::EventBus.publish("feed.post_updated", post_id: post.id, author_id: post.author_id, kind: post.kind)

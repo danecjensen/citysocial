@@ -2,11 +2,6 @@ module SharedCalendar
   class Engine < ::Rails::Engine
     isolate_namespace SharedCalendar
 
-    # Wire this module's event subscriptions once the app has booted.
-    config.after_initialize do
-      SharedCalendar::Events.subscribe!
-    end
-
     config.generators do |g|
       g.test_framework :rspec
     end

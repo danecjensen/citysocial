@@ -26,7 +26,7 @@ RSpec.describe "Home Feed 2.0", type: :request do
   it "posts an article and invokes safe rich-preview enrichment" do
     author = create(:user)
     login_as(author)
-    allow(Feed::LinkPreview).to receive(:enrich) do |post_record|
+    allow(Feed::FetchLinkPreview).to receive(:enrich) do |post_record|
       post_record.update!(
         preview_title: "Transit plan explained",
         preview_description: "The important details for local riders.",
@@ -46,7 +46,7 @@ RSpec.describe "Home Feed 2.0", type: :request do
 
     article = Feed::Post.last
     expect(response).to redirect_to("/feed/posts/#{article.id}")
-    expect(Feed::LinkPreview).to have_received(:enrich).with(article)
+    expect(Feed::FetchLinkPreview).to have_received(:enrich).with(article)
 
     get "/feed/posts/#{article.id}"
     expect(response.body).to include("Transit plan explained", "Local News", "Read the full story")

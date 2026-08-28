@@ -1,8 +1,6 @@
-require_relative "lib/platform_core/version"
-
 Gem::Specification.new do |spec|
   spec.name        = "platform_core"
-  spec.version     = PlatformCore::VERSION
+  spec.version     = "0.1.0"
   spec.authors     = ["CitySocial"]
   spec.summary     = "Shared kernel: identity, social graph, and the event bus."
   spec.files       = Dir["{app,config,lib}/**/*", "README.md"]

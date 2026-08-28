@@ -1,8 +1,6 @@
-require_relative "lib/developer/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "developer"
-  spec.version  = Developer::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "Developer app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]

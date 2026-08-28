@@ -17,3 +17,11 @@ both creates the restaurants and gives each one its photo.
 
 Views reference blobs via `main_app.rails_blob_path(photo, only_path: true)` —
 Active Storage's routes live in the host app, not this engine.
+
+## Events published
+
+- `restaurants.matchup_decided` (vote_id:, voter_id:, winner_id:, loser_id:)
+  emitted by `Restaurants::Vote` after_create_commit when a resident picks the
+  better of two restaurants.
+
+Restaurants subscribes to nothing.

@@ -1,8 +1,6 @@
-require_relative "lib/events/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "events"
-  spec.version  = Events::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "Events app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]

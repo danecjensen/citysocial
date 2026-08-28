@@ -1,8 +1,6 @@
-require_relative "lib/restaurants/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "restaurants"
-  spec.version  = Restaurants::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "Restaurants app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]

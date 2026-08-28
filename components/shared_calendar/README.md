@@ -8,3 +8,9 @@ The month grid, mobile agenda, and event page all surface attached images. The
 module depends only on `platform_core` and publishes
 `shared_calendar.event_created` through `PlatformCore::EventBus` so followers
 can be notified without crossing module boundaries.
+
+## Events published
+
+- `shared_calendar.event_created` (event_id:, author_id:)
+
+SharedCalendar subscribes to nothing.

@@ -2,11 +2,6 @@ module Messaging
   class Engine < ::Rails::Engine
     isolate_namespace Messaging
 
-    # Wire this module's event subscriptions once the app has booted.
-    config.after_initialize do
-      Messaging::Events.subscribe!
-    end
-
     config.generators do |g|
       g.test_framework :rspec
     end

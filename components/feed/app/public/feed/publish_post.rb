@@ -42,7 +42,7 @@ module Feed
       end
       return Result.new(status: :invalid, post: post, errors: post.errors.full_messages) unless post.save
 
-      Feed::LinkPreview.enrich(post) if enrich_link && post.url.present?
+      Feed::FetchLinkPreview.enrich(post) if enrich_link && post.url.present?
 
       PlatformCore::EventBus.publish(
         "feed.post_created",

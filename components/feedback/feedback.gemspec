@@ -1,8 +1,6 @@
-require_relative "lib/feedback/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "feedback"
-  spec.version  = Feedback::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "Feedback app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]

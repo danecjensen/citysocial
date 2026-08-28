@@ -2,11 +2,6 @@ module Communities
   class Engine < ::Rails::Engine
     isolate_namespace Communities
 
-    # Wire this module's event subscriptions once the app has booted.
-    config.after_initialize do
-      Communities::Events.subscribe!
-    end
-
     config.generators do |g|
       g.test_framework :rspec
     end

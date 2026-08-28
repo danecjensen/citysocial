@@ -2,3 +2,9 @@
 
 A CitySocial app-module. Mounted at `/<%= file_name %>`. Depends only on
 `platform_core`. Communicates with other modules via `PlatformCore::EventBus`.
+
+## Events published
+
+None yet. List each event and its payload keys here as you add them, and add a
+`lib/<%= file_name %>/events.rb` with a `subscribe!` only once this module
+actually subscribes to something (see `components/notifications` for the shape).

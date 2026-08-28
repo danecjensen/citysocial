@@ -12,18 +12,10 @@ module AppModule
   class AppModuleGenerator < Rails::Generators::NamedBase
     source_root File.expand_path("templates", __dir__)
 
-    def create_directories
-      %w[app/models app/controllers app/views app/public db/migrate].each do |dir|
-        create_file "components/#{file_name}/#{dir}/.keep", ""
-      end
-    end
-
     def create_module_files
       template "gemspec.tt",            "components/#{file_name}/#{file_name}.gemspec"
       template "engine.tt",             "components/#{file_name}/lib/#{file_name}/engine.rb"
       template "root.tt",               "components/#{file_name}/lib/#{file_name}.rb"
-      template "version.tt",            "components/#{file_name}/lib/#{file_name}/version.rb"
-      template "events.tt",             "components/#{file_name}/lib/#{file_name}/events.rb"
       template "application_record.tt", "components/#{file_name}/app/models/#{file_name}/application_record.rb"
       template "routes.tt",             "components/#{file_name}/config/routes.rb"
       template "package.tt",            "components/#{file_name}/package.yml"

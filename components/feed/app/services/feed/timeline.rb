@@ -1,5 +1,5 @@
 module Feed
-  # Feed's PUBLIC api. A sibling module that needs feed data calls this.
+  # Builds the home timeline. Internal to feed: no sibling module reads it.
   module Timeline
     module_function
 

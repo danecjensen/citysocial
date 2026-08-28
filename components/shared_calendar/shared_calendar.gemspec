@@ -1,8 +1,6 @@
-require_relative "lib/shared_calendar/version"
-
 Gem::Specification.new do |spec|
   spec.name     = "shared_calendar"
-  spec.version  = SharedCalendar::VERSION
+  spec.version  = "0.1.0"
   spec.authors  = ["CitySocial"]
   spec.summary  = "SharedCalendar app-module."
   spec.files    = Dir["{app,config,lib}/**/*", "README.md"]
