@@ -10,8 +10,34 @@
     "Editing the @theme design tokens or the standalone Tailwind build config"
   ],
   "check_command": "bin/verify",
-  "next_id": 37,
+  "next_id": 42,
   "items": [
+    {
+      "id": "F-037",
+      "title": "Show read receipts on your sent messages",
+      "problem": "A resident who sends a private message never learns whether the neighbor actually saw it: read_at is tracked and set the moment the recipient opens the thread, but the sender's own message bubbles show only sender+timestamp, so the send is a one-way action with no confirmation.",
+      "evidence": "components/messaging/app/views/messaging/conversations/show.html.erb:19-33 renders each bubble with no read indicator; components/messaging/app/models/messaging/conversation.rb:78-81 mark_read_for! sets read_at on messages the viewer did NOT send, and conversations_controller.rb:24 loads @messages (read_at included) — the data exists but is consumed only for the unread badge count.",
+      "northstar_fit": "Completes the private-messaging do->others-see->react loop: the sender learns their neighbor actually saw the message, the confirmation that turns a one-way send into a real connection (a core Craigslist-utility + Facebook-richness outcome).",
+      "acceptance": [
+        "Each of the sender's own message bubbles shows a 'Read' indicator only when that message's read_at is present",
+        "Received messages and unread sent messages show no read indicator",
+        "Rendered sender name, timestamp, and body are otherwise unchanged",
+        "Request spec asserts the sender sees 'Read' on a message the recipient has opened and not on an unread one"
+      ],
+      "impact": 4,
+      "effort": 1,
+      "confidence": 0.85,
+      "score": 3.4,
+      "status": "done",
+      "origin": "auto",
+      "attempts": 1,
+      "created": "2026-08-11",
+      "pr": "https://github.com/danecjensen/citysocial/pull/46",
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "read-receipts",
+      "notes": "1b-grounded in repo evidence (dead-end loop: read_at persisted+loaded but never rendered to the sender). Messaging has zero open-PR file overlap. No migration."
+    },
     {
       "id": "F-017",
       "title": "Feedback 'Support' toggle emits aria-pressed",
@@ -31,6 +57,31 @@
       "attempts": 1,
       "created": "2026-08-05",
       "pr": "https://github.com/danecjensen/citysocial/pull/19"
+    },
+    {
+      "id": "F-038",
+      "title": "Show conversation context label in the messaging inbox list",
+      "problem": "A resident scanning their inbox cannot see what a thread is about: context_label/context_path are stored per conversation and shown on the thread header, but the inbox card omits them, weakening recognition and re-engagement.",
+      "evidence": "components/messaging/app/views/messaging/conversations/index.html.erb inbox card omits context; components/messaging/app/views/messaging/conversations/show.html.erb:6-10 already renders @conversation.context_label; the row carries context_path/context_label (added in F-016).",
+      "northstar_fit": "Strengthens re-engagement by letting a resident recognize which listing/post a thread is about at a glance, so utilitarian conversations resume without hunting.",
+      "acceptance": [
+        "Inbox card renders conversation.context_label as a Badge when conversation.context? is true",
+        "Cards without context are unchanged",
+        "Request spec asserts the context label appears on a contextual conversation and is absent otherwise"
+      ],
+      "impact": 3,
+      "effort": 1,
+      "confidence": 0.85,
+      "score": 2.55,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_product",
+      "product_family": "messaging",
+      "milestone": "inbox-context",
+      "notes": "1b-grounded (context stored+shown on thread but omitted from inbox). No migration, in-module."
     },
     {
       "id": "F-009",
@@ -131,6 +182,55 @@
       "notes": "Grounded in master repo state (existing Notifications badge pattern + existing Messaging::Inbox.unread_count public API + messaging being a personal inbox mislabeled as a browse pill). Independently corroborated by research brief R-006 (10/10), which is fresh only on PR #25's branch, not master, so it was NOT consumed from research.md; grounded directly in repo evidence via the 1b dead-end/unsurfaced-API veins."
     },
     {
+      "id": "F-040",
+      "title": "Events archive search composes FormFieldComponent",
+      "problem": "The events archive search form hand-rolls f.label/f.text_field/f.select markup, bypassing the shared design system and drifting styling.",
+      "evidence": "components/events/app/views/events/events/all.html.erb:9-19 hand-rolls form inputs instead of composing PlatformCore::Ui::FormFieldComponent like every other form in the app.",
+      "northstar_fit": "weak: convention/consistency polish; keeps every view on the shared design system, an enabling-quality baseline, but does not itself tighten an engagement loop.",
+      "acceptance": [
+        "The archive search text and select inputs render via PlatformCore::Ui::FormFieldComponent",
+        "Search and filter behavior is unchanged",
+        "Request spec still passes for the archive search flow"
+      ],
+      "impact": 2,
+      "effort": 1,
+      "confidence": 0.9,
+      "score": 1.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "events",
+      "milestone": "form-consistency",
+      "notes": "1b-grounded (design-system drift). Low north-star value; convention polish."
+    },
+    {
+      "id": "F-041",
+      "title": "Mark decorative matchup placeholder icon aria-hidden",
+      "problem": "The fallback food SVG shown when a matchup restaurant has no hero photo is decorative but not aria-hidden, so screen readers announce a meaningless graphic inside the 'Pick X' card.",
+      "evidence": "components/restaurants/app/views/restaurants/matchups/new.html.erb:21 renders a decorative placeholder <svg> with no aria-hidden attribute.",
+      "northstar_fit": "Accessibility is baseline product quality; hides a meaningless graphic from assistive tech on a core voting surface.",
+      "acceptance": [
+        "The decorative placeholder svg carries aria-hidden=\"true\"",
+        "Rendered layout is otherwise unchanged"
+      ],
+      "impact": 2,
+      "effort": 1,
+      "confidence": 0.9,
+      "score": 1.8,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "restaurants",
+      "milestone": "matchup-a11y",
+      "notes": "1b-grounded (a11y: decorative svg not hidden). Tiny, in-module."
+    },
+    {
       "id": "F-036",
       "title": "Show a recent picks activity feed on the restaurants leaderboard",
       "problem": "Restaurant matchup votes are persisted and even published as restaurants.matchup_decided events, but no view ever renders them, so the do -> others-see loop dead-ends and casting a pick is invisible to the community.",
@@ -178,6 +278,32 @@
       "attempts": 1,
       "created": "2026-08-05",
       "pr": "https://github.com/danecjensen/citysocial/pull/13"
+    },
+    {
+      "id": "F-039",
+      "title": "Show supporter handles on a feedback submission",
+      "problem": "The author of a feedback idea sees only a supports_count number, never who backed it, so the payoff half of the support loop is invisible even though each supporter's identity is stored.",
+      "evidence": "components/feedback/app/views/feedback/submissions/show.html.erb:35-48 renders supports_count only; components/feedback/app/models/feedback/support.rb:8 stores user_id and :14-21 publishes feedback.submission_supported with supporter_id. Resolve identities via one batched PlatformCore::Graph.users lookup (F-018 pattern) to avoid an N+1.",
+      "northstar_fit": "Completes the feedback support do->others-see loop by making social proof visible: the author sees the neighbors behind their idea, which is the reward that drives more support.",
+      "acceptance": [
+        "Submission show page lists supporter handles/avatars resolved via one batched PlatformCore::Graph.users query (no per-supporter N+1)",
+        "supports_count and existing Support toggle are unchanged",
+        "A submission with zero supporters renders no supporter list (or an EmptyState), not a bare heading",
+        "Request spec asserts supporters render and query count stays flat as supporters grow"
+      ],
+      "impact": 4,
+      "effort": 2,
+      "confidence": 0.85,
+      "score": 1.7,
+      "status": "ready",
+      "origin": "auto",
+      "attempts": 0,
+      "created": "2026-08-11",
+      "pr": null,
+      "kind": "module_feature",
+      "product_family": "feedback",
+      "milestone": "supporter-visibility",
+      "notes": "1b-grounded (supporter identities stored+published but only count rendered). No migration, in-module; reuses Graph.users batch."
     },
     {
       "id": "F-018",
@@ -240,6 +366,32 @@
       "attempts": 1,
       "created": "2026-08-04",
       "pr": "https://github.com/danecjensen/citysocial/pull/1"
+    },
+    {
+      "id": "F-022",
+      "title": "Share public events through a reusable capability",
+      "problem": "Residents who discover a CitySocial event have no reliable way to send its canonical page into the chats where local plans already happen.",
+      "evidence": "Research PR #28, R-009 (grader 10/10); components/events/app/views/events/events/show.html.erb already groups public ticket and calendar actions, while shared UI lives under components/platform_core/app/public/platform_core/ui/.",
+      "acceptance": [
+        "A public PlatformCore::Ui::ShareComponent accepts a title and canonical URL, composes shared buttons, and always renders a Copy link action",
+        "A Stimulus controller reveals a separate native Share action only when navigator.share is supported and keeps copy fallback usable after cancel, permission, or API failures",
+        "Accessible live status reports copy/share success or failure",
+        "Event detail shares event_url(@event), never the external ticket/source URL, while ticket and calendar actions remain unchanged",
+        "The design catalog plus component and request specs document and cover the capability without adding a dependency"
+      ],
+      "impact": 4,
+      "effort": 3,
+      "confidence": 1.0,
+      "score": 1.333,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-07",
+      "pr": "https://github.com/danecjensen/citysocial/pull/29",
+      "kind": "app_wide_capability",
+      "product_family": "sharing",
+      "milestone": "public-event-sharing",
+      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
     },
     {
       "id": "F-003",
@@ -505,6 +657,33 @@
       "notes": "Product lane milestone 3: Marketplace listings and community posts now open a context-preserving private compose flow; Messaging stores only a validated internal path and public label, then renders the backlink without reading sibling models."
     },
     {
+      "id": "F-023",
+      "title": "Launch reliable pickup game rosters",
+      "problem": "Austin residents cannot tell whether a casual game has a real spot, enough committed players, or a fair next-in-line process before traveling to play.",
+      "evidence": "research.md#R-008; Events is read-only discovery and Communities owns discussion, while neither owns resident-hosted rosters, capacity, or deterministic waitlist promotion.",
+      "acceptance": [
+        "A generated PickupSports engine owns additive game and roster data, depends only on platform_core, and is mounted as its own product",
+        "A signed-in resident can host and edit a future game with sport, skill, time, neighborhood, venue, details, and capacity while the host takes the first spot",
+        "Anyone can browse and filter upcoming games and view a public roster with open, full, waitlisted, and canceled states",
+        "Residents can join or leave; overflow is waitlisted and the earliest waitlisted resident is promoted transactionally when a player leaves",
+        "The module publishes primitive game, roster, and promotion events and exposes a read-only UpcomingGames public API",
+        "Model, request, public API, route, and boundary checks cover ownership, validation, duplicate joins, capacity, FIFO promotion, cancellation, and filters"
+      ],
+      "impact": 5,
+      "effort": 5,
+      "confidence": 0.8,
+      "score": 0.8,
+      "status": "done",
+      "origin": "research",
+      "attempts": 1,
+      "created": "2026-08-07",
+      "pr": "https://github.com/danecjensen/citysocial/pull/30",
+      "kind": "module_product",
+      "product_family": "pickup_sports",
+      "milestone": "roster-first-mvp",
+      "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
+    },
+    {
       "id": "F-014",
       "title": "Batch-load the viewer's votes on the community post list",
       "problem": "Rendering the community post list calls vote_value_for(current_user.id) once per post/comment, issuing one communities_votes lookup per row.",
@@ -538,7 +717,7 @@
       "impact": 2,
       "effort": 3,
       "confidence": 0.7,
-      "score": 0.47,
+      "score": 0.4667,
       "status": "ready",
       "origin": "auto",
       "attempts": 0,
@@ -548,59 +727,6 @@
       "product_family": "messaging",
       "milestone": "inbox-performance",
       "notes": "Effort 3 (three distinct batch sources); split into participant-batch vs message/unread-batch if it doesn't fit one run. Depends on F-018's Graph.users. Below threshold."
-    },
-    {
-      "id": "F-022",
-      "title": "Share public events through a reusable capability",
-      "problem": "Residents who discover a CitySocial event have no reliable way to send its canonical page into the chats where local plans already happen.",
-      "evidence": "Research PR #28, R-009 (grader 10/10); components/events/app/views/events/events/show.html.erb already groups public ticket and calendar actions, while shared UI lives under components/platform_core/app/public/platform_core/ui/.",
-      "acceptance": [
-        "A public PlatformCore::Ui::ShareComponent accepts a title and canonical URL, composes shared buttons, and always renders a Copy link action",
-        "A Stimulus controller reveals a separate native Share action only when navigator.share is supported and keeps copy fallback usable after cancel, permission, or API failures",
-        "Accessible live status reports copy/share success or failure",
-        "Event detail shares event_url(@event), never the external ticket/source URL, while ticket and calendar actions remain unchanged",
-        "The design catalog plus component and request specs document and cover the capability without adding a dependency"
-      ],
-      "impact": 4,
-      "effort": 3,
-      "confidence": 1.0,
-      "score": 1.333,
-      "status": "done",
-      "origin": "research",
-      "attempts": 1,
-      "created": "2026-08-07",
-      "pr": "https://github.com/danecjensen/citysocial/pull/29",
-      "kind": "app_wide_capability",
-      "product_family": "sharing",
-      "milestone": "public-event-sharing",
-      "notes": "Capability lane: shared canonical copy/native sharing with Events as the first public consumer. R-009 remains on open research-only PR #28, so this run did not edit that concurrent branch. F-021 is reserved by open PR #26. Verification incomplete only because PostgreSQL and screenshot tooling were environment-blocked."
-    },
-    {
-      "id": "F-023",
-      "title": "Launch reliable pickup game rosters",
-      "problem": "Austin residents cannot tell whether a casual game has a real spot, enough committed players, or a fair next-in-line process before traveling to play.",
-      "evidence": "research.md#R-008; Events is read-only discovery and Communities owns discussion, while neither owns resident-hosted rosters, capacity, or deterministic waitlist promotion.",
-      "acceptance": [
-        "A generated PickupSports engine owns additive game and roster data, depends only on platform_core, and is mounted as its own product",
-        "A signed-in resident can host and edit a future game with sport, skill, time, neighborhood, venue, details, and capacity while the host takes the first spot",
-        "Anyone can browse and filter upcoming games and view a public roster with open, full, waitlisted, and canceled states",
-        "Residents can join or leave; overflow is waitlisted and the earliest waitlisted resident is promoted transactionally when a player leaves",
-        "The module publishes primitive game, roster, and promotion events and exposes a read-only UpcomingGames public API",
-        "Model, request, public API, route, and boundary checks cover ownership, validation, duplicate joins, capacity, FIFO promotion, cancellation, and filters"
-      ],
-      "impact": 5,
-      "effort": 5,
-      "confidence": 0.8,
-      "score": 0.8,
-      "status": "done",
-      "origin": "research",
-      "attempts": 1,
-      "created": "2026-08-07",
-      "pr": "https://github.com/danecjensen/citysocial/pull/30",
-      "kind": "module_product",
-      "product_family": "pickup_sports",
-      "milestone": "roster-first-mvp",
-      "notes": "Product lane milestone 1. Persona: Austin newcomer or casual player. Job: know a suitable game has a real spot and viable roster before traveling. Loop: host posts -> residents discover and join -> capacity/waitlist changes are visible and promotion events are notification-ready -> residents commit or leave early. Follow-ups: attendance closeout, recurring games, Notifications delivery, and reliability signals."
     }
   ]
 }
